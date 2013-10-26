@@ -1,0 +1,137 @@
+@import 'compass'; // import compass core
+
+@import 'globals';
+@import 'baseline';
+@import 'page/about';
+@import 'page/blog_index';
+
+.header-wrap {
+	.header {
+		margin:{top: 0; left: $page-side-margin; right: $page-side-margin;}
+		@include screen-narrow {
+			margin:{left: $page-side-margin-min-px; right: $page-side-margin-min-px;}
+		}
+		.site-title-wrap {
+			@include screen-narrow {
+				display: block;
+				margin:{left: auto; right: auto;}
+				text-align: center;
+				margin:{left: -$page-side-margin-min-px; right: -$page-side-margin-min-px; top: -$top-stripe-width;}
+				line-height: 0;
+			}
+			.logo-wrap {
+				@include screen-narrow {
+					display: inline-block;
+					overflow: hidden;
+					margin:{left: auto; right: auto;}
+					text-align: center;
+					line-height: 0;
+				}
+				.logo-background {
+					margin-left: -20px;
+					@include screen-narrow {
+						margin-left: 0;
+					}
+					.logo {
+						border: none; outline: none;
+						@include screen-narrow {
+							display: inline;
+						}
+					}
+				}
+			}
+		}
+		.nav {
+			@include inline-block;
+			vertical-align: center;
+			@include screen-narrow {
+				display: block;
+				text-align: center;
+				margin-top: 1em;
+			}
+			.nav-items {
+				padding-top: .8em;
+				@include screen-narrow {
+					padding-top: 0;
+				}
+				.nav-item {
+					@include inline-block;
+					vertical-align: center;
+					margin:{left: 2em; bottom: 12px;}
+					@include screen-narrow {
+						margin:{left: .5em; right: .5em;}
+						vertical-align: top;
+					}
+					&.current {
+						@include screen-narrow {
+							margin-bottom: 18px;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+.page-main {
+	padding-bottom: 3em;
+	margin:{left:$page-side-margin; right:$page-side-margin;}
+	@include screen-narrow {
+		margin-left:  $page-side-margin-min-px;
+		margin-right: $page-side-margin-min-px;
+	}
+	.page-content {
+	}
+}
+
+.page-footer {
+	margin:{left:$page-side-margin; right:$page-side-margin;}
+	@include screen-wide {
+	}
+	.site-credits {
+	}
+}
+
+
+//**********************************************************
+// category-work page style
+//**********************************************************
+body.category-work{
+	.page-content {
+		article {
+			.wp-post-image {
+				float: right;
+				max-width: 50%;
+				margin:{left: 2em; right: 1em; top: .3em; bottom: 2em;}
+				@include box-sizing(border-box);
+				@media screen and (max-width:801px) {
+					float: none; vertical-align: bottom;
+					max-width: 100%;
+					width: 100%;
+					margin: 0; 
+				}
+			}
+			.entry-title {
+				@media screen and (max-width:801px) {
+					margin-top: 0;
+					text-align: center;
+				}
+			}
+			.entry-meta {
+				.entry-livelink {
+					@include screen-narrow {
+						display: block; text-align: center; margin-right: 0;
+						a {
+							display: inline-block; padding: .3em .6em;
+							color: white;
+							background-color: $primary-color;
+							@include border-radius(5px);
+						}
+					}
+				}
+			}
+			@media screen and (max-width:801px) {
+			}
+		}
+	}
+}

@@ -1,0 +1,9 @@
+{% assign words = 0 %}
+{% assign lines = include.content|split:'pre>' %}
+{% for line in lines %}
+    {% assign mod = forloop.index|modulo:2 %}
+    {% assign line_words = line|strip_html|number_of_words|times:mod %}
+    {% assign words = words|plus:line_words %}
+{% endfor %}
+
+{{ words }}

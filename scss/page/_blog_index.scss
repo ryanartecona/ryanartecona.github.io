@@ -1,0 +1,53 @@
+// ----------
+// index page
+// ----------
+.page.blog-index {
+	ul.posts {
+		list-style: none;
+		padding-left: 0;
+		li.post {
+			margin-bottom: 1.5em;
+			font-family: $sans-serif;
+			.meta {
+				display: block;
+				color: $gray-light;
+				.meta-item {
+					&:after {
+						display: inline-block;
+						content: " • ";
+						color: $gray-x-light;
+						margin:{left: .8em; right: .5em;}
+					}
+					&:last-child:after {
+						display: none;
+					}
+				}
+			}
+			.permalink {
+				display: block;	
+				margin-bottom: 6px;
+				a {
+					font-size: 2.5em;
+					line-height: 1.05;
+					font-style: italic;
+					font-weight: 600;
+					text-decoration: none;
+					color: $gray-light;
+					border-bottom: solid 4px transparent;
+					@include transition(
+						border-color ease-out .3s,
+						color ease-out .3s);
+					&:hover {
+						border-bottom-style: solid;
+						border-bottom-color: $primary-color;
+						color: $gray-med;
+						@include transition(none);
+					}
+					@include screen-narrow {
+						font-size: 1.75em;
+					}
+				}
+			}
+		}
+	}
+}

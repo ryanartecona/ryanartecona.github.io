@@ -1,0 +1,6 @@
+name:      Ryan Artecona
+permalink: pretty
+markdown:  redcarpet
+pygments:  true
+redcarpet:
+  extensions: ["smart"]

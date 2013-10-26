@@ -1,0 +1,295 @@
+@import 'compass';
+
+// reset
+////////////////////////////////////////////////////////////////////
+html, body {margin:0; padding:0;}
+
+
+// typography and colors
+////////////////////////////////////////////////////////////////////
+body {
+	font-family: $serif;
+}
+
+h1 {}
+h2 {}
+h3 {}
+h4 {}
+h5 {}
+h6 {}
+
+h1,h2,h3,h4,h5,h6 {
+}
+h1,h2 {
+}
+
+ul {}
+
+a {
+	&:hover {
+	}
+}
+
+input[type="text"] {
+}
+input[type="button"],
+input[type="submit"] {
+}
+
+
+//generic styles
+///////////////////////////////////////////////////////////////////
+body {
+	border-top: solid $top-stripe-width $black;
+	background-color: #f5f5f5;
+}
+.page-wrap {}
+
+.header-wrap .header {
+	margin-bottom: 2.5em;
+	@include screen-narrow {
+		margin-bottom: 1em;
+	}
+	.site-title-wrap {
+		@include inline-block; vertical-align: center;
+		margin: 0;
+		a {
+			&:hover {}
+			.logo-wrap {
+				.logo {vertical-align: center;}
+			}
+			.site-title {@extend .hidden;}
+		}
+		@include screen-narrow {
+			background: $black;
+			@include background-dark-glow;
+		}
+		.logo-background {
+			display: block;
+			@include background-dark-glow;
+			padding: 23px;
+			@include screen-narrow {
+				padding: 8px;
+				background: none;
+			}
+			.logo {
+				display: block;
+				width: 45px; height: 45px;
+				@include screen-narrow {
+					width: 35px; height: 35px;
+				}
+			}
+		}
+	}
+	.site-description {
+	}
+	
+	.nav {
+		font-family: $serif;
+		.nav-items {
+			padding: 0; 
+			margin: 0;
+			.nav-item {
+				font-size: 1.4em;
+				@include screen-narrow {
+					font-size: 1.2em;
+				}
+				a {
+					color: $primary-color;
+					text-decoration: none;
+					border-bottom: solid 5px transparent;
+					@include transition(border-color .3s ease-out);
+					&:hover {
+						border-bottom-color: $primary-color;
+						@include transition(none);
+					}
+					@include screen-narrow {
+						border-bottom-width: 4px;
+					}
+				}
+			}
+			.nav-item.current a {
+				color: $black;
+				border-bottom: solid 5px $black;
+				@include screen-narrow {
+					border-bottom-width: 4px;
+				}
+			}
+		}
+	}
+}
+
+.article { 
+	@include pie-clearfix;
+	margin-bottom: 3em;
+	font-size: 1.05em;
+	@include screen-narrow {
+		font-size: .95em;
+	}
+	.wp-post-image {
+		border: solid 5px $black;
+	}
+	.entry-title {
+		font-family: $sans-serif;
+		font-size: 3em;
+		line-height: 1;
+		font-style: italic;
+		margin: 0;
+		color: $gray-light;
+		@include text-shadow(1px 1px 2px rgba(255,255,255,.5));
+		@include screen-narrow {
+			font-size: 2em;
+		}
+	}
+	.entry-meta {
+		color: $gray-light;
+		font-family: $sans-serif;
+		@include screen-narrow {
+			font-size: .85em;
+		}
+		.entry-meta-item {
+			&:after {
+				display: inline-block;
+				content: " • ";
+				color: $gray-x-light;
+				margin:{left: .8em; right: .5em;}
+			}
+			&:last-child:after {
+				display: none;
+			}
+		}
+	}
+	.entry-content {
+		color: $gray-x-dark;
+
+		h2, h3, h4, h5, h6,
+		p, pre, blockquote, ul, ol,
+		div.highlight {
+			max-width: 600px;
+			margin:{left: auto; right: auto;}
+			@include box-sizing(border-box);
+		}
+		p, blockquote, ul, ol {
+			line-height: 1.5;
+			code {
+				font-family: $monospace;
+				font-size: 0.85em;
+				background: transparentize($gray-med, 0.8);
+				padding: 0.1em 0.3em;
+				@include border-radius(2px);
+			}
+		}
+		h2, h3, h4 {
+			font-family: $sans-serif;
+		}
+		p {
+			margin:{top: 1.5em; bottom: 1.5em;}
+		}
+		pre code {
+			display: block;
+			padding: 0.9em 1.1em;
+			@include border-radius(3px);
+
+			font-family: $monospace;
+			font-size: .85em;
+			line-height: 1.3;
+			overflow: scroll;
+		}
+		a {
+			color: $primary-color;
+			border-bottom: dotted 1px $primary-color;
+			text-decoration: none;
+			&:hover {
+				color: darken($primary-color, 20%);
+				border-bottom-style: solid;
+			}
+		}
+		small {
+			display: block;
+			padding: .5em .8em;
+			@include border-radius(3px);
+			background-color: $gray-xx-light;
+			color: $gray-dark;
+		}
+	}
+}
+
+.article, .page {
+	img {max-width: 100%;}
+}
+
+.page-footer {
+	clear: both;
+	padding: 1em 0;
+	border-top: solid 1px $gray-x-light;
+	color: $gray-med;
+	.twitter-handle {
+		color: $gray-dark;
+		text-decoration: none;
+	}
+}
+
+
+// category-work archive page
+////////////////////////////////////////////////////////////////
+$inner-padding: 2%;
+$inner-padding: 0;
+.category-description {
+	font-weight: bold; font-style: italic; line-height: 1.3;
+	border-bottom: solid 1px $gray-x-light;
+	margin-bottom: 3em;
+	//padding: 0 $inner-padding;
+}
+
+body.category-work {
+	article {
+		margin-bottom: 4.5em;
+		.entry-title {
+			font-family: $sans-serif;
+			font-size: 1.6em; line-height: 1.1; font-style: italic;
+			letter-spacing: .1em;
+			margin-top: .2em; margin-bottom: 0;
+			padding: .3em .5em;
+			background-color: $black;
+			color: white;
+		}
+		.entry-livelink {
+			display: block; float: right; margin-top: 0;
+			font-family: $sans-serif;
+			padding: .4em .8em .3em;
+			margin:{left: 1em; bottom: .2em;}
+			background-color: $primary-color;
+			border-bottom: solid 3px $black;
+			a {
+				text-decoration: none;
+				color: white;
+			}
+		}
+		.entry-excerpt {
+			font-size: .85em;
+			line-height: 1.4;
+			margin-bottom: 1em; margin-top: 2em;
+			padding: 0 $inner-padding;
+		}
+		.entry-skills {
+			font-family: $sans-serif;
+			margin-bottom: .7em;
+			padding: 0 $inner-padding;
+		}
+		.entry-meta {
+			padding: 0 $inner-padding;
+			color: $gray-light;
+			font-family: $sans-serif;
+			span {
+				margin-right: 1.5em;
+			}
+			.entry-date {
+			}
+		}
+	}
+}
+
+
+//special classes
+////////////////////////////////////////////////////////////////
+.hidden {position: absolute; left: -9999px;}

@@ -1,0 +1,116 @@
+//**********************************************************
+// about page
+//**********************************************************
+
+.page.page-about {
+	font-family: $sans-serif; line-height: 1.5; font-size: .9em;
+	@include pie-clearfix;
+	.portrait-wrap {
+		float: right; margin: 0 5% 1em 1.5em;
+		max-width: 45%;
+		@include border-radius(100%);
+		@include screen-narrow {
+			float: none;
+			max-width: 200px;
+			margin: 0 auto 2em;
+			padding:{left: 10%; right: 10%;}
+		}
+		.portrait {
+			display: block;
+			@include border-radius(inherit);
+			@include box-sizing(border-box);
+			border: solid 15px $black;
+			@include screen-narrow {
+				margin:{left: auto; right: auto;}
+				border-width: 10px;
+			}
+		}
+	}
+	.intro {
+		font-size: 1.8em; font-family: $sans-serif;
+		color: $black;
+		line-height: 1.2;
+		@include screen-narrow {
+			font-size: 1.5em;
+		}
+	}
+	h2 {
+		font-size: 1.5em; font-family: $sans-serif;
+		color: $black;
+		line-height: 1.2;
+		margin:{top: 1.4em; bottom: 1em;}
+		@include screen-narrow {
+			font-size: 1.25em;
+		}
+	}
+	.hr {
+		height: 15px; 
+		background-color: $black;
+		@include screen-narrow {
+			height: 10px;
+		}
+	}
+	p {
+		margin:{top: 0; bottom: 2em;}
+	}
+	p.bio {
+		margin-top: 3em; margin-bottom: 3em;
+		&:first-letter {
+			float: left; margin-right: .2em;
+			font-family: $serif;
+			font-size: 2em; line-height: 1.2; font-weight: bold;
+			width: 1.2em; height: 1.1em;
+			padding-top: .10em;
+			text-align: center; 
+			border: solid 3px $black; @include border-radius(100%);
+		}
+	}
+	.skills {
+		@include screen-wide {
+			width: 40%;
+		}
+	}
+	.contact {
+		@include pie-clearfix;
+		p {
+			@include pie-clearfix;
+			float: left;
+			width: 40%;
+			margin-top: 0;
+			@media screen and (max-width:641px) {
+				width: auto; float: none;
+			}
+		}
+		.links {
+			@include pie-clearfix;
+			float: left;
+			width: 40%;
+			margin-left: 20%;
+			@include screen-x-wide {
+				clear: left;
+				margin-left: 0;
+			}
+			a {
+				text-decoration: none;
+				color: $black;
+				border-bottom: solid 3px transparent;
+				@include transition(border-color .3s ease-out);
+				&:hover {
+					border-bottom-color: $black;
+					@include transition(none);
+				}
+				&:after {
+					content: " \BB";
+					color: $primary-color;
+				}
+			}
+			.email {
+				font-size: 1.3em;
+			}
+			@media screen and (max-width:641px) {
+				width: auto; float: none; margin-left: 0;
+				text-align: center;
+			}
+		}
+	}
+}

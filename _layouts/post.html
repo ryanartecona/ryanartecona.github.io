@@ -1,0 +1,23 @@
+---
+layout: default
+---
+<div class="article category-{{ page.category }}">
+  <div class="entry-header">
+    <h2 class="entry-title">
+      {{ page.title }}
+    </h2>
+  </div>
+
+  <div class="entry-meta">
+    <span class="entry-meta-item entry-date">
+      {% include natural_date date=page.date %}
+    </span>
+    <span class="entry-meta-item entry-wordcount">
+      {% include real_number_of_words content=content %} words
+  </span>
+  </div>
+
+  <div class="entry-content">
+    {{ content }}
+  </div>
+</div>
