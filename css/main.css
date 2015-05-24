@@ -131,7 +131,7 @@ body {
     color: #333; }
     .article .entry-content h2, .article .entry-content h3, .article .entry-content h4, .article .entry-content h5, .article .entry-content h6,
     .article .entry-content p, .article .entry-content pre, .article .entry-content blockquote, .article .entry-content ul, .article .entry-content ol,
-    .article .entry-content div.highlight {
+    .article .entry-content div.highlight, .article .entry-content hr {
       max-width: 600px;
       margin-left: auto;
       margin-right: auto;
@@ -150,6 +150,22 @@ body {
         border-radius: 2px; }
     .article .entry-content h2, .article .entry-content h3, .article .entry-content h4 {
       font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif; }
+    .article .entry-content hr {
+      border: none; }
+      .article .entry-content hr, .article .entry-content hr:before, .article .entry-content hr:after {
+        width: 5px;
+        height: 5px;
+        background: #cfcfcf;
+        border-radius: 100%;
+        position: relative; }
+      .article .entry-content hr:before, .article .entry-content hr:after {
+        content: "";
+        display: block;
+        position: absolute; }
+      .article .entry-content hr:before {
+        right: 25px; }
+      .article .entry-content hr:after {
+        left: 25px; }
     .article .entry-content p {
       margin-top: 1.5em;
       margin-bottom: 1.5em; }
