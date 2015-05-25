@@ -380,9 +380,10 @@ Moreover, the prescribed solution to this dilemma is to *encode the enum in a cl
 -   1 custom setter
 -   3 bespoke classes
 -   1 mixin providing a default method implementation for 2/3 of the classes
+-   2 implicit interfaces
 -   5 methods in total, split across those classes and mixins
 
-to support the `charge` and `frequentRenterPoints` in a way that avoids using constants as enums. This is, in my opinion, *a nightmare*. Though some Ruby programmers may disagree that the original example is the best approach for the problem given, it's tough to argue that the approach outlined here is *the most object-oriented*, and that all too many programmers thereby consider it to be *the most praiseworthy*.
+to support the `charge` and `frequentRenterPoints` in a way that avoids using constants as enums. This is, in my opinion, *a nightmare*. Though some Ruby programmers may disagree that the original example is the best approach for the problem given, it's tough to argue that the approach outlined here is *the most object-oriented*. I think all too many programmers would thereby consider it to be *the most praiseworthy*.
 
 After lots of incremental changes, the Ruby comes out looking like this.
 
@@ -429,12 +430,16 @@ end
   end
 ```
 
-The Haskell examples already given have all their bases covered here, and then some. They don't need to change, *at all*, for 2 reasons. First, Haskell has fantastic support for user-defined data types. Defining an enum is dead simple, and defining fancier algebraic data types (not shown here) is not much more difficult. Second, designing and organizing your functions and data types are completely separate concerns from organizing your namespaces. This is in stark contrast with Ruby and most other OO languages, where both are concerns are painfully intertwined, as exhibited here.
+There's no Haskell translation for this ultimate refactoring. The Haskell examples already given don't need to change, *at all*, for 2 reasons.
 
-I want to pause and note, again, that the primary motivation for this whole section of changes, which take no fewer than *16 pages* in the book, boils down to a lack of enums or sum types in Ruby. In Haskell, we can define what kinds of movies we know about, in a single place, as a data type.
+First, Haskell has fantastic support for user-defined data types. Defining an enum is dead simple, and defining fancier algebraic data types (not shown here) is not much more difficult. Second, designing and organizing your functions and data types are completely separate concerns from organizing your namespaces. This is in stark contrast with Ruby and most other OO languages, where both are concerns are painfully intertwined, as exhibited here.
+
+I want to pause and note, again, that the primary motivation for this whole section of changes, which take no fewer than *16 pages* in the book, boils down to a lack of enums or sum types in Ruby. In Haskell, we can define what kinds of movies we know about, in a single place, as a data type. We started and finished with this.
 
 ``` haskell
 data MovieType = Regular | NewRelease | Childrens
 ```
 
-The compiler can then detect when we fail to consider one of these possible values, or we try to treat one as something it's not, or even we do something silly like spell one of their names wrong. In Ruby, the best we can do is give some special names to what are really just a handful of integers, and then hope our tests are good enough to catch when we make one of those mistakes. Unsurprisingly, this makes code feel pretty brittle.
+The compiler could thereafter detect when we failed to consider one of these possible values, or when we tried to treat one as something it's not, or even when we did something silly like spell one of their names wrong.
+
+In Ruby, the best we can do is give some special names to what are really just a handful of integers, and then hope our tests are good enough to catch when we make one of those mistakes. Unsurprisingly, this can make code feel pretty brittle. If this poor man's enum using integer constants approach makes a handful of classes and mixins and a little duck-typing look well-behaved by comparison, *maybe that is less a strength of OOP and more an inability for the language to express much outside of a class hierarchy*.
