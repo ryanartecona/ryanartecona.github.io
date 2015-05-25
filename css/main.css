@@ -132,7 +132,7 @@ body {
     .article .entry-content h2, .article .entry-content h3, .article .entry-content h4, .article .entry-content h5, .article .entry-content h6,
     .article .entry-content p, .article .entry-content pre, .article .entry-content blockquote, .article .entry-content ul, .article .entry-content ol,
     .article .entry-content div.highlight, .article .entry-content hr {
-      max-width: 600px;
+      max-width: 700px;
       margin-left: auto;
       margin-right: auto;
       -moz-box-sizing: border-box;
