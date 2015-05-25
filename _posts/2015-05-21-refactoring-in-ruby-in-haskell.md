@@ -14,7 +14,7 @@ Naturally, I translated the refactoring session from Chapter 1 into Haskell.
 
 There are significant differences from the Ruby examples and this Haskell translation. In translating, I tried to be faithful to (my reading of) the spirit of the Ruby examples by writing code that might have been written by a junior dev, hammered out in haste, or hacked together without intention of 'making it to production': it fulfills its stated purpose and nothing more. The point is this is straightforward Haskell code, and its differences from the Ruby examples are attributable to differences between the respective languages.
 
-<small>This is a working literate Haskell program, which you can [download here](/downloads/refactoring_1.lhs). You can load it in `ghci` with `:load refactoring_1.lhs`, and inspect any value defined here. You can print a report with `putStrLn` as in `putStrLn (statement (Customer "Schnee" []))`. You can inspect the type of any value or function with `:type` as in `:type statement`, and you can request info about a type with `:info` as in `:info Movie`. If you need to install Haskell first, follow [this guide](https://github.com/bitemyapp/learnhaskell/blob/master/install.md).</small>
+<small>This is a working literate Haskell program, which you can [download here](/downloads/refactoring_1.lhs). You can load it in `ghci` with `:load refactoring_1.lhs`, and inspect any value defined here. If you need to install Haskell first, follow [this guide](https://github.com/bitemyapp/learnhaskell/blob/master/install.md).</small>
 
 ------------------------------------------------------------------------
 
@@ -361,7 +361,8 @@ htmlStatement c = unlines
     [ "<h1>Rentals for <em>" ++ name c ++ "</em></h1><p>"
     , intercalate "\n" rentalReportLines
     , "<p>You owe <em>" ++ show (totalCharge c) ++ "</em><p>"
-    , "On this rental you earned <em>" ++ show (totalFrequentRenterPoints c) ++ " frequent renter points<p>"]
+    , "On this rental you earned <em>" ++ show (totalFrequentRenterPoints c) ++ "</em> frequent renter points<p>"
+    ]
   where
   rentalReportLines = flip map (rentals c) $ \rental ->
     "\t" ++ title (movie rental) ++ ": " ++ show (charge rental) ++ "<br>"

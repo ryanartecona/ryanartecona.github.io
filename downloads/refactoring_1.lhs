@@ -336,7 +336,8 @@ Finally, we can do what we set out to and write our html statement.
 >     [ "<h1>Rentals for <em>" ++ name c ++ "</em></h1><p>"
 >     , intercalate "\n" rentalReportLines
 >     , "<p>You owe <em>" ++ show (totalCharge c) ++ "</em><p>"
->     , "On this rental you earned <em>" ++ show (totalFrequentRenterPoints c) ++ " frequent renter points<p>"]
+>     , "On this rental you earned <em>" ++ show (totalFrequentRenterPoints c) ++ "</em> frequent renter points<p>"
+>     ]
 >   where
 >   rentalReportLines = flip map (rentals c) $ \rental ->
 >     "\t" ++ title (movie rental) ++ ": " ++ show (charge rental) ++ "<br>"
