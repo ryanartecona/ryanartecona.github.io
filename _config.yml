@@ -1,6 +1,6 @@
 name:        Ryan Artecona
 permalink:   pretty
 markdown:    redcarpet
-highlighter: rouge
+highlighter: pygments
 redcarpet:
   extensions: ["smart", "strikethrough"]
