@@ -46,7 +46,7 @@
     }
   }
   .hr {
-    height: 15px; 
+    height: 15px;
     background-color: $black;
     @include screen-narrow {
       height: 10px;
@@ -63,8 +63,9 @@
       font-size: 2em; line-height: 1.2; font-weight: bold;
       width: 1.2em; height: 1.1em;
       padding-top: .10em;
-      text-align: center; 
-      border: solid 3px $black; @include border-radius(100%);
+      text-align: center;
+      border: solid 3px $black;
+      @include border-radius(100%);
     }
   }
   .skills {

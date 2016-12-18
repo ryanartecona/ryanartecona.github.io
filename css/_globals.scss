@@ -1,5 +1,5 @@
-
 //main accent colors
+
 $primary-color: rgb(155,109,202); //purple
 $primary-color-shadow: rgb(66,31,83);
 $secondary-color: rgb(108,148,92); //green
@@ -13,17 +13,21 @@ $gray-x-dark: #333;
 $black: #222;
 
 //layout stuff
+
 $top-stripe-width: 8px;
 
 $page-side-margin: 5%;
 $page-side-margin-min-px: 16px;
 
 //typography
+
 $serif: "Hoefler Text", "Baskerville old face", Garamond, Georgia, "Times New Roman", serif;
 $sans-serif: "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
 $monospace: Menlo, Consolas, "Lucida Console", monospace;
 
+
 //screen width breakpoints
+
 @mixin screen-narrow {
 	@media screen and (max-width:560px) {
 		@content;
@@ -40,10 +44,47 @@ $monospace: Menlo, Consolas, "Lucida Console", monospace;
 	}
 }
 
+
 //misc mixins
+
 @mixin background-dark-glow {
 	background: $black;
-	@include background(
-		linear-gradient($black 33%, $primary-color-shadow)
-	);
+  background: -moz-linear-gradient($black 33%, $primary-color-shadow);
+  background: -webkit-linear-gradient($black 33%, $primary-color-shadow);
+  background: linear-gradient($black 33%, $primary-color-shadow);
+}
+
+
+//stubs for compass-provided mixins, lost when moved to hakyll from jekyll
+
+@mixin transition($t...) {
+  -moz-transition: $t;
+  -o-transition: $t;
+  -webkit-transition: $t;
+  transition: $t;
+}
+
+@mixin pie-clearfix {
+  *zoom: 1;
+  &:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+
+@mixin text-shadow($ts) {
+  text-shadow: $ts;
+}
+
+@mixin box-sizing($bs) {
+  -moz-box-sizing: $bs;
+  -webkit-box-sizing: $bs;
+  box-sizing: $bs;
+}
+
+@mixin border-radius($br) {
+  -moz-border-radius: $br;
+  -webkit-border-radius: $br;
+  border-radius: $br;
 }

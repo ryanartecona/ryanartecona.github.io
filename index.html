@@ -1,27 +1,18 @@
----
-layout: default
-toplevel_title: blog
----
-
 <div class="page blog-index">
   <ul class="posts">
-    {% for post in site.posts %}
+    $for(posts)$
       <li class="post">
         <div class="permalink">
-            <a href="{{ post.url }}">
-                {{ post.title }}
+            <a href="$url$">
+                $title$
             </a>
         </div>
         <div class="meta">
             <span class="meta-item date">
-                {% include natural_date date=post.date %}
-            </span>
-            <span class="meta-item wordcount">
-                {% assign post_rendered_content = post.content | markdownify %}
-                {% include real_number_of_words content=post_rendered_content %} words
+                $date$
             </span>
         </div>
       </li>
-    {% endfor %}
+    $endfor$
   </ul>
 </div>

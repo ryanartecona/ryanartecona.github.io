@@ -1,4 +1,4 @@
-@import 'compass';
+/* @import 'compass'; */
 
 // reset
 ////////////////////////////////////////////////////////////////////
@@ -51,7 +51,8 @@ body {
     margin-bottom: 1em;
   }
   .site-title-wrap {
-    @include inline-block; vertical-align: center;
+    display: inline-block;
+    vertical-align: middle;
     margin: 0;
     a {
       &:hover {}
@@ -83,11 +84,11 @@ body {
   }
   .site-description {
   }
-  
+
   .nav {
     font-family: $serif;
     .nav-items {
-      padding: 0; 
+      padding: 0;
       margin: 0;
       .nav-item {
         font-size: 1.4em;
@@ -119,7 +120,7 @@ body {
   }
 }
 
-.article { 
+.article {
   @include pie-clearfix;
   margin-bottom: 3em;
   font-size: 1.05em;
@@ -206,7 +207,7 @@ body {
     p {
       margin:{top: 1.5em; bottom: 1.5em;}
     }
-    pre code {
+    pre {
       display: block;
       padding: 0.9em 1.1em;
       @include border-radius(3px);

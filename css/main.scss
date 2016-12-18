@@ -1,7 +1,8 @@
-@import 'compass'; // import compass core
+/* @import 'compass'; // import compass core */
 
 @import 'globals';
 @import 'baseline';
+@import 'syntax';
 @import 'page/about';
 @import 'page/blog_index';
 
@@ -22,6 +23,7 @@
 			.logo-wrap {
 				@include screen-narrow {
 					display: inline-block;
+          vertical-align: middle;
 					overflow: hidden;
 					margin:{left: auto; right: auto;}
 					text-align: center;
@@ -42,8 +44,8 @@
 			}
 		}
 		.nav {
-			@include inline-block;
-			vertical-align: center;
+			display: inline-block;
+			vertical-align: middle;
 			@include screen-narrow {
 				display: block;
 				text-align: center;
@@ -55,8 +57,8 @@
 					padding-top: 0;
 				}
 				.nav-item {
-					@include inline-block;
-					vertical-align: center;
+					display: inline-block;
+					vertical-align: middle;
 					margin:{left: 2em; bottom: 12px;}
 					@include screen-narrow {
 						margin:{left: .5em; right: .5em;}
@@ -122,7 +124,8 @@ body.category-work{
 					@include screen-narrow {
 						display: block; text-align: center; margin-right: 0;
 						a {
-							display: inline-block; padding: .3em .6em;
+              display: inline-block;
+              padding: .3em .6em;
 							color: white;
 							background-color: $primary-color;
 							@include border-radius(5px);
