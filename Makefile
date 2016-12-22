@@ -1,13 +1,3 @@
-.PHONY: build
-build: css posts
-	bundle exec jekyll build
-
-.PHONY: css
-css: css/main.css
-
-css/main.css: _scss/*.scss
-	bundle exec sass --scss --compass --sourcemap=none _scss/main.scss $@
-
 .PHONY: posts
 posts: _posts/2015-05-21-refactoring-in-ruby-in-haskell.md
 
