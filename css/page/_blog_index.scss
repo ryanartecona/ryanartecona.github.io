@@ -2,6 +2,7 @@
 // index page
 // ----------
 .page.blog-index {
+	@include center-column;
 	ul.posts {
 		list-style: none;
 		padding-left: 0;
@@ -24,15 +25,14 @@
 				}
 			}
 			.permalink {
-				display: block;	
+				display: block;
 				margin-bottom: 6px;
 				a {
-					font-size: 2.5em;
+					font-size: 1.5em;
 					line-height: 1.05;
-					font-style: italic;
-					font-weight: 600;
+					font-weight: 700;
 					text-decoration: none;
-					color: $gray-light;
+					color: $gray-dark;
 					border-bottom: solid 4px transparent;
 					@include transition(
 						border-color ease-out .3s,
@@ -40,11 +40,8 @@
 					&:hover {
 						border-bottom-style: solid;
 						border-bottom-color: $primary-color;
-						color: $gray-med;
+						color: $gray-x-dark;
 						@include transition(none);
-					}
-					@include screen-narrow {
-						font-size: 1.75em;
 					}
 				}
 			}

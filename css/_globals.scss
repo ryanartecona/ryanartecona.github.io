@@ -21,9 +21,9 @@ $page-side-margin-min-px: 16px;
 
 //typography
 
-$serif: "Hoefler Text", "Baskerville old face", Garamond, Georgia, "Times New Roman", serif;
+$serif: Georgia, "Times New Roman", serif;
 $sans-serif: "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
-$monospace: Menlo, Consolas, "Lucida Console", monospace;
+$monospace: PragmataPro, FiraCode, "Source Code Pro", Menlo, Consolas, "Lucida Console", monospace;
 
 
 //screen width breakpoints
@@ -42,6 +42,15 @@ $monospace: Menlo, Consolas, "Lucida Console", monospace;
 	@media screen and (min-width:1201px) {
 		@content;
 	}
+}
+
+@mixin center-column {
+  max-width: 800px;
+  margin: {
+      left: auto;
+      right: auto;
+  }
+  @include box-sizing(border-box);
 }
 
 

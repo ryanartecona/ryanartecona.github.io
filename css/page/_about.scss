@@ -3,33 +3,35 @@
 //**********************************************************
 
 .page.page-about {
-  font-family: $sans-serif;
+  @include center-column;
+  font-family: $serif;
   line-height: 1.5;
-  font-size: .9em;
+  font-size: 16px;
   @include pie-clearfix;
   .portrait-wrap {
-    float: right; margin: 0 5% 1em 1.5em;
-    max-width: 30%;
+    margin-bottom: 3em;
     @include border-radius(100%);
-    @include screen-narrow {
-      float: none;
-      max-width: 200px;
-      margin: 0 auto 2em;
-      padding:{left: 10%; right: 10%;}
-    }
     .portrait {
       display: block;
+      max-width: 200px;
+      margin: {
+        bottom: -3em;
+        left: auto;
+        right: auto;
+      }
       @include border-radius(inherit);
       @include box-sizing(border-box);
       border: solid 15px $black;
       @include screen-narrow {
         margin:{left: auto; right: auto;}
         border-width: 10px;
+        max-width: 150px;
       }
     }
   }
   .intro {
-    font-size: 1.8em; font-family: $sans-serif;
+    font-size: 1.8em;
+    font-family: $sans-serif;
     color: $black;
     line-height: 1.2;
     @include screen-narrow {
@@ -53,34 +55,22 @@
     }
   }
   p {
-    margin:{top: 0; bottom: 2em;}
-  }
-  p.bio {
-    margin-top: 3em; margin-bottom: 3em;
-    &:first-letter {
-      float: left; margin-right: .2em;
-      font-family: $serif;
-      font-size: 2em; line-height: 1.2; font-weight: bold;
-      width: 1.2em; height: 1.1em;
-      padding-top: .10em;
-      text-align: center;
-      border: solid 3px $black;
-      @include border-radius(100%);
+    margin: {
+      top: 0;
+      bottom: 1em;
     }
   }
   .skills {
-    @include screen-wide {
-      width: 40%;
-    }
+    margin-bottom: 2em;
   }
   .contact {
     @include pie-clearfix;
-    p {
+    .info {
       @include pie-clearfix;
       float: left;
       width: 40%;
       margin-top: 0;
-      @media screen and (max-width:641px) {
+      @include screen-narrow {
         width: auto; float: none;
       }
     }
@@ -89,10 +79,6 @@
       float: left;
       width: 40%;
       margin-left: 20%;
-      @include screen-x-wide {
-        clear: left;
-        margin-left: 0;
-      }
       a {
         text-decoration: none;
         color: $black;
@@ -107,12 +93,10 @@
           color: $primary-color;
         }
       }
-      .email {
-        font-size: 1.3em;
-      }
-      @media screen and (max-width:641px) {
-        width: auto; float: none; margin-left: 0;
-        text-align: center;
+      @include screen-narrow {
+        width: auto;
+        float: none;
+        margin-left: 0;
       }
     }
   }
