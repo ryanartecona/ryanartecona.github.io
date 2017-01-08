@@ -15,7 +15,7 @@ import           System.Process (readProcess)
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
-    match ("images/*" .||. "downloads/*" .||. "resume.pdf") $ do
+    match ("images/*" .||. "downloads/*" .||. "resume.pdf" .||. "CNAME") $ do
       route   idRoute
       compile copyFileCompiler
 

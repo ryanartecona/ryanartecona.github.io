@@ -1,4 +1,21 @@
-.PHONY: posts
+HAKYLL=stack exec -- ra-hakyll
+
+build: stack-build posts
+	${HAKYLL} build
+
+stack-build:
+	stack build
+
+clean: stack-build
+	${HAKYLL} clean
+	git submodule update --init
+	rm -rf _site
+	mkdir -p _site
+	echo "gitdir: ../.git/modules/_site" > _site/.git
+
+watch: stack-build posts clean
+	${HAKYLL} watch
+
 posts: _posts/2015-05-21-refactoring-in-ruby-in-haskell.md
 
 _posts/2015-05-21-refactoring-in-ruby-in-haskell.md: downloads/refactoring_1.lhs
