@@ -29,19 +29,19 @@ $monospace: PragmataPro, FiraCode, "Source Code Pro", Menlo, Consolas, "Lucida C
 //screen width breakpoints
 
 @mixin screen-narrow {
-	@media screen and (max-width:560px) {
-		@content;
-	}
+  @media screen and (max-width:560px) {
+    @content;
+  }
 }
 @mixin screen-wide {
-	@media screen and (min-width:801px) {
-		@content;
-	}
+  @media screen and (min-width:801px) {
+    @content;
+  }
 }
 @mixin screen-x-wide {
-	@media screen and (min-width:1201px) {
-		@content;
-	}
+  @media screen and (min-width:1201px) {
+    @content;
+  }
 }
 
 @mixin center-column {
@@ -57,7 +57,7 @@ $monospace: PragmataPro, FiraCode, "Source Code Pro", Menlo, Consolas, "Lucida C
 //misc mixins
 
 @mixin background-dark-glow {
-	background: $black;
+  background: $black;
   background: -moz-linear-gradient($black 33%, $primary-color-shadow);
   background: -webkit-linear-gradient($black 33%, $primary-color-shadow);
   background: linear-gradient($black 33%, $primary-color-shadow);
