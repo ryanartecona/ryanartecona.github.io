@@ -40,14 +40,11 @@
           </h1>
           <div class="nav" role="navigation">
             <ul class="nav-items">
-              <li class="nav-item">
+              <li class="nav-item$if(isInPosts)$ current$endif$">
                 <a href="/">Posts</a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item$if(isInAbout)$ current$endif$">
                 <a href="/about">About</a>
-              </li>
-              <li class="nav-item">
-                <a href="/resume.pdf">Résumé</a>
               </li>
             </ul>
           </div>

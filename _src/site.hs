@@ -19,10 +19,6 @@ main = hakyll $ do
       route   idRoute
       compile copyFileCompiler
 
-    match "css/*.css" $ do
-      route   idRoute
-      compile copyFileCompiler
-
     match "css/main.scss" $ do
       route $ setExtension "css"
       compile sassCompiler
@@ -45,8 +41,9 @@ main = hakyll $ do
 
     match "about.html" $ do
       route $ customRoute $ \t -> t |> toFilePath |> dropExtension |> (</> "index.html")
+      let aboutCtx = navInAbout <> defaultContext
       compile $ myPandocCompiler
-        >>= loadAndApplyTemplate "_layouts/default.html" defaultContext
+        >>= loadAndApplyTemplate "_layouts/default.html" aboutCtx
         >>= relativizeUrls
 
     match "index.html" $ do
@@ -55,6 +52,7 @@ main = hakyll $ do
         posts <- recentFirst =<< loadAllSnapshots "_posts/*" "source"
         let indexCtx = mconcat [
               listField "posts" postCtx (return posts) ,
+              navInPosts ,
               defaultContext ]
         getResourceBody
           >>= applyAsTemplate indexCtx
@@ -74,9 +72,14 @@ main = hakyll $ do
 dateCtx :: Context String
 dateCtx = dateField "date" "%B %e, %Y"
 
+navInPosts, navInAbout :: Context a
+navInPosts = constField "isInPosts" "true"
+navInAbout = constField "isInAbout" "true"
+
 postCtx :: Context String
 postCtx =
     dateCtx
+    <> navInPosts
     <> dropIndexHtml "url"
     <> defaultContext
 
