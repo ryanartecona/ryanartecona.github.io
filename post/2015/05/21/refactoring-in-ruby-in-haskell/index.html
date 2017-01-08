@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>
+      
+        Refactoring in Ruby in Haskell
+      
+    </title>
+    <meta name="viewport" content="width=device-width">
+
+    <link rel="stylesheet" href="../../../../../css/main.css">
+  </head>
+
+  <body>
+
+    <div class="page-wrap">
+      <div class="header-wrap">
+        <div class="header" role="page-header">
+          <h1 class="site-title-wrap">
+            <a rel="home" href="../../../../../" title="Ryan Artecona">
+              <span class="logo-wrap">
+                <span class="logo-background">
+                  <img class="logo" src="../../../../../images/RA_logo.png" alt="Ryan Artecona" />
+                </span>
+              </span>
+              <span class="site-title">
+                Ryan Artecona
+              </span>
+            </a>
+          </h1>
+          <div class="nav" role="navigation">
+            <ul class="nav-items">
+              <li class="nav-item current">
+                <a href="../../../../../">Posts</a>
+              </li>
+              <li class="nav-item">
+                <a href="../../../../../about">About</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-main">
+        <div class="page-content">
+          <div class="article">
+  <div class="entry-header">
+    <h2 class="entry-title">
+      Refactoring in Ruby in Haskell
+    </h2>
+  </div>
+
+  <div class="entry-meta">
+    <span class="entry-meta-item entry-date">
+      May 21, 2015
+    </span>
+  </div>
+
+  <div class="entry-content">
+    <p>Recently, my team at work read the first few chapters of <a href="http://www.amazon.com/Refactoring-Edition-Addison-Wesley-Professional-Series/dp/0321984137"><em>Refactoring: Ruby Edition</em></a>, a 2009 translation by Jay Fields and Shane Harvie of Martin Fowler’s <a href="http://www.amazon.com/Refactoring-Improving-Design-Existing-Code/dp/0201485672"><em>Refactoring</em></a> from 1999.</p>
+<p>The book’s first chapter takes the reader through a refactoring of a small example program, with incremental code changes and their motivations explained along the way. The chapter is presumably meant to give the reader a taste of what the authors consider a well-managed refactoring session.</p>
+<p>Of the chapters we read, except for a handful of points, I don’t have a strong positive or negative opinion on the authors’ arguments and insights, (given the book’s context). The dominant frustration I <em>did</em> have while reading the chapters was from the staggering proportion of considerations that would have been obviated by an expressive static type system.</p>
+<p>Naturally, I translated the refactoring session from Chapter 1 into Haskell.</p>
+<p>There are significant differences from the Ruby examples and this Haskell translation. In translating, I tried to be faithful to (my reading of) the spirit of the Ruby examples by writing code that might have been written by a junior dev, hammered out in haste, or hacked together without intention of ‘making it to production’: it fulfills its stated purpose and nothing more. The point is this is straightforward Haskell code, and its differences from the Ruby examples are attributable to differences between the respective languages.</p>
+<p><small>This is a working literate Haskell program, which you can <a href="../../../../../downloads/refactoring_1.lhs">download here</a>. You can load it in <code>ghci</code> with <code>:load refactoring_1.lhs</code>, and inspect any value defined here. If you need to install Haskell first, follow <a href="https://github.com/bitemyapp/learnhaskell/blob/master/install.md">this guide</a>.</small></p>
+<hr />
+<p>First, some basic imports.</p>
+<div class="highlight"><pre><span class="kr">module</span> <span class="nn">Refactoring</span> <span class="kr">where</span>
+<span class="kr">import</span> <span class="nn">Data.List</span> <span class="p">(</span><span class="nf">intercalate</span><span class="p">)</span>
+</pre></div>
+
+<h2 id="the-starting-point">The Starting Point</h2>
+<p>The stated purpose of the example program is “to calculate and print a statement of a customer’s charges at a video store.”</p>
+<p>First a Ruby snippet, followed by its Haskell translation.</p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">Movie</span>
+  <span class="no">REGULAR</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="no">NEW_RELEASE</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="no">CHILDRENS</span> <span class="o">=</span> <span class="mi">2</span>
+
+  <span class="kp">attr_reader</span> <span class="ss">:title</span>
+  <span class="kp">attr_accessor</span> <span class="ss">:price_code</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">price_code</span><span class="p">)</span>
+    <span class="vi">@title</span><span class="p">,</span> <span class="vi">@price_code</span> <span class="o">=</span> <span class="n">title</span><span class="p">,</span> <span class="n">price_code</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<div class="highlight"><pre><span class="kr">data</span> <span class="kt">MovieType</span> <span class="ow">=</span> <span class="kt">Regular</span> <span class="o">|</span> <span class="kt">NewRelease</span> <span class="o">|</span> <span class="kt">Childrens</span>
+<span class="kr">data</span> <span class="kt">Movie</span> <span class="ow">=</span> <span class="kt">Movie</span> <span class="p">{</span><span class="n">title</span> <span class="ow">::</span> <span class="kt">String</span><span class="p">,</span> <span class="n">priceCode</span> <span class="ow">::</span> <span class="kt">MovieType</span><span class="p">}</span>
+</pre></div>
+
+<p>The movie price codes were defined as integer constants in Ruby, but their purpose was to be discriminated in a <code>case</code> statement as though they together formed an enum. Ruby doesn’t have enums, but Haskell does, as a simple use case of an <a href="https://wiki.haskell.org/Algebraic_data_type">algebraic data type</a>.</p>
+<p>Haskell doesn’t have classes, so our <code>Movie</code> is just a data type. This does nothing more than introduce the <code>Movie</code> type along with its only constructor, also named <code>Movie</code>, and the record of the two fields it represents.</p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">Rental</span>
+  <span class="kp">attr_reader</span> <span class="ss">:movie</span><span class="p">,</span> <span class="ss">:days_rented</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">movie</span><span class="p">,</span> <span class="n">days_rented</span><span class="p">)</span>
+    <span class="vi">@movie</span><span class="p">,</span> <span class="vi">@days_rented</span> <span class="o">=</span> <span class="n">movie</span><span class="p">,</span> <span class="n">days_rented</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<div class="highlight"><pre><span class="kr">type</span> <span class="kt">DaysRented</span> <span class="ow">=</span> <span class="kt">Int</span>
+<span class="kr">data</span> <span class="kt">Rental</span> <span class="ow">=</span> <span class="kt">Rental</span> <span class="p">{</span><span class="n">movie</span> <span class="ow">::</span> <span class="kt">Movie</span><span class="p">,</span> <span class="n">daysRented</span> <span class="ow">::</span> <span class="kt">DaysRented</span><span class="p">}</span>
+</pre></div>
+
+<p>Our <code>Rental</code> type and constructor here work the same as <code>Movie</code> above. We give an alias to the <code>Int</code> type called <code>DaysRented</code> so that we can keep track of what that <code>Int</code> is supposed to represent. To be clear, this gets us no more type safety than using <code>Int</code> directly (the type system treats them as interchangeable), but it helps our type signatures better document programmer intent.</p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">Customer</span>
+  <span class="kp">attr_reader</span> <span class="ss">:name</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+    <span class="vi">@name</span> <span class="o">=</span> <span class="nb">name</span>
+    <span class="vi">@rentals</span> <span class="o">=</span> <span class="o">[]</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">add_rental</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+    <span class="vi">@rentals</span> <span class="o">&lt;&lt;</span> <span class="n">arg</span>
+  <span class="k">end</span>
+</pre></div>
+
+<div class="highlight"><pre><span class="kr">data</span> <span class="kt">Customer</span> <span class="ow">=</span> <span class="kt">Customer</span> <span class="p">{</span><span class="n">name</span> <span class="ow">::</span> <span class="kt">String</span><span class="p">,</span> <span class="n">rentals</span> <span class="ow">::</span> <span class="p">[</span><span class="kt">Rental</span><span class="p">]}</span>
+
+<span class="nf">addRental</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">Rental</span> <span class="ow">-&gt;</span> <span class="kt">Customer</span>
+<span class="nf">addRental</span> <span class="n">cust</span> <span class="n">rental</span> <span class="ow">=</span> <span class="n">cust</span> <span class="p">{</span><span class="n">rentals</span> <span class="ow">=</span> <span class="n">rental</span> <span class="kt">:</span> <span class="n">rentals</span> <span class="n">cust</span><span class="p">}</span>
+</pre></div>
+
+<p>This <code>Customer</code> type and constructor should look familiar. The <code>addRental</code> function creates a new Customer with the <code>name</code> and <code>rentals</code> of the given <code>Customer</code>, except with an additional rental pushed onto the front of the list with the <code>:</code> operator (pronounced ‘cons’). The <code>cust {rentals = ...}</code> bit is called <em>record update syntax</em>, and it’s how you create a new record by updating the field of an existing record. Unmentioned fields like <code>name</code> get passed through unchanged.</p>
+<div class="highlight"><pre><span class="c1"># inside Customer class</span>
+  <span class="k">def</span> <span class="nf">statement</span>
+    <span class="n">total_amount</span><span class="p">,</span> <span class="n">frequent_renter_points</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;Rental Record for </span><span class="si">#{</span><span class="vi">@name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="vi">@rentals</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">element</span><span class="o">|</span>
+      <span class="n">this_amount</span> <span class="o">=</span> <span class="mi">0</span>
+
+      <span class="c1"># determine amounts for each line</span>
+      <span class="k">case</span> <span class="n">element</span><span class="o">.</span><span class="n">movie</span><span class="o">.</span><span class="n">price_code</span>
+      <span class="k">when</span> <span class="no">Movie</span><span class="o">::</span><span class="no">REGULAR</span>
+        <span class="n">this_amount</span> <span class="o">+=</span> <span class="mi">2</span>
+        <span class="n">this_amount</span> <span class="o">+=</span> <span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">days_rented</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="o">.</span><span class="mi">5</span> <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">days_rented</span> <span class="o">&gt;</span> <span class="mi">2</span>
+      <span class="k">when</span> <span class="no">Movie</span><span class="o">::</span><span class="no">NEW_RELEASE</span>
+        <span class="n">this_amount</span> <span class="o">+=</span> <span class="n">element</span><span class="o">.</span><span class="n">days_rented</span> <span class="o">*</span> <span class="mi">3</span>
+      <span class="k">when</span> <span class="no">Movie</span><span class="o">::</span><span class="no">CHILDRENS</span>
+        <span class="n">this_amount</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">.</span><span class="mi">5</span>
+        <span class="n">this_amount</span> <span class="o">+=</span> <span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">days_rented</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="o">.</span><span class="mi">5</span> <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">days_rented</span> <span class="o">&gt;</span> <span class="mi">3</span>
+      <span class="k">end</span>
+
+      <span class="c1"># add frequent renter points</span>
+      <span class="n">frequent_renter_points</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="c1"># add bonus for a two day new release rental</span>
+      <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">movie</span><span class="o">.</span><span class="n">price_code</span> <span class="o">==</span> <span class="no">Movie</span><span class="o">.</span><span class="n">NEW_RELEASE</span> <span class="o">&amp;&amp;</span> <span class="n">element</span><span class="o">.</span><span class="n">days_rented</span> <span class="o">&gt;</span> <span class="mi">1</span>
+          <span class="n">frequent_renter_points</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="k">end</span>
+
+      <span class="c1"># show figures for this rental</span>
+      <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">element</span><span class="o">.</span><span class="n">movie</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">this_amount</span><span class="o">.</span><span class="n">to_s</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+      <span class="n">total_amount</span> <span class="o">+=</span> <span class="n">this_amount</span>
+    <span class="k">end</span>
+    <span class="c1"># add footer lines</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;Amount owed is </span><span class="si">#{</span><span class="n">total_amount</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;You earned </span><span class="si">#{</span><span class="n">frequent_renter_points</span><span class="si">}</span><span class="s2"> frequent renter points&quot;</span> <span class="n">result</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<div class="highlight"><pre><span class="nf">statement</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">String</span>
+<span class="nf">statement</span> <span class="n">c</span> <span class="ow">=</span> <span class="n">unlines</span>
+    <span class="p">[</span> <span class="s">&quot;Rental record for &quot;</span> <span class="o">++</span> <span class="n">name</span> <span class="n">c</span>
+    <span class="p">,</span> <span class="n">intercalate</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="n">rentalReportLines</span>
+    <span class="p">,</span> <span class="s">&quot;Amount owed is &quot;</span> <span class="o">++</span> <span class="n">show</span> <span class="n">totalAmount</span>
+    <span class="p">,</span> <span class="s">&quot;You earned &quot;</span> <span class="o">++</span> <span class="n">show</span> <span class="n">totalFrequentRenterPoints</span> <span class="o">++</span> <span class="s">&quot; frequent renter points&quot;</span>
+    <span class="p">]</span>
+  <span class="kr">where</span>
+  <span class="p">(</span><span class="n">rentalReportLines</span><span class="p">,</span> <span class="n">totalAmount</span><span class="p">,</span> <span class="n">totalFrequentRenterPoints</span><span class="p">)</span> <span class="ow">=</span> <span class="n">foldl</span> <span class="n">f</span> <span class="p">(</span><span class="kt">[]</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">(</span><span class="n">rentals</span> <span class="n">c</span><span class="p">)</span>
+
+  <span class="n">f</span> <span class="ow">::</span> <span class="p">([</span><span class="kt">String</span><span class="p">],</span> <span class="kt">Double</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Rental</span> <span class="ow">-&gt;</span> <span class="p">([</span><span class="kt">String</span><span class="p">],</span> <span class="kt">Double</span><span class="p">,</span> <span class="kt">Int</span><span class="p">)</span>
+  <span class="n">f</span> <span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">accAmount</span><span class="p">,</span> <span class="n">accFRPts</span><span class="p">)</span> <span class="n">rental</span> <span class="ow">=</span>
+    <span class="kr">let</span> <span class="n">chrg</span> <span class="ow">=</span> <span class="n">charge</span> <span class="n">rental</span>
+        <span class="n">pts</span> <span class="ow">=</span> <span class="n">frequentRenterPoints</span> <span class="n">rental</span>
+        <span class="n">rentalReportLine</span> <span class="ow">=</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span> <span class="o">++</span> <span class="n">title</span> <span class="p">(</span><span class="n">movie</span> <span class="n">rental</span><span class="p">)</span> <span class="o">++</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span> <span class="o">++</span> <span class="n">show</span> <span class="p">(</span><span class="n">charge</span> <span class="n">rental</span><span class="p">)</span>
+    <span class="kr">in</span> <span class="p">(</span><span class="n">result</span> <span class="o">++</span> <span class="p">[</span><span class="n">rentalReportLine</span><span class="p">],</span> <span class="n">accAmount</span> <span class="o">+</span> <span class="n">chrg</span><span class="p">,</span> <span class="n">accFRPts</span> <span class="o">+</span> <span class="n">pts</span><span class="p">)</span>
+
+  <span class="n">charge</span> <span class="ow">::</span> <span class="kt">Rental</span> <span class="ow">-&gt;</span> <span class="kt">Double</span>
+  <span class="n">charge</span> <span class="p">(</span><span class="kt">Rental</span> <span class="n">m</span> <span class="n">nDays</span><span class="p">)</span> <span class="ow">=</span> <span class="kr">case</span> <span class="n">priceCode</span> <span class="n">m</span> <span class="kr">of</span>
+    <span class="kt">Regular</span>    <span class="ow">-&gt;</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="kr">if</span> <span class="n">nDays</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="kr">then</span> <span class="p">(</span><span class="n">fromIntegral</span> <span class="n">nDays</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="kr">else</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="kt">NewRelease</span> <span class="ow">-&gt;</span> <span class="n">fromIntegral</span> <span class="n">nDays</span> <span class="o">*</span> <span class="mf">3.0</span>
+    <span class="kt">Childrens</span>  <span class="ow">-&gt;</span> <span class="mf">1.5</span> <span class="o">+</span> <span class="p">(</span><span class="kr">if</span> <span class="n">nDays</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="kr">then</span> <span class="p">(</span><span class="n">fromIntegral</span> <span class="n">nDays</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="kr">else</span> <span class="mi">0</span><span class="p">)</span>
+
+  <span class="n">frequentRenterPoints</span> <span class="ow">::</span> <span class="kt">Rental</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
+  <span class="n">frequentRenterPoints</span> <span class="p">(</span><span class="kt">Rental</span> <span class="p">(</span><span class="kt">Movie</span> <span class="kr">_</span> <span class="kt">NewRelease</span><span class="p">)</span> <span class="n">nDays</span><span class="p">)</span> <span class="o">|</span> <span class="n">nDays</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">=</span> <span class="mi">2</span>
+  <span class="n">frequentRenterPoints</span> <span class="kr">_</span> <span class="ow">=</span> <span class="mi">1</span>
+</pre></div>
+
+<p><small>The <code>Data.List.intercalate</code> function is simply what most other languages call <code>join</code> on a list of strings. The <code>unlines</code> function is like <code>intercalate &quot;\n&quot;</code> except it also adds a newline at the end.</small></p>
+<p>The <code>statement</code> function is the meat of the original example, and its translation required the biggest departure from its Ruby counterpart. The Ruby version begins by initializing a few local accumulator variables which are added to or appended to throughout the method body. In Haskell, we don’t have assignment operators, because our variables aren’t references, they’re immutable values (this is Haskell’s purity). Instead, threading accumulator state through a computation is accomplished by folding over a list. The helper function <code>f</code> defines how to add or append to our accumulator values as we fold over the list of the customer’s rentals.</p>
+<p>It would have been arguably easier to build up a statement with a few maps instead of a single fold, but that would have left us with even less to refactor.</p>
+<p>We also have <code>charge</code> and <code>frequentRenterPoints</code> defined in <code>statement</code>’s local scope inside a <code>where</code> clause. In Haskell it is easy and natural to define local helper functions like this without worrying about polluting any broader namespace. None of these helper functions or intermediate values are in any way visible outside the scope of <code>statement</code>, and we haven’t done any preemptive modularization. We of course could have put the definitions of <code>charge</code> and <code>frequentRenterPoints</code> in the <code>let</code> bindings of the <code>f</code> helper, where they are used, but in either case the pattern matching and guards would have worked and looked almost exactly the same.</p>
+<h2 id="comments-on-the-starting-program">Comments on the Starting Program</h2>
+<p>We anticipate a couple of upcoming changes to which this program will need to adapt. The first is that the plaintext <code>statement</code> will need an HTML-generating counterpart. The second is that the <code>MovieType</code> system for classifying movies will change in an unknown way, and the formula for calculating charges for each <code>MovieType</code> will need to change with it.</p>
+<h2 id="the-first-step-in-refactoring">The First Step in Refactoring</h2>
+<p>Here, the authors say (paraphrased) that an efficient refactoring session will need to be supported by solid tests, so that we find out quickly if we introduce regressions. He doesn’t give examples of the tests, but I will note here that the Haskell translation has <em>barely any</em> testable surface area that isn’t already covered by the type system.</p>
+<p>That is to say, expressive, statically checked types get us the same fast regression feedback during a refactoring session that we rely on tests for in Ruby. Moreover, we get the benefit with none of the investment required by hand-written tests, we are guaranteed full coverage, and most often we can display type errors directly in our editor <em>at the error site</em> instead of <em>at the broken test</em>.</p>
+<h2 id="decomposing-and-redistributing-the-statement-method-function">Decomposing and Redistributing the Statement <del>Method</del> Function</h2>
+<p>The authors’ first goal is to pull out the section of <code>statement</code> which handles calculating the amount to charge for each rental. The session proceeds in several stages. First, a preface is given regarding how to analyze the surrounding code to ensure we don’t affect what remains when we extract a chunk of it. This is followed by the actual extraction into a method in the <code>Customer</code> class, and then by renaming a now-local variable so that it makes more sense in its new context. Finally, the new method is moved to its natural home in the <code>Rental</code> class, with the call site in <code>statement</code> updated to reflect its new location.</p>
+<p>Eliding several intermediate steps, we end up with this Ruby.</p>
+<div class="highlight"><pre><span class="c1"># in Rental class</span>
+  <span class="k">def</span> <span class="nf">charge</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">case</span> <span class="n">movie</span><span class="o">.</span><span class="n">price_code</span>
+    <span class="k">when</span> <span class="no">Movie</span><span class="o">::</span><span class="no">REGULAR</span>
+      <span class="n">result</span> <span class="o">+=</span> <span class="mi">2</span>
+      <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">days_rented</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="o">.</span><span class="mi">5</span> <span class="k">if</span> <span class="n">days_rented</span> <span class="o">&gt;</span> <span class="mi">2</span>
+    <span class="k">when</span> <span class="no">Movie</span><span class="o">::</span><span class="no">NEW_RELEASE</span>
+      <span class="n">result</span> <span class="o">+=</span> <span class="n">days_rented</span> <span class="o">*</span> <span class="mi">3</span>
+    <span class="k">when</span> <span class="no">Movie</span><span class="o">::</span><span class="no">CHILDRENS</span>
+      <span class="n">result</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">.</span><span class="mi">5</span>
+      <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">days_rented</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="o">.</span><span class="mi">5</span> <span class="k">if</span> <span class="n">days_rented</span> <span class="o">&gt;</span> <span class="mi">3</span>
+    <span class="k">end</span>
+    <span class="n">result</span>
+  <span class="k">end</span>
+
+<span class="c1"># in Customer class</span>
+  <span class="k">def</span> <span class="nf">statement</span>
+    <span class="n">total_amount</span><span class="p">,</span> <span class="n">frequent_renter_points</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;Rental Record for </span><span class="si">#{</span><span class="vi">@name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="vi">@rentals</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">element</span><span class="o">|</span>
+      <span class="n">this_amount</span> <span class="o">=</span> <span class="n">element</span><span class="o">.</span><span class="n">charge</span>
+      <span class="c1"># ^^^^ changed here ^^^^^^^^</span>
+
+      <span class="c1"># add frequent renter points</span>
+      <span class="n">frequent_renter_points</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="c1"># add bonus for a two day new release rental</span>
+      <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">movie</span><span class="o">.</span><span class="n">price_code</span> <span class="o">==</span> <span class="no">Movie</span><span class="o">.</span><span class="n">NEW_RELEASE</span> <span class="o">&amp;&amp;</span>
+               <span class="n">element</span><span class="o">.</span><span class="n">days_rented</span> <span class="o">&gt;</span> <span class="mi">1</span>
+          <span class="n">frequent_renter_points</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="k">end</span>
+
+      <span class="c1"># show figures for this rental</span>
+      <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">each</span><span class="o">.</span><span class="n">movie</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">this_amount</span><span class="o">.</span><span class="n">to_s</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+      <span class="n">total_amount</span> <span class="o">+=</span> <span class="n">this_amount</span>
+    <span class="k">end</span>
+    <span class="c1"># add footer lines</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;Amount owed is </span><span class="si">#{</span><span class="n">total_amount</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;You earned </span><span class="si">#{</span><span class="n">frequent_renter_points</span><span class="si">}</span><span class="s2"> frequent renter points&quot;</span>
+    <span class="n">result</span>
+  <span class="k">end</span>
+</pre></div>
+
+<div class="highlight"><pre><span class="nf">charge</span> <span class="ow">::</span> <span class="kt">Rental</span> <span class="ow">-&gt;</span> <span class="kt">Double</span>
+<span class="nf">charge</span> <span class="p">(</span><span class="kt">Rental</span> <span class="n">m</span> <span class="n">nDays</span><span class="p">)</span> <span class="ow">=</span> <span class="kr">case</span> <span class="n">priceCode</span> <span class="n">m</span> <span class="kr">of</span>
+  <span class="kt">Regular</span>    <span class="ow">-&gt;</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="kr">if</span> <span class="n">nDays</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="kr">then</span> <span class="p">(</span><span class="n">fromIntegral</span> <span class="n">nDays</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="kr">else</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="kt">NewRelease</span> <span class="ow">-&gt;</span> <span class="n">fromIntegral</span> <span class="n">nDays</span> <span class="o">*</span> <span class="mf">3.0</span>
+  <span class="kt">Childrens</span>  <span class="ow">-&gt;</span> <span class="mf">1.5</span> <span class="o">+</span> <span class="p">(</span><span class="kr">if</span> <span class="n">nDays</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="kr">then</span> <span class="p">(</span><span class="n">fromIntegral</span> <span class="n">nDays</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="kr">else</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+<p>In our Haskell example, we can simply unindent the <code>charge</code> helper so that it gets raised from the <code>statement</code> local scope into the <code>Refactoring</code> module scope, and move it to above or below the <code>statement</code> definition. If we wanted, we could rename <code>charge</code> to something else, or move it to a new file. Note that we would see a compiler error for any of these changes if we moved or renamed this function without updating its call sites. Also note that in all cases <em>its definition wouldn’t need to change</em>, since it would have been less convenient to write it any other way in the first place.</p>
+<p>The authors discuss a couple of concerns that are simply non-issues in Haskell. We <em>can’t</em> give a different local name to this function’s <code>Rental</code> argument (which was a refactoring step in the Ruby example), since we never gave it a name! We only pattern matched on its contents. We also <em>can’t</em> worry about whether to make it a method on <code>Customer</code> or on <code>Rental</code>, since data types aren’t namespaces like classes are, and Haskell functions don’t have a magic <code>self</code> argument to worry about like OO instance methods. Our <code>charge</code> function is simply a pure function in our module.</p>
+<h2 id="extracting-frequent-renter-points">Extracting Frequent Renter Points</h2>
+<p>The authors perform a similar extraction on the section of <code>statement</code> that deals with frequent renter points. The authors elide these steps to a single operation, so we can assume the same steps were taken as in the previous section which dealt with extracting the <code>charge</code> computation out of <code>statement</code>.</p>
+<div class="highlight"><pre><span class="c1"># in Customer class</span>
+  <span class="k">def</span> <span class="nf">statement</span>
+    <span class="n">total_amount</span><span class="p">,</span> <span class="n">frequent_renter_points</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;Rental Record for </span><span class="si">#{</span><span class="vi">@name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="vi">@rentals</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">element</span><span class="o">|</span>
+      <span class="n">frequent_renter_points</span> <span class="o">+=</span> <span class="n">element</span><span class="o">.</span><span class="n">frequent_renter_points</span>
+      <span class="c1"># ^^^^^ changed here ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
+
+      <span class="c1"># show figures for this rental</span>
+      <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">each</span><span class="o">.</span><span class="n">movie</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">element</span><span class="o">.</span><span class="n">charge</span><span class="o">.</span><span class="n">to_s</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+      <span class="n">total_amount</span> <span class="o">+=</span> <span class="n">element</span><span class="o">.</span><span class="n">charge</span>
+    <span class="k">end</span>
+    <span class="c1"># add footer lines</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;Amount owed is </span><span class="si">#{</span><span class="n">total_amount</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;You earned </span><span class="si">#{</span><span class="n">frequent_renter_points</span><span class="si">}</span><span class="s2"> frequent renter points&quot;</span>
+    <span class="n">result</span>
+  <span class="k">end</span>
+
+<span class="c1"># in Rental class</span>
+  <span class="k">def</span> <span class="nf">frequent_renter_points</span>
+    <span class="p">(</span><span class="n">movie</span><span class="o">.</span><span class="n">price_code</span> <span class="o">==</span> <span class="no">Movie</span><span class="o">.</span><span class="n">NEW_RELEASE</span> <span class="o">&amp;&amp;</span> <span class="n">days_rented</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">?</span> <span class="mi">2</span> <span class="p">:</span> <span class="mi">1</span>
+  <span class="k">end</span>
+</pre></div>
+
+<div class="highlight"><pre><span class="nf">frequentRenterPoints</span> <span class="ow">::</span> <span class="kt">Rental</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<span class="nf">frequentRenterPoints</span> <span class="p">(</span><span class="kt">Rental</span> <span class="p">(</span><span class="kt">Movie</span> <span class="kr">_</span> <span class="kt">NewRelease</span><span class="p">)</span> <span class="n">nDays</span><span class="p">)</span> <span class="o">|</span> <span class="n">nDays</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">=</span> <span class="mi">2</span>
+<span class="nf">frequentRenterPoints</span> <span class="kr">_</span> <span class="ow">=</span> <span class="mi">1</span>
+</pre></div>
+
+<p>Again, this is a simple change in the Haskell example. We unindent <code>frequentRenterPoints</code> to bring it out into module scope, and the definition of the function needs no modification.</p>
+<h2 id="removing-temps">Removing Temps</h2>
+<p>For the sake of removing the accumulator variables used in computing the aggregate metrics over all rentals for a Customer, the authors pull <code>total_amount</code> and <code>frequent_renter_points</code> into their own <code>Customer</code> methods.</p>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">Customer</span>
+  <span class="k">def</span> <span class="nf">statement</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;Rental Record for </span><span class="si">#{</span><span class="vi">@name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="vi">@rentals</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">element</span><span class="o">|</span>
+      <span class="c1"># show figures for this rental</span>
+      <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">each</span><span class="o">.</span><span class="n">movie</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">element</span><span class="o">.</span><span class="n">charge</span><span class="o">.</span><span class="n">to_s</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">end</span>
+    <span class="c1"># add footer lines</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;Amount owed is </span><span class="si">#{</span><span class="n">total_charge</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;You earned </span><span class="si">#{</span><span class="n">total_frequent_renter_points</span><span class="si">}</span><span class="s2"> frequent renter points&quot;</span> <span class="n">result</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+
+  <span class="k">def</span> <span class="nf">total_charge</span>
+    <span class="vi">@rentals</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">sum</span><span class="p">,</span> <span class="n">rental</span><span class="o">|</span> <span class="n">sum</span> <span class="o">+</span> <span class="n">rental</span><span class="o">.</span><span class="n">charge</span> <span class="p">}</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">total_frequent_renter_points</span>
+    <span class="vi">@rentals</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">sum</span><span class="p">,</span> <span class="n">rental</span><span class="o">|</span> <span class="n">sum</span> <span class="o">+</span> <span class="n">rental</span><span class="o">.</span><span class="n">frequent_renter_points</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<div class="highlight"><pre><span class="nf">totalCharge</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">Double</span>
+<span class="nf">totalCharge</span> <span class="n">cust</span> <span class="ow">=</span> <span class="n">sum</span> <span class="o">$</span> <span class="n">map</span> <span class="n">charge</span> <span class="o">$</span> <span class="n">rentals</span> <span class="n">cust</span>
+
+<span class="nf">totalFrequentRenterPoints</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<span class="nf">totalFrequentRenterPoints</span> <span class="ow">=</span> <span class="n">sum</span> <span class="o">.</span> <span class="n">map</span> <span class="n">frequentRenterPoints</span> <span class="o">.</span> <span class="n">rentals</span>
+</pre></div>
+
+<p>The analogous definitions in Haskell are just as short as the rather concise Ruby definitions. They get slightly shorter if we define them by composing functions instead of fully applying them, as in <code>totalFrequentRenterPoints</code>.</p>
+<p>And with that, we can rewrite our <code>statement</code> function to make use of our refactorings.</p>
+<div class="highlight"><pre><span class="nf">statement'</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">String</span>
+<span class="nf">statement'</span> <span class="n">c</span> <span class="ow">=</span> <span class="n">unlines</span>
+    <span class="p">[</span> <span class="s">&quot;Rental record for &quot;</span> <span class="o">++</span> <span class="n">name</span> <span class="n">c</span>
+    <span class="p">,</span> <span class="n">intercalate</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="n">rentalReportLines</span>
+    <span class="p">,</span> <span class="s">&quot;Amount owed is &quot;</span> <span class="o">++</span> <span class="n">show</span> <span class="p">(</span><span class="n">totalCharge</span> <span class="n">c</span><span class="p">)</span>
+    <span class="p">,</span> <span class="s">&quot;You earned &quot;</span> <span class="o">++</span> <span class="n">show</span> <span class="p">(</span><span class="n">totalFrequentRenterPoints</span> <span class="n">c</span><span class="p">)</span> <span class="o">++</span> <span class="s">&quot; frequent renter points&quot;</span>
+    <span class="p">]</span>
+  <span class="kr">where</span>
+  <span class="n">rentalReportLines</span> <span class="ow">=</span> <span class="n">flip</span> <span class="n">map</span> <span class="p">(</span><span class="n">rentals</span> <span class="n">c</span><span class="p">)</span> <span class="o">$</span> <span class="nf">\</span><span class="n">rental</span> <span class="ow">-&gt;</span>
+    <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span> <span class="o">++</span> <span class="n">title</span> <span class="p">(</span><span class="n">movie</span> <span class="n">rental</span><span class="p">)</span> <span class="o">++</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span> <span class="o">++</span> <span class="n">show</span> <span class="p">(</span><span class="n">charge</span> <span class="n">rental</span><span class="p">)</span>
+</pre></div>
+
+<p>Finally, we can do what we set out to and write our html statement.</p>
+<div class="highlight"><pre><span class="c1"># in Customer class</span>
+  <span class="k">def</span> <span class="nf">html_statement</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;&lt;h1&gt;Rentals for &lt;em&gt;</span><span class="si">#{</span><span class="vi">@name</span><span class="si">}</span><span class="s2">&lt;/em&gt;&lt;/h1&gt;&lt;p&gt;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="vi">@rentals</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">element</span><span class="o">|</span>
+      <span class="c1"># show figures for this rental</span>
+      <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">each</span><span class="o">.</span><span class="n">movie</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">element</span><span class="o">.</span><span class="n">charge</span><span class="o">.</span><span class="n">to_s</span> <span class="o">+</span> <span class="s2">&quot;&lt;br&gt;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">end</span>
+    <span class="c1"># add footer lines</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;&lt;p&gt;You owe &lt;em&gt;</span><span class="si">#{</span><span class="n">total_charge</span><span class="si">}</span><span class="s2">&lt;/em&gt;&lt;p&gt;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;On this rental you earned &quot;</span> <span class="o">+</span>
+           <span class="s2">&quot;&lt;em&gt;</span><span class="si">#{</span><span class="n">total_frequent_renter_points</span><span class="si">}</span><span class="s2">&lt;/em&gt; &quot;</span> <span class="o">+</span>
+           <span class="s2">&quot;frequent renter points&lt;p&gt;&quot;</span>
+    <span class="n">result</span>
+  <span class="k">end</span>
+</pre></div>
+
+<div class="highlight"><pre><span class="nf">htmlStatement</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">String</span>
+<span class="nf">htmlStatement</span> <span class="n">c</span> <span class="ow">=</span> <span class="n">unlines</span>
+    <span class="p">[</span> <span class="s">&quot;&lt;h1&gt;Rentals for &lt;em&gt;&quot;</span> <span class="o">++</span> <span class="n">name</span> <span class="n">c</span> <span class="o">++</span> <span class="s">&quot;&lt;/em&gt;&lt;/h1&gt;&lt;p&gt;&quot;</span>
+    <span class="p">,</span> <span class="n">intercalate</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="n">rentalReportLines</span>
+    <span class="p">,</span> <span class="s">&quot;&lt;p&gt;You owe &lt;em&gt;&quot;</span> <span class="o">++</span> <span class="n">show</span> <span class="p">(</span><span class="n">totalCharge</span> <span class="n">c</span><span class="p">)</span> <span class="o">++</span> <span class="s">&quot;&lt;/em&gt;&lt;p&gt;&quot;</span>
+    <span class="p">,</span> <span class="s">&quot;On this rental you earned &lt;em&gt;&quot;</span> <span class="o">++</span> <span class="n">show</span> <span class="p">(</span><span class="n">totalFrequentRenterPoints</span> <span class="n">c</span><span class="p">)</span> <span class="o">++</span> <span class="s">&quot;&lt;/em&gt; frequent renter points&lt;p&gt;&quot;</span>
+    <span class="p">]</span>
+  <span class="kr">where</span>
+  <span class="n">rentalReportLines</span> <span class="ow">=</span> <span class="n">flip</span> <span class="n">map</span> <span class="p">(</span><span class="n">rentals</span> <span class="n">c</span><span class="p">)</span> <span class="o">$</span> <span class="nf">\</span><span class="n">rental</span> <span class="ow">-&gt;</span>
+    <span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span> <span class="o">++</span> <span class="n">title</span> <span class="p">(</span><span class="n">movie</span> <span class="n">rental</span><span class="p">)</span> <span class="o">++</span> <span class="s">&quot;: &quot;</span> <span class="o">++</span> <span class="n">show</span> <span class="p">(</span><span class="n">charge</span> <span class="n">rental</span><span class="p">)</span> <span class="o">++</span> <span class="s">&quot;&lt;br&gt;&quot;</span>
+</pre></div>
+
+<p>Note also that at this point in the book, several UML class diagrams had been given to keep the reader oriented among all the code changes at play. In Haskell, we almost always have type signatures to serve exactly that purpose, and when we don’t, we can still interrogate the compiler for the type of any value it knows about, and often do so without leaving our text editor!</p>
+<h2 id="replacing-the-conditional-logic-on-price-code-with-polymorphism">Replacing the Conditional Logic on Price Code with Polymorphism</h2>
+<p>At this point, the authors decide treating a group of constants as together forming an enum so that we can switch over them is a Bad Idea™. It is decidedly slightly less bad if that case statement only needs to be defined in one place. This naturally requires a refactor to move both the <code>charge</code> method and the <code>frequent_renter_points</code> from the <code>Rental</code> class to the <code>Movie</code> class, which is where the constants are defined.</p>
+<p>Moreover, the prescribed solution to this dilemma is to <em>encode the enum in a class hierarchy instead of in constants</em>. The ensuing refactor is given the most detailed play-by-play of any in the chapter, and involves no fewer than</p>
+<ul>
+<li>1 custom setter</li>
+<li>3 bespoke classes</li>
+<li>1 mixin providing a default method implementation for 2/3 of the classes</li>
+<li>2 implicit interfaces</li>
+<li>5 methods in total, split across those classes and mixins</li>
+</ul>
+<p>to support the <code>charge</code> and <code>frequentRenterPoints</code> in a way that avoids using constants as enums. This is, in my opinion, <em>a nightmare</em>. Though some Ruby programmers may disagree that the original example is the best approach for the problem given, it’s tough to argue that the approach outlined here is <em>the most object-oriented</em>. I think all too many programmers would thereby consider it to be <em>the most praiseworthy</em>.</p>
+<p>After lots of incremental changes, the Ruby comes out looking like this.</p>
+<div class="highlight"><pre><span class="k">module</span> <span class="nn">DefaultPrice</span>
+  <span class="k">def</span> <span class="nf">frequent_renter_points</span><span class="p">(</span><span class="n">days_rented</span><span class="p">)</span>
+    <span class="mi">1</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">RegularPrice</span>
+  <span class="kp">include</span> <span class="no">DefaultPrice</span>
+  <span class="k">def</span> <span class="nf">charge</span><span class="p">(</span><span class="n">days_rented</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">days_rented</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="o">.</span><span class="mi">5</span> <span class="k">if</span> <span class="n">days_rented</span> <span class="o">&gt;</span> <span class="mi">2</span>
+    <span class="n">result</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">NewReleasePrice</span>
+  <span class="k">def</span> <span class="nf">charge</span><span class="p">(</span><span class="n">days_rented</span><span class="p">)</span>
+    <span class="n">days_rented</span> <span class="o">*</span> <span class="mi">3</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">frequent_renter_points</span><span class="p">(</span><span class="n">days_rented</span><span class="p">)</span>
+    <span class="n">days_rented</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">?</span> <span class="mi">2</span> <span class="p">:</span> <span class="mi">1</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">ChildrensPrice</span>
+  <span class="kp">include</span> <span class="no">DefaultPrice</span>
+  <span class="k">def</span> <span class="nf">charge</span><span class="p">(</span><span class="n">days_rented</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="mi">1</span><span class="o">.</span><span class="mi">5</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="p">(</span><span class="n">days_rented</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="o">.</span><span class="mi">5</span> <span class="k">if</span> <span class="n">days_rented</span> <span class="o">&gt;</span> <span class="mi">3</span>
+    <span class="n">result</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># then, in Movie class</span>
+  <span class="k">def</span> <span class="nf">charge</span><span class="p">(</span><span class="n">days_rented</span><span class="p">)</span>
+    <span class="vi">@price</span><span class="o">.</span><span class="n">charge</span><span class="p">(</span><span class="n">days_rented</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">frequent_renter_points</span><span class="p">(</span><span class="n">days_rented</span><span class="p">)</span>
+    <span class="vi">@price</span><span class="o">.</span><span class="n">frequent_renter_points</span><span class="p">(</span><span class="n">days_rented</span><span class="p">)</span>
+  <span class="k">end</span>
+</pre></div>
+
+<p>There’s no Haskell translation for this ultimate refactoring. The Haskell examples already given don’t need to change, <em>at all</em>, for 2 reasons.</p>
+<p>First, Haskell has fantastic support for user-defined data types. Defining an enum is dead simple, and defining fancier algebraic data types (not shown here) is not much more difficult. Second, designing and organizing your functions and data types are completely separate concerns from organizing your namespaces. This is in stark contrast with Ruby and most other OO languages, where both are concerns are painfully intertwined, as exhibited here.</p>
+<p>I want to pause and note, again, that the primary motivation for this whole section of changes, which take no fewer than <em>16 pages</em> in the book, boils down to a lack of enums or sum types in Ruby. In Haskell, we can define what kinds of movies we know about, in a single place, as a data type. We started and finished with this.</p>
+<div class="highlight"><pre><span class="kr">data</span> <span class="kt">MovieType</span> <span class="ow">=</span> <span class="kt">Regular</span> <span class="o">|</span> <span class="kt">NewRelease</span> <span class="o">|</span> <span class="kt">Childrens</span>
+</pre></div>
+
+<p>The compiler could thereafter detect when we failed to consider one of these possible values, or when we tried to treat one as something it’s not, or even when we did something silly like spell one of their names wrong.</p>
+<p>In Ruby, the best we can do is give some special names to what are really just a handful of integers, and then hope our tests are good enough to catch when we make one of those mistakes. Unsurprisingly, this can make code feel pretty brittle. If this poor man’s enum using integer constants approach makes a handful of classes and mixins and a little duck-typing look well-behaved by comparison, <em>maybe that is less a strength of OOP and more an inability for the language to express much outside of a class hierarchy</em>.</p>
+  </div>
+</div>
+
+        </div>
+      </div>
+
+    </div>
+
+  <script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-28816340-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+  </body>
+</html>

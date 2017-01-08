@@ -1,1 +1,0 @@
-{{ include.date | date:"%B" }} {{ include.date | date:"%d" | times:1 }}, {{ include.date | date:"%Y" }}

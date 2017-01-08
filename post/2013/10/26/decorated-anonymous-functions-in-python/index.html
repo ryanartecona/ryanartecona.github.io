@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>
+      
+        Decorated Anonymous Functions in Python
+      
+    </title>
+    <meta name="viewport" content="width=device-width">
+
+    <link rel="stylesheet" href="../../../../../css/main.css">
+  </head>
+
+  <body>
+
+    <div class="page-wrap">
+      <div class="header-wrap">
+        <div class="header" role="page-header">
+          <h1 class="site-title-wrap">
+            <a rel="home" href="../../../../../" title="Ryan Artecona">
+              <span class="logo-wrap">
+                <span class="logo-background">
+                  <img class="logo" src="../../../../../images/RA_logo.png" alt="Ryan Artecona" />
+                </span>
+              </span>
+              <span class="site-title">
+                Ryan Artecona
+              </span>
+            </a>
+          </h1>
+          <div class="nav" role="navigation">
+            <ul class="nav-items">
+              <li class="nav-item current">
+                <a href="../../../../../">Posts</a>
+              </li>
+              <li class="nav-item">
+                <a href="../../../../../about">About</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-main">
+        <div class="page-content">
+          <div class="article">
+  <div class="entry-header">
+    <h2 class="entry-title">
+      Decorated Anonymous Functions in Python
+    </h2>
+  </div>
+
+  <div class="entry-meta">
+    <span class="entry-meta-item entry-date">
+      October 26, 2013
+    </span>
+  </div>
+
+  <div class="entry-content">
+    <p>Python functions are generally first-class objects, and that is generally all that’s needed to construct higher-order functions and to engage in the style of functional programming those enable. There is, however, no language support for multiline anonymous functions, leaving a very large and unfortunate gap between <code>def</code> named functions and <code>lambda</code> expressions. I show in this article how decorators can be abused to lend anonymity to <code>def</code> function definitions.</p>
+<h2 id="functions-as-values">Functions as Values</h2>
+<p>First things first. In Python, a function is a block.</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+</pre></div>
+
+<p>When it fits on a single line, you have the option of writing a function with lambda syntax.</p>
+<div class="highlight"><pre><span class="n">add</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+</pre></div>
+
+<p>A lambda expression is especially convenient when you need to pass a simple operation to a higher-order function (a function which accepts another function as an argument).</p>
+<div class="highlight"><pre><span class="n">xs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+<span class="n">squares</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">xs</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">squares</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="mi">25</span><span class="p">]</span>
+</pre></div>
+
+<p>If your function argument is more complex, you’ve got to define it beforehand, and pass it by reference. This can get messy quickly.</p>
+<div class="highlight"><pre><span class="n">string</span> <span class="o">=</span> <span class="s">&quot;Long live Guido!&quot;</span>
+<span class="c"># I have a strange desire to separate</span>
+<span class="c"># vowels from consonants</span>
+
+<span class="c"># helper functions</span>
+<span class="n">is_vowel</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="s">&quot;aeiou&quot;</span>
+<span class="n">is_cons</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="s">&quot;bcdfghjklmnpqrstvwxyz&quot;</span>
+
+<span class="c"># define reducer</span>
+<span class="k">def</span> <span class="nf">reduce_letters</span><span class="p">((</span><span class="n">vs</span><span class="p">,</span> <span class="n">cs</span><span class="p">),</span> <span class="n">ch</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reducer function that collects a string's vowels</span>
+<span class="sd">    and consonants into a (vs,cs) tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vs</span> <span class="o">=</span> <span class="n">vs</span> <span class="o">+</span> <span class="n">ch</span> <span class="k">if</span> <span class="n">is_vowel</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span> <span class="k">else</span> <span class="n">vs</span>
+    <span class="n">cs</span> <span class="o">=</span> <span class="n">cs</span> <span class="o">+</span> <span class="n">ch</span> <span class="k">if</span> <span class="n">is_cons</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span> <span class="k">else</span> <span class="n">cs</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>
+
+<span class="c"># reduce with reducer, with (&quot;&quot;,&quot;&quot;) initial argument</span>
+<span class="n">vowels</span><span class="p">,</span> <span class="n">conss</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">reduce_letters</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="s">&quot;&quot;</span><span class="p">))</span>
+
+<span class="k">assert</span> <span class="n">vowels</span> <span class="o">==</span> <span class="s">&quot;oieuio&quot;</span> <span class="ow">and</span> <span class="n">conss</span> <span class="o">==</span> <span class="s">&quot;LnglvGd&quot;</span>
+</pre></div>
+
+<p>In practice, the above code written in an iterative style, with local variables and a <code>for</code> loop instead of a reducing function, would be more readable and concise (more pythonic). In many cases, though, abstraction via higher-order functions and combinators lends to more modular and clearly organized code than the equivalent imperative constructs. I think this is a damn shame, because Python actually has great support for passing functions around as objects. When blocks intended as one-off operations require being defined beforehand as local functions, the distinction between functions as reusable, modular operations and lambdas as single-serving operations—a distinction that is typically very helpful in reading python code—is eroded. A significant factor keeping this functional style from being easily authored and read is syntactic support for expression-level multiline functions, which would allow the definition of operations <em>exactly</em> where they are needed (not sooner).</p>
+<p>In Python, a function definition is a <em>statement</em>, not an <em>expression</em>. This means the <code>def</code> keyword begins a function definition on its own line, which captures all subsequent indented lines without ambiguity. Many other dynamic languages have expression-level function definitions (JavaScripters use anonymous functions, a.k.a. ‘callbacks’, <em>everywhere</em>, and Rubyists are rightly fond of their blocks). The same would be impossible, currently, in Python, more or less because a change in indentation is the only way to signal the end of a function body (as opposed to an <code>end</code> keyword, or wrapping the body in curly braces). While they often lead to trouble, function expressions open up possibilities for very elegant and robust APIs.</p>
+<p>Of course, Python has no need for such toys (because <a href="http://www.python.org/dev/peps/pep-0020/">flat is better than nested</a>…right?). But if it wanted, it could almost fake them using tools it does have. I will show how.</p>
+<h2 id="decorators-and-local-assignment">Decorators and Local Assignment</h2>
+<p>If you are not familiar with them, decorators are a way to modify the behavior of functions in Python. An introduction is beyond the scope of the present article, but <a href="http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/#_9_decorators">here’s a good decorator tutorial</a>, and if you’re up for it you can read <a href="http://www.python.org/dev/peps/pep-0318/">the full PEP 318</a>. Decorators are commonly used to registers functions as handlers for certain events, to add automatic behavior for certain inputs or outputs (memoization, error handling, etc.), or to allow for easier authoring of more “advanced” functionality (<code>classmethod</code>, <code>property</code> accessors, <code>functools.wraps</code>, etc.) Fundamentally, decorators are functions that accept a single function argument, and return a new function that replaces the defined function in the defined function’s own local scope. Inside, they look like this.</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+
+<span class="k">def</span> <span class="nf">log_finished</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">func</span><span class="o">.</span><span class="n">func_name</span><span class="p">,</span> <span class="s">&quot;finished&quot;</span>
+    <span class="k">return</span> <span class="n">wrapped</span>
+
+<span class="nd">@log_finished</span>
+<span class="k">def</span> <span class="nf">useless</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="n">useless</span><span class="p">()</span> <span class="c"># prints &quot;useless finished&quot;</span>
+</pre></div>
+
+<p><small> The <code>@wraps</code> helper is unnecessary, but I include it because decorators should not be authored in practice without it. It helps keep the behavior of a decorated function from changing in hidden ways. </small></p>
+<p>As it turns out, decorator functions aren’t written in a special way so much as they adhere to a certain convention that allows them to be used as decorators. Most simply, decorators are functions (callables) that accept a function as an argument and return a function as result. More concretely, decorators are simply syntactic sugar for the following form.</p>
+<div class="highlight"><pre><span class="nd">@decorate</span>
+<span class="k">def</span> <span class="nf">func</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="c"># essentially desugars to:</span>
+
+<span class="k">def</span> <span class="nf">func</span><span class="p">():</span> 
+    <span class="k">pass</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">decorate</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+</pre></div>
+
+<p>In english, a decorated function definition is effectively equivalent to defining a plain function, passing that function to the decorator, and overwriting the local function variable with the return value of the decorator. Note that there is nothing stopping the decorator from returning something <em>other</em> than a function to replace the original local function variable, which makes decorator syntax abusable.</p>
+<p>Perhaps surprisingly, the following code runs.</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">()</span>
+
+<span class="nd">@call</span>
+<span class="k">def</span> <span class="nf">return_two</span><span class="p">():</span>
+    <span class="k">return</span> <span class="mi">2</span>
+
+<span class="k">assert</span> <span class="n">return_two</span> <span class="o">==</span> <span class="mi">2</span>
+</pre></div>
+
+<p>That is, the decorator <code>call</code> gets called as the function <code>return_two</code> is defined, with <code>return_two</code> passed as an argument, and returns the value that <code>return_two</code> returns, the int value <code>2</code>. Since <code>2</code> is returned by the decorator, the local variable <code>return_two</code>, which was originally a function object, gets immediately overwritten with <code>2</code>. In other words, whenever a decorator decorates a function, the function gets replaced by whatever the decorator returns, whether that’s a function or <em>any other</em> Python object. <em>Funky!</em></p>
+<p><strong>A word of warning</strong>: The (ab)use of decorators for these effects are <strong>not</strong> consistent with their <a href="http://www.python.org/dev/peps/pep-0318/#examples">intended use</a> when added to the language, <strong>nor</strong> with the universal expectation that decorated functions can still be used as functions. This author encourages both wild experimentation in isolation <em>and</em> responsible treatment of colleagues and library users.</p>
+<h2 id="pseudo-anonymous-functions">Pseudo-anonymous Functions</h2>
+<p>Having discovered this secret about decorators, we can exploit them to implement a facility for passing an anonymous block into a function that expects one. Because a decorator only gets called with a single argument (the function to decorate), a function that supports this style of anonymous blocks will need its block to be passed in both</p>
+<ol style="list-style-type: decimal">
+<li>as the last argument, and</li>
+<li>in a separate function call, e.g. <code>func(arg1, arg2)(blockarg)</code></li>
+</ol>
+<p>To upgrade the builtin <code>reduce</code> function to behave this way, we can write a helper.</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">block_reduce</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">with_block</span><span class="p">(</span><span class="n">block</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">initial</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">xs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">initial</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">with_block</span>
+</pre></div>
+
+<p>And with this, we can rewrite our previous example as the following.</p>
+<div class="highlight"><pre><span class="nd">@block_reduce</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="s">&quot;&quot;</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">vowels_conss</span><span class="p">((</span><span class="n">vs</span><span class="p">,</span> <span class="n">cs</span><span class="p">),</span> <span class="n">c</span><span class="p">):</span>
+    <span class="n">vs</span> <span class="o">=</span> <span class="n">vs</span> <span class="o">+</span> <span class="n">c</span> <span class="k">if</span> <span class="n">is_vowel</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">else</span> <span class="n">vs</span>
+    <span class="n">cs</span> <span class="o">=</span> <span class="n">cs</span> <span class="o">+</span> <span class="n">c</span> <span class="k">if</span> <span class="n">is_cons</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">else</span> <span class="n">cs</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">vs</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="n">vowels_conss</span> <span class="o">==</span> <span class="p">(</span><span class="s">&quot;oieuio&quot;</span><span class="p">,</span> <span class="s">&quot;LnglvGd&quot;</span><span class="p">)</span>
+</pre></div>
+
+<p>Here, <code>block_reduce</code> first accepts the iterable and (optional) initial argument for <code>reduce</code> before accepting a function that gets applied as the reducer, and then its return value replaces <code>vowels_conss</code> in the local scope, such that the variable <code>vowels_conss</code>is no longer a function at all, but the result of the whole <code>block_reduce</code> operation. Ignore for a moment that the syntax used this way is obviously whack, and notice that <code>vowels_conss</code> <em>didn’t</em> need to be defined as a named function before it was used (its definition <em>is</em> its use), and that at <em>no point</em> in the execution of the above code does <code>vowels_conss</code> even exist in the local scope as a function that can be mistakenly referenced elsewhere. <em>Anonymous!</em></p>
+<h2 id="curried-functions">Curried Functions</h2>
+<p><a href="http://en.wikipedia.org/wiki/Currying">Function currying</a> is a style of defining n-ary functions in terms of unary functions. It’s more common in practice in functional languages, including Haskell. A curried function that expects multiple arguments is built in terms of a series of functions which each only expect one of those arguments (unary functions), the last of which ultimately returns the result. In a language like Python, where a normal function would be invoked as <code>func(arg1, arg2, arg3)</code>, an equivalent curried function would be invoked as <code>curried_func(arg1)(arg2)(arg3)</code>. As you can imagine, writing curried functions by hand is unfortunately verbose in Python.</p>
+<p>The important part is that, with a bit of introspection, a function can be written as usual in idiomatic Python and be extended to support (optional) curried invocation with the addition of a simple <code>@curried</code> decorator. An example implementation, as well as a slightly better introduction to optionally-curried functions can be found on <a href="https://github.com/ryanartecona/curry.py">my github</a> (a more comprehensive set of functional utilities can be found in <a href="https://github.com/kachayev/fn.py">fn.py</a> or <a href="https://github.com/Suor/funcy">funcy</a>.</p>
+<p>With optional curried invocation, a function expecting a block as well as non-block arguments can be written <em>in idiomatic python</em> and can be subsequently used with our pseudo-anonymous blocks.</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">curry</span> <span class="kn">import</span> <span class="n">curried</span>
+
+<span class="c"># curried helpers</span>
+<span class="n">c_map</span> <span class="o">=</span> <span class="n">curried</span><span class="p">(</span><span class="k">lambda</span> <span class="n">xs</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="nb">map</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">xs</span><span class="p">))</span>
+<span class="n">c_join</span> <span class="o">=</span> <span class="n">curried</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">,</span> <span class="n">xs</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">xs</span><span class="p">))</span>
+
+
+<span class="c"># --- Ex. 1 ---</span>
+
+<span class="n">words</span> <span class="o">=</span> <span class="s">&quot;Long live Guido!&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+<span class="nd">@c_join</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">)</span>
+<span class="nd">@c_map</span><span class="p">(</span><span class="n">words</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">exclaim_string</span><span class="p">(</span> <span class="n">word</span> <span class="p">):</span>
+    <span class="k">return</span> <span class="n">word</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s">'!'</span>
+
+<span class="k">assert</span> <span class="n">exclaim_string</span> <span class="o">==</span> <span class="s">&quot;LONG! LIVE! GUIDO!!&quot;</span>
+
+
+<span class="c"># --- Ex. 2 ---</span>
+
+<span class="nd">@c_map</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">101</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">fizzbuzz</span><span class="p">(</span> <span class="n">i</span> <span class="p">):</span>
+    <span class="n">s</span>  <span class="o">=</span> <span class="s">&quot;Fizz&quot;</span> <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="mi">3</span> <span class="ow">is</span> <span class="mi">0</span> <span class="k">else</span> <span class="s">&quot;&quot;</span>
+    <span class="n">s</span> <span class="o">+=</span> <span class="s">&quot;Buzz&quot;</span> <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="mi">5</span> <span class="ow">is</span> <span class="mi">0</span> <span class="k">else</span> <span class="s">&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">s</span> <span class="ow">or</span> <span class="n">i</span>
+
+<span class="c"># fizzbuzz == the standard FizzBuzz sequence</span>
+
+
+<span class="c"># --- Ex. 3 ---</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="n">untrusted_json</span> <span class="o">=</span> <span class="s">'[[&quot;a&quot;, &quot;b&quot;], [&quot;c&quot;]]'</span>
+<span class="n">untrusted_obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">untrusted_json</span><span class="p">)</span>
+
+<span class="c"># ensure untrusted_obj is a list of</span>
+<span class="c"># lists of single-character strings</span>
+
+<span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">untrusted_obj</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span>
+<span class="nd">@c_map</span><span class="p">(</span><span class="n">untrusted_obj</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">valid_obj</span><span class="p">(</span><span class="n">untrusted_xs</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span>
+    <span class="nd">@c_map</span><span class="p">(</span><span class="n">untrusted_xs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">valid_xs</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="nb">unicode</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">c</span>
+    <span class="k">return</span> <span class="n">valid_xs</span>
+
+<span class="k">assert</span> <span class="n">valid_obj</span> <span class="o">==</span> <span class="p">[[</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s">&quot;c&quot;</span><span class="p">]]</span>
+</pre></div>
+
+<p>Elegant? <em>Hell no</em>. Useful? Perhaps not, but I found this possibility of hacky anonymous functions in Python surprising and interesting, and I wanted to share. Mostly, I just wish multiline anonymous function definitions (as expressions) were compatible with Python’s indentation-based syntax. Tell me what you think <span class="citation">[@ryanartecona]</span>(https://twitter.com/ryanartecona).</p>
+  </div>
+</div>
+
+        </div>
+      </div>
+
+    </div>
+
+  <script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-28816340-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+  </body>
+</html>
