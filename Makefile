@@ -16,9 +16,9 @@ clean: stack-build
 watch: stack-build posts clean
 	${HAKYLL} watch
 
-posts: _posts/2015-05-21-refactoring-in-ruby-in-haskell.md
+posts: posts/2015-05-21-refactoring-in-ruby-in-haskell.md
 
-_posts/2015-05-21-refactoring-in-ruby-in-haskell.md: downloads/refactoring_1.lhs
+posts/2015-05-21-refactoring-in-ruby-in-haskell.md: downloads/refactoring_1.lhs
 	echo "---" > $@
 	echo "title: Refactoring in Ruby in Haskell" >> $@
 	echo "layout: post" >> $@

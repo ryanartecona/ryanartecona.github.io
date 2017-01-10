@@ -26,7 +26,7 @@ main = hakyll $ do
     match ("_layouts/*.html" .||. "_includes/*") $ do
       compile templateCompiler
 
-    match "_posts/*" $ do
+    match "posts/*" $ do
       route $ foldl composeRoutes idRoute [
         setExtension "html",
         customRoute $ \p -> p |> toFilePath |> (`replaceDirectory` "post/"),
@@ -49,7 +49,7 @@ main = hakyll $ do
     match "index.html" $ do
       route $ idRoute
       compile $ do
-        posts <- recentFirst =<< loadAllSnapshots "_posts/*" "source"
+        posts <- recentFirst =<< loadAllSnapshots "posts/*" "source"
         let indexCtx = mconcat [
               listField "posts" postCtx (return posts) ,
               navInPosts ,
@@ -60,10 +60,10 @@ main = hakyll $ do
           >>= relativizeUrls
 
     redirect "2013/10/26/decorated-anonymous-functions-in-python/index.html"
-             "_posts/2013-10-26-decorated-anonymous-functions-in-python.md"
+             "posts/2013-10-26-decorated-anonymous-functions-in-python.md"
 
     redirect "2015/05/21/refactoring-in-ruby-in-haskell/index.html"
-             "_posts/2015-05-21-refactoring-in-ruby-in-haskell.md"
+             "posts/2015-05-21-refactoring-in-ruby-in-haskell.md"
 
 
 --------------------------------------------------------------------------------
