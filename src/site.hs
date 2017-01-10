@@ -23,7 +23,7 @@ main = hakyll $ do
       route $ setExtension "css"
       compile sassCompiler
 
-    match ("_layouts/*.html" .||. "_includes/*") $ do
+    match ("templates/*.html" .||. "_includes/*") $ do
       compile templateCompiler
 
     match "posts/*" $ do
@@ -35,15 +35,15 @@ main = hakyll $ do
       compile $ getResourceBody
         >>= saveSnapshot "source"
         >>  myPandocCompiler
-        >>= loadAndApplyTemplate "_layouts/post.html" postCtx
-        >>= loadAndApplyTemplate "_layouts/default.html" postCtx
+        >>= loadAndApplyTemplate "templates/post.html" postCtx
+        >>= loadAndApplyTemplate "templates/default.html" postCtx
         >>= relativizeUrls
 
     match "about.html" $ do
       route $ customRoute $ \t -> t |> toFilePath |> dropExtension |> (</> "index.html")
       let aboutCtx = navInAbout <> defaultContext
       compile $ myPandocCompiler
-        >>= loadAndApplyTemplate "_layouts/default.html" aboutCtx
+        >>= loadAndApplyTemplate "templates/default.html" aboutCtx
         >>= relativizeUrls
 
     match "index.html" $ do
@@ -56,7 +56,7 @@ main = hakyll $ do
               defaultContext ]
         getResourceBody
           >>= applyAsTemplate indexCtx
-          >>= loadAndApplyTemplate "_layouts/default.html" indexCtx
+          >>= loadAndApplyTemplate "templates/default.html" indexCtx
           >>= relativizeUrls
 
     redirect "2013/10/26/decorated-anonymous-functions-in-python/index.html"
@@ -100,7 +100,7 @@ redirect fromPath toItem =
       r <- maybe (fail "unknown route for redirect target") return maybeRoute
       let ctx = constField "location" r
       makeItem ""
-        >>= loadAndApplyTemplate "_layouts/redirect.html" ctx
+        >>= loadAndApplyTemplate "templates/redirect.html" ctx
 
 --------------------------------------------------------------------------------
 -- Highlight with ambient "pygmentize" executable
