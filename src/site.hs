@@ -23,7 +23,7 @@ main = hakyll $ do
       route $ setExtension "css"
       compile sassCompiler
 
-    match ("templates/*.html" .||. "_includes/*") $ do
+    match ("templates/*.html" .||. "partials/*") $ do
       compile templateCompiler
 
     match "posts/*" $ do
