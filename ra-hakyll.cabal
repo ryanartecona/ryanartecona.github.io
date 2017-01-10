@@ -14,7 +14,7 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 executable ra-hakyll
-  hs-source-dirs:      _src
+  hs-source-dirs:      src
   main-is:             site.hs
   default-language:    Haskell2010
   ghc-options:         -threaded
