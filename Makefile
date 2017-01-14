@@ -13,7 +13,7 @@ clean: stack-build
 	mkdir -p _site
 	echo "gitdir: ../.git/modules/_site" > _site/.git
 
-watch: stack-build posts clean
+watch: stack-build posts
 	${HAKYLL} watch
 
 posts: post/2015-05-21-refactoring-in-ruby-in-haskell.md

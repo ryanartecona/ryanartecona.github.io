@@ -1,8 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 --------------------------------------------------------------------------------
 module Main where
+import           Text.Pandoc (readDocBook)
 import           Text.Pandoc.Options
 import           Text.Pandoc.Definition
+import           Text.Pandoc.Error (PandocError (..))
 import           Flow
 import           Data.Char (toLower)
 import           Data.Monoid ((<>))
@@ -26,14 +28,20 @@ main = hakyll $ do
     match ("templates/*.html" .||. "partials/*") $ do
       compile templateCompiler
 
-    match ("post/*" .||. "draft/*") $ do
-      route $ foldl composeRoutes idRoute [
-        setExtension "html",
-        appendIndex,
-        dateFolders]
+    match ("post/*.md" .||. "draft/*.md") $ do
+      route routePostOrDraft
       compile $ getResourceBody
         >>= saveSnapshot "source"
         >>  myPandocCompiler
+        >>= loadAndApplyTemplate "templates/post.html" postCtx
+        >>= loadAndApplyTemplate "templates/default.html" postCtx
+        >>= relativizeUrls
+
+    match ("post/*.adoc" .||. "draft/*.adoc") $ do
+      route routePostOrDraft
+      compile $ getResourceBody
+        >>= saveSnapshot "source"
+        >>  compileAsciidoc
         >>= loadAndApplyTemplate "templates/post.html" postCtx
         >>= loadAndApplyTemplate "templates/default.html" postCtx
         >>= relativizeUrls
@@ -82,12 +90,12 @@ postCtx =
     <> dropIndexHtml "url"
     <> defaultContext
 
-myPandocCompiler :: Compiler (Item String)
-myPandocCompiler =
-    pandocCompilerWithTransformM defReadOpts defWriteOpts pygmentize
-  where
-    defReadOpts = defaultHakyllReaderOptions
-    defWriteOpts = defaultHakyllWriterOptions {writerEmailObfuscation = NoObfuscation}
+routePostOrDraft :: Routes
+routePostOrDraft = foldl composeRoutes idRoute
+  [ setExtension "html"
+  , appendIndex
+  , dateFolders
+  ]
 
 redirect :: Identifier -> Identifier -> Rules ()
 redirect fromPath toItem =
@@ -100,6 +108,41 @@ redirect fromPath toItem =
       let ctx = constField "location" r
       makeItem ""
         >>= loadAndApplyTemplate "templates/redirect.html" ctx
+
+--------------------------------------------------------------------------------
+-- Pandoc stuff
+
+myPandocReadOpts :: ReaderOptions
+myPandocReadOpts = defaultHakyllReaderOptions
+
+myPandocWriteOpts :: WriterOptions
+myPandocWriteOpts = defaultHakyllWriterOptions
+  { writerEmailObfuscation = NoObfuscation
+  , writerTableOfContents = True
+  , writerTOCDepth = 3
+  , writerTemplate = "$toc$\n$body$"
+  }
+
+myPandocCompiler :: Compiler (Item String)
+myPandocCompiler =
+  pandocCompilerWithTransformM myPandocReadOpts myPandocWriteOpts pygmentize
+
+readPandocWithReader
+  :: (String -> Either PandocError Pandoc)
+  -> Item String
+  -> Compiler (Item Pandoc)
+readPandocWithReader reader item = case traverse reader item of
+  Left (ParseFailure err) -> fail ("readPandocWithReader: parse failed: " ++ err)
+  Left (ParsecError _ err) -> fail ("readPandocWithReader: parse failed: " ++ show err)
+  Right compiledItem -> return compiledItem
+
+compileAsciidoc :: Compiler (Item String)
+compileAsciidoc = do
+  getResourceBody
+    >>= withItemBody (unixFilter "asciidoc" ["-a", "source-highlighter=pygments", "--backend", "docbook", "-"])
+    >>= readPandocWithReader (readDocBook myPandocReadOpts)
+    >>= traverse pygmentize
+    >>= return . (writePandocWith myPandocWriteOpts)
 
 --------------------------------------------------------------------------------
 -- Highlight with ambient "pygmentize" executable

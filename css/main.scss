@@ -230,7 +230,7 @@ body {
         @include border-radius(2px);
       }
     }
-    h2, h3, h4 {
+    h1, h2, h3, h4 {
       font-family: $sans-serif;
     }
     hr {
@@ -256,6 +256,11 @@ body {
     }
     p {
       margin:{top: 1.5em; bottom: 1.5em;}
+    }
+    ul li p {
+      // ascii doc wraps list items in <p>
+      margin-top: .5em;
+      margin-bottom: .5em;
     }
     pre {
       display: block;
