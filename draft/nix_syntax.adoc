@@ -1,0 +1,221 @@
+Nix Syntax Primer
+=================
+
+$toc$
+
+(intro)
+
+== Preliminaries
+
+=== Other similar primers
+
+- https://medium.com/@MrJamesFisher/nix-by-example-a0063a1a4c55
+- https://learnxinyminutes.com/docs/nix/
+- https://nixcloud.io/tour
+
+=== Running the examples
+
+The `#` character begins line comments, so I will use `#->` in examples to denote what an expression evaluates to. I will write standalone examples whenever possible so they can be easily copied and run from your REPL.
+
+There are a few ways to interactively evaluate Nix expressions. I recommend following along with the examples with one of these.
+
+- https://nixcloud.io/tour
++
+This is its own beginner's tour of the Nix language, but it includes an editor that can evaluate Nix right on the page. I recommend this if you haven't installed Nix on your computer or if you don't have a terminal handy.
+
+- `nix-repl`
++
+If you have already installed Nix on your computer, you may already know that you can install `nix-repl` with `nix-env --install nix-repl`. It's nothing fancy, but it's better than no REPL. Use `:?` for help with commands. One unfortunate caveat is `nix-repl` doesn't support multiline expressions.
+
+- `nix-instantiate --eval --expr '...'`
++
+If you already have Nix installed, you may also evaluate individual expressions with `nix-instantiate --eval --expr '...'`, or files with `nix-instantiate --eval path/to/file.nix`. A Nix file just contains one big expression.
+
+== JSON types
+
+Nix has most of the same primitive value types as JSON, namely: numbers, booleans, strings, and `null`. One notable exception is that Nix does not have floats, so all numbers are integers.
+
+[options="header",cols="1,1,1"]
+|====
+|        |Nix     |JSON
+|Number  |`1`     |`1`
+|Float   | n/a    | `3.14`
+|Boolean |`true`  |`true`
+|Boolean |`false` |`false`
+|String  |`"str"` |`"str"`
+|Null    |`null`  |`null`
+|====
+
+Also like JSON, Nix has arrays and objects, albeit with slightly different syntax. Note that what JSON calls "objects", Nix calls "attribute sets" or sometimes just "sets".
+
+[options="header",cols="1,2,2"]
+|====
+|           |Nix                            |JSON
+|Array      |`[1 2 3]`                      |`[1, 2, 3]`
+|Object/Set |`{foo = "bar"; baz = "quux";}` |`{"foo": "bar", "baz": "quux"}`
+|====
+
+== functions
+
+Basic function syntax is quite terse: you have an argument on the left and a function body on the right separated only by a `:`. It's easy to miss if you're not looking for it.
+
+Here is a function which simply adds `1` to its argument.
+
+[source,nix]
+----
+x: x + 1
+#-> «lambda»
+----
+
+NOTE: Nix often calls functions "lambdas". There's no distinction.
+
+[quote]
+____
+this is quoted
+____
+
+To apply a function to an argument, simply place the argument after the function.
+
+[source,nix]
+----
+let
+  add1 = (x: x + 1);
+in
+  add1 2
+----
+
+All functions in Nix take exactly 1 argument (they're "unary").
+
+This isn't a limitation, since we can get something that looks and behaves like a multi-argument function by writing it in a curried style: you write a function which takes the first argument, and it returns _another_ function which takes the next argument, and when you have all your arguments in scope you can return the real result of the function.
+
+[source,nix]
+----
+(x: (y: x + y))
+----
+
+You can drop those parentheses without changing how the expression is grouped, which makes curried functions easier to read and write.
+
+[source,nix]
+----
+x: y: x + y
+----
+
+(The `:` in a function definition is "right associative".)
+
+To use a curried function, simply supply all the arguments.
+
+[source,nix]
+----
+let
+  add = (x: y: x + y);
+in
+  add 1 2
+----
+
+(Function application is "left associative".)
+
+Functions can also pattern match on attribute set arguments.
+
+[source,nix]
+----
+{x, y}: x + y
+----
+
+This is often used to approximate named function arguments.
+
+[source,nix]
+----
+let
+  add = ({x, y}:
+    x + y
+  );
+in
+  add {x = 1; y = 2;}
+----
+
+Note that such a function requires an attribute set which has _exactly_ the keys used in the pattern. Missing or unexpected keys will cause an error.
+
+To allow extra keys, which will be ignored, you can mention `...`.
+
+[source,nix]
+----
+let
+  hello = ({name, ...}:
+    "Hello ${name}"
+  );
+in
+  hello {name = "world"; x = false;}
+----
+
+To allow missing keys, you can give them default values with `?`.
+
+[source,nix]
+----
+let
+  hello = ({name ? "world"}:
+    "Hello ${name}"
+  );
+in
+  hello {}
+----
+
+== variables and scopes
+
+You can bind a variable to a value with `let ...; in ...`.
+
+[source,nix]
+----
+let x = "value"; in {key = x;}
+ #-> { key = "value"; }
+----
+
+[source,nix]
+----
+let x = {item = "value";}; in (with x; item)
+----
+
+== attribute sets
+
+(like JSON's "Object", Ruby's "Hash", Python's "dict", etc., but with an obscure name)
+
+[source,nix]
+----
+let x = {key = "value";}; in x.key
+
+let name = "key"; x = {"${name}" = "value";}; in x."${name}"
+
+let x = 1; y = 2; in {inherit x y;}
+
+let attrset = {x = 1; y = 2;}; in {inherit (attrset) x y;}
+
+let foo = {x = 1;}; bar = {y = 2;}; in (foo // bar)
+----
+
+== strings
+
+[source,nix]
+----
+"str"
+
+let name = "foo"; in "${name}"
+
+let name = "world"; in
+''
+  # This can be any text, like a bash script
+  echo "Hello ${name}"
+''
+
+let name = "world"; in "Hello " + name
+----
+
+== paths
+
+[source,nix]
+----
+let path = ./config.yml; in "${path}"
+----
+
+[source,bash]
+----
+nix-instantiate -I mypath=./ --eval "<mypath>"
+----
