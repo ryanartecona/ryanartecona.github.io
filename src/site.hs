@@ -118,9 +118,6 @@ myPandocReadOpts = defaultHakyllReaderOptions
 myPandocWriteOpts :: WriterOptions
 myPandocWriteOpts = defaultHakyllWriterOptions
   { writerEmailObfuscation = NoObfuscation
-  , writerTableOfContents = True
-  , writerTOCDepth = 3
-  , writerTemplate = "$toc$\n$body$"
   }
 
 myPandocCompiler :: Compiler (Item String)
@@ -140,9 +137,33 @@ compileAsciidoc :: Compiler (Item String)
 compileAsciidoc = do
   getResourceBody
     >>= withItemBody (unixFilter "asciidoc" ["-a", "source-highlighter=pygments", "--backend", "docbook", "-"])
+    >>= saveSnapshot "pandocSource"
     >>= readPandocWithReader (readDocBook myPandocReadOpts)
     >>= traverse pygmentize
     >>= return . (writePandocWith myPandocWriteOpts)
+    >>= applyAsTemplate (tableOfContentsField "toc" "pandocSource" (readDocBook myPandocReadOpts))
+
+--------------------------------------------------------------------------------
+-- Table of Contents
+
+tableOfContentsField :: String                                -- ^ Key to use
+                     -> Snapshot                              -- ^ Snapshot to load
+                     -> (String -> Either PandocError Pandoc) -- ^ Pandoc reader to use
+                     -> Context String                        -- ^ Returns ToC (HTML)
+tableOfContentsField key snapshot reader = field key $ \item -> do
+    snap <- loadSnapshot (itemIdentifier item) snapshot
+    (itemBody <$>) . getTableOfContents $ snap
+  where
+    tocOptions = myPandocWriteOpts
+      { writerTableOfContents=True
+      , writerStandalone=True
+      , writerTemplate="<div class=\"toc\">$toc$</div>"
+      }
+    getTableOfContents :: Item String -> Compiler (Item String)
+    getTableOfContents item =
+      return item
+        >>= readPandocWithReader reader
+        >>= return . (writePandocWith tocOptions)
 
 --------------------------------------------------------------------------------
 -- Highlight with ambient "pygmentize" executable
