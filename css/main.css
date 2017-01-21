@@ -648,14 +648,23 @@ body {
     @media screen and (max-width: 560px) {
       .article .entry-meta {
         font-size: .85em; } }
-    .article .entry-meta .entry-meta-item:after {
+    .article .entry-meta .entry-meta-item:before {
       display: inline-block;
       content: " • ";
       color: #cfcfcf;
-      margin-left: .8em;
-      margin-right: .5em; }
-    .article .entry-meta .entry-meta-item:last-child:after {
+      margin-left: .5em;
+      margin-right: .8em; }
+    .article .entry-meta .entry-meta-item:first-child:before {
       display: none; }
+    .article .entry-meta div.toc {
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.5em;
+      font-size: 12px; }
+      .article .entry-meta div.toc ul {
+        padding-left: 0;
+        list-style: none; }
+        .article .entry-meta div.toc ul ul {
+          padding-left: 2em; }
   .article .entry-content {
     color: #333;
     max-width: 800px;
@@ -675,10 +684,11 @@ body {
         font-size: 0.85em;
         background: rgba(136, 136, 136, 0.2);
         padding: 0.1em 0.3em;
+        white-space: nowrap;
         -moz-border-radius: 2px;
         -webkit-border-radius: 2px;
         border-radius: 2px; }
-    .article .entry-content h2, .article .entry-content h3, .article .entry-content h4 {
+    .article .entry-content h1, .article .entry-content h2, .article .entry-content h3, .article .entry-content h4 {
       font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif; }
     .article .entry-content hr {
       border: none; }
@@ -696,9 +706,15 @@ body {
         right: 25px; }
       .article .entry-content hr:after {
         left: 25px; }
+    .article .entry-content p, .article .entry-content h1, .article .entry-content h2, .article .entry-content h3, .article .entry-content h4, .article .entry-content h5, .article .entry-content h6 {
+      margin-top: 1.3em; }
     .article .entry-content p {
-      margin-top: 1.5em;
-      margin-bottom: 1.5em; }
+      margin-bottom: 1.3em; }
+    .article .entry-content ul {
+      padding-left: 1.1em; }
+      .article .entry-content ul li p {
+        margin-top: .5em;
+        margin-bottom: .5em; }
     .article .entry-content pre {
       display: block;
       padding: 0.9em 1.1em;
@@ -717,6 +733,51 @@ body {
       border-radius: 3px;
       background-color: #e7e7e7;
       color: #666; }
+    .article .entry-content blockquote {
+      border-left: solid 4px #cfcfcf;
+      margin: 0;
+      padding-left: 1em;
+      color: #666; }
+    .article .entry-content div.admonition {
+      font-size: .85em;
+      margin: .8em 0;
+      padding: .5em .8em;
+      -moz-border-radius: 3px;
+      -webkit-border-radius: 3px;
+      border-radius: 3px;
+      background-color: #e7e7e7;
+      color: #666; }
+      .article .entry-content div.admonition p:first-child {
+        margin-top: 0; }
+        .article .entry-content div.admonition p:first-child:before {
+          font-weight: bold;
+          display: inline; }
+      .article .entry-content div.admonition p:last-child {
+        margin-bottom: 0; }
+      .article .entry-content div.admonition.note p:first-child:before {
+        /* content: "Note: " */ }
+    .article .entry-content table {
+      /* max-width: 100%; */
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse; }
+      .article .entry-content table thead tr.header {
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif; }
+        .article .entry-content table thead tr.header th {
+          border: solid 2px #e7e7e7;
+          padding: .3em .5em; }
+      .article .entry-content table tbody {
+        vertical-align: top; }
+        .article .entry-content table tbody tr:nth-child(odd) {
+          background-color: rgba(0, 0, 0, 0.03); }
+        .article .entry-content table tbody tr td {
+          border: solid 2px #e7e7e7;
+          margin: 0;
+          padding: .3em .5em; }
+          .article .entry-content table tbody tr td p:first-child, .article .entry-content table tbody tr td pre:first-child {
+            margin-top: 0; }
+          .article .entry-content table tbody tr td p:last-child, .article .entry-content table tbody tr td pre:last-child {
+            margin-bottom: 0; }
 
 .article img, .page img {
   max-width: 100%; }
