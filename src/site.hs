@@ -4,6 +4,7 @@ module Main where
 import           Text.Pandoc (readDocBook)
 import           Text.Pandoc.Options
 import           Text.Pandoc.Definition
+import           Text.Pandoc.Walk (walkM)
 import           Text.Pandoc.Error (PandocError (..))
 import           Flow
 import           Data.Char (toLower)
@@ -39,11 +40,12 @@ main = hakyll $ do
 
     match ("post/*.adoc" .||. "draft/*.adoc") $ do
       route routePostOrDraft
+      let adocPostCtx = (tableOfContentsField "toc" "pandocSource" (readDocBook myPandocReadOpts)) <> postCtx
       compile $ getResourceBody
         >>= saveSnapshot "source"
         >>  compileAsciidoc
-        >>= loadAndApplyTemplate "templates/post.html" postCtx
-        >>= loadAndApplyTemplate "templates/default.html" postCtx
+        >>= loadAndApplyTemplate "templates/post.html" adocPostCtx
+        >>= loadAndApplyTemplate "templates/default.html" adocPostCtx
         >>= relativizeUrls
 
     match "about.html" $ do
@@ -134,14 +136,30 @@ readPandocWithReader reader item = case traverse reader item of
   Right compiledItem -> return compiledItem
 
 compileAsciidoc :: Compiler (Item String)
-compileAsciidoc = do
-  getResourceBody
-    >>= withItemBody (unixFilter "asciidoc" ["-a", "source-highlighter=pygments", "--backend", "docbook", "-"])
-    >>= saveSnapshot "pandocSource"
-    >>= readPandocWithReader (readDocBook myPandocReadOpts)
-    >>= traverse pygmentize
-    >>= return . (writePandocWith myPandocWriteOpts)
-    >>= applyAsTemplate (tableOfContentsField "toc" "pandocSource" (readDocBook myPandocReadOpts))
+compileAsciidoc =
+    getResourceBody
+      >>= withItemBody (unixFilter "asciidoc" ["--backend", "docbook", "-"])
+      >>= saveSnapshot "pandocSource"
+      >>= readPandocWithReader (readDocBook myPandocReadOpts)
+      >>= traverse pygmentize
+      >>= traverse fixAdmonitions
+      >>= return . (writePandocWith myPandocWriteOpts)
+  where
+    -- Pandoc renders DocBook <important>/<caution>/<note>/<tip> as e.g.
+    --   <blockquote><p><strong>Note</strong></p><p>note text here</p></blockquote>
+    -- I'd rather have something I can style with CSS, like
+    --   <div class="admonition note"><p>note text here</p></div>
+    -- See: https://github.com/jgm/pandoc/issues/1456#issuecomment-118939340
+    fixAdmonitions :: Pandoc -> Compiler Pandoc
+    fixAdmonitions (Pandoc meta bs) = Pandoc meta <$> mapM f bs
+      where
+        f :: Block -> Compiler Block
+        f (BlockQuote (Para [Strong [Str "Note"]] : xs)) = return (Div ("", ["admonition", "note"], []) xs)
+        f (BlockQuote (Para [Strong [Str "Tip"]] : xs)) = return (Div ("", ["admonition", "tip"], []) xs)
+        f (BlockQuote (Para [Strong [Str "Important"]] : xs)) = return (Div ("", ["admonition", "important"], []) xs)
+        f (BlockQuote (Para [Strong [Str "Caution"]] : xs)) = return (Div ("", ["admonition", "caution"], []) xs)
+        f (BlockQuote (Para [Strong [Str "Warning"]] : xs)) = return (Div ("", ["admonition", "warning"], []) xs)
+        f x = return x
 
 --------------------------------------------------------------------------------
 -- Table of Contents
@@ -169,7 +187,7 @@ tableOfContentsField key snapshot reader = field key $ \item -> do
 -- Highlight with ambient "pygmentize" executable
 
 pygmentize :: Pandoc -> Compiler Pandoc
-pygmentize (Pandoc meta bs) = Pandoc meta <$> mapM highlight bs
+pygmentize = walkM highlight
 
 highlight :: Block -> Compiler Block
 highlight (CodeBlock (_, options, _) code) =
