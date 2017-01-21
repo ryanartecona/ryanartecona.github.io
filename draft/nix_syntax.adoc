@@ -1,11 +1,13 @@
 Nix Syntax Primer
 =================
 
-$toc$
-
-(intro)
-
 == Preliminaries
+
+Nix is the name shared by both the https://nixos.org/nix/manual[Nix package manager] and its https://nixos.org/nix/manual#ch-expression-language[Nix expression language]. The expression language is used extensively in working with Nix-the-package-manager and everything built on top of it, including for configuring the https://nixos.org/nixos/manual[NixOS] Linux distribution. This is a primer on the Nix expression language.
+
+My hope is that with this guide -- reading it, skimming it, or just keeping it handy if you get stuck -- you can get your bearings enough to read through existing Nix code and, if you're so inclined, start writing some of your own without fear.
+
+I assume no prior familiarity with Nix, so you can start here from scratch. Familiarity with functional programming or a lazily evaluated language might help, but neither are required.
 
 === Other similar primers
 
@@ -17,29 +19,44 @@ $toc$
 
 The `#` character begins line comments, so I will use `#->` in examples to denote what an expression evaluates to. I will write standalone examples whenever possible so they can be easily copied and run from your REPL.
 
-There are a few ways to interactively evaluate Nix expressions. I recommend following along with the examples with one of these.
+There are a few ways to interactively evaluate Nix expressions. I recommend following along with the examples using one of these.
 
 - https://nixcloud.io/tour
 +
-This is its own beginner's tour of the Nix language, but it includes an editor that can evaluate Nix right on the page. I recommend this if you haven't installed Nix on your computer or if you don't have a terminal handy.
+This is its own beginner's tour of the Nix language, but it includes an editor that can evaluate expressions Nix right on the page. I recommend this if you haven't installed Nix on your computer or if you don't have a terminal handy.
 
 - `nix-repl`
 +
-If you have already installed Nix on your computer, you may already know that you can install `nix-repl` with `nix-env --install nix-repl`. It's nothing fancy, but it's better than no REPL. Use `:?` for help with commands. One unfortunate caveat is `nix-repl` doesn't support multiline expressions.
+If you have already installed Nix on your computer, you may already know that you can install `nix-repl` with `nix-env --install nix-repl`. It's nothing fancy, but it's better than no REPL. Use `:?` for help with commands. One unfortunate caveat is `nix-repl` doesn't support multiline expressions, though sometimes it's still worth it to explore unfamiliar territory with its tab completion.
 
-- `nix-instantiate --eval --expr '...'`
+- `nix-instantiate`
 +
-If you already have Nix installed, you may also evaluate individual expressions with `nix-instantiate --eval --expr '...'`, or files with `nix-instantiate --eval path/to/file.nix`. A Nix file just contains one big expression.
+If you already have Nix installed, you may also evaluate individual expressions with `nix-instantiate --eval --strict --expr '...'` or files with `nix-instantiate --eval --strict path/to/file.nix`. A Nix file just contains one big expression. If you want to paste examples verbatim into your terminal, something like `pbpaste | tee /dev/stderr | nix-instantiate --eval --strict -` should work fine (it's how I've checked my examples).
 
-== JSON types
+== Basics
+
+=== What to expect
+
+Before getting to details, here's some orientation.
+
+- Nix expressions have **no side effects**.
+- Nix expressions are **lazily evaluated**.
+- Nix expressions are **immutable**.
+- Nix expressions are **dynamically typed**.
+- Nix expressions require **no compilation**.
+- Nix expressions are **insensitive to whitespace**.
+
+Nix is fundamentally a _configuration language_, not a general-purpose programming language. Its purpose is to ...
+
+=== JSON types
 
 Nix has most of the same primitive value types as JSON, namely: numbers, booleans, strings, and `null`. One notable exception is that Nix does not have floats, so all numbers are integers.
 
-[options="header",cols="1,1,1"]
+[options="header",cols="1,2,2"]
 |====
 |        |Nix     |JSON
 |Number  |`1`     |`1`
-|Float   | n/a    | `3.14`
+|Float   | n/a    |`3.14`
 |Boolean |`true`  |`true`
 |Boolean |`false` |`false`
 |String  |`"str"` |`"str"`
@@ -55,9 +72,290 @@ Also like JSON, Nix has arrays and objects, albeit with slightly different synta
 |Object/Set |`{foo = "bar"; baz = "quux";}` |`{"foo": "bar", "baz": "quux"}`
 |====
 
-== functions
+Beyond these, Nix also has _**function**_, _**path**_, and _**derivation**_ values and a few other sorts of expressions for writing actual programs.
 
-Basic function syntax is quite terse: you have an argument on the left and a function body on the right separated only by a `:`. It's easy to miss if you're not looking for it.
+We'll cover all these below except for derivations, because derivations deserve their own primer.
+
+== Expression forms
+
+=== Strings
+
+Concatenate with `+`.
+
+[source,nix]
+"Hello " + "world"
+#-> "Hello world"
+
+Nix has string interpolation with `${...}`. You can put any expression in those braces.
+
+[source,nix]
+let
+  name = "world";
+in
+  "Hello ${name + "!"}"
+#-> "Hello world!"
+
+You can also write strings inside double single-quotes, `''like this''`. This form allows multiline strings, and it will intelligently strip indentation!
+
+[source,nix]
+let
+  name = "world";
+in
+  ''
+  # This can be any text!
+  echo "Hello ${name}"
+  ''
+#-> "# This can be any text!\necho \"Hello world\"\n"
+
+NOTE: Once you start using this, you'll wish every language had multiline strings that were so pleasant. I know I do.
+
+It's common in the nixpkgs repo for bash code snippets and other config files to be written in strings this way.
+
+=== Integers
+
+===== TODO: Ints
+
+=== Booleans
+
+There's not much to note about booleans. There's conjunction with `&&`.
+
+[source,nix]
+true && false
+#-> false
+
+There's disjunction with `||`.
+
+[source,nix]
+true || false
+#-> true
+
+There's negation with `!`.
+
+[source,nix]
+!false
+#-> true
+
+The one boolean operator you may be less familiar with is `->` for implication.
+
+[source,nix]
+true -> true
+#-> true
+
+You can read `p -> q` as "_p_ implies _q_". This means if _p_ is true, then _q_ must be true. It's logically equivalent to `!(p && !q)`, if that helps.
+
+The `->` operator is usually only used to assert mutually consistent configuration options. If you write a package which allows setting two feature flags, `includeGUI` and `useFancyGUITheme`, and it only makes sense for `useFancyGUITheme` to be true if `includeGUI` is _also_ true, then you might write `assert useFancyGUITheme -> includeGUI;` to ensure your package won't try to include a GUI theme without including the GUI.
+
+=== Arrays
+
+===== TODO: Arrays
+
+=== Attribute sets
+
+An attribute set is like JSON's "Object", Ruby's "Hash", Python's "dict", etc., but with an obscure name. It's a mapping from names to values.
+
+[source,nix]
+----
+let
+  x = { key = "value"; };
+in
+  x.key
+#-> "value"
+----
+
+An attribute name must be a string, but it can be any string. The value can be anything.
+
+[source,nix]
+let
+  x = {"my key" = 1 + 2;};
+in
+  x."my key"
+#-> 3
+
+You can use string interpolation in attribute names, if you need to, both while defining and accessing.
+
+[source,nix]
+let
+  name = "key";
+  x = { "${name}" = "value"; };
+in
+  x."${name}"
+#-> "value"
+
+You can also merge the attributes of two sets into one with `//`. The right hand side wins if attribute names conflict, and the merge is shallow.
+
+[source,nix]
+let
+  foo = {x = 1; z = {a = "a";};};
+  bar = {y = 3; z = {b = "b";};};
+in
+  (foo // bar)
+#-> { x = 1; y = 3; z = { b = "b"; }; }
+
+
+==== Inheriting
+
+If you want to turn a bound name into an attribute in a set, you can use `inherit ...;`.
+
+[source,nix]
+let
+  x = 1;
+  y = 2;
+  z = 3;
+in
+  {
+    x = x;
+    inherit y z;
+  }
+#-> { x = 1; y = 2; z = 3; }
+
+NOTE: This is in a way the opposite of <<_literal_with_literal_expression,`with` expressions>>, which turn attributes of a set into bound names.
+
+This feature is similar to "field punning" in some languages or "property value shorthand" in ES6, so it may feel familiar if you can see past the `inherit` keyword.
+
+If want to cherry pick specific attributes in one set to include in another set, you may use an alternate form of `inherit`.
+
+[source,nix]
+let
+  foo = {x = 1; y = 2;};
+in
+  { inherit (foo) x y; }
+#-> { x = 1; y = 2; }
+
+The parens around `(foo)` are necessary here, as they change the meaning of `inherit`! It's unfortunate syntax, but important to know.
+
+==== Nested definitions
+
+Sometimes when writing Nix code you have to work with deeply nested attribute sets, such as when writing a configuration file for a NixOS machine.
+
+Nix provides a shorthand for defining nested attribute sets which can make them easier to read and write.
+
+[source,nix]
+{
+  explicit = {
+    a = 1;
+    b = {
+      c = 2;
+    };
+  };
+  short.a = 1;
+  short.b.c = 2;
+}
+#-> { explicit = { a = 1; b = { c = 2; }; }; short = { a = 1; b = { c = 2; }; }; }
+
+Just know that you can't mix and match these styles in an ambiguous way. Each key, at any level, can use one or the other style but not both.
+
+[source,nix]
+{
+  foo.a = 1;
+  foo = {
+    b = 2;
+  };
+}
+#-> error: attribute ‘foo’ at (string):3:3 already defined at (string):2:3
+
+=== Bindings and scopes
+
+==== `let` binding
+
+If you haven't already guessed, you can bind a name to a value with `let ... = ...; in ...`.
+
+[source,nix]
+----
+let x = "value"; in {key = x;}
+#-> { key = "value"; }
+----
+
+Note that these are constant bindings to immutable values. You can reuse a bound name in an inner scope ("shadowing" it), but you can't reassign it or otherwise change a value once it's assigned. These aren't what most languages call "variables".
+
+You can bind multiple names in a single `let` expression.
+
+[source,nix]
+----
+let
+  x = 1;
+  y = 2;
+in
+  x + y
+#-> 3
+----
+
+You should also know that a `let` binding is just another type of expression, so you can use one inside another.
+
+[source,nix]
+----
+let
+  first = (
+    let
+      second = "Hello";
+    in
+      second + " "
+  );
+in
+  let
+    third = "world";
+  in
+    first + third
+#-> "Hello world"
+----
+
+==== `with` expression
+
+A `with` expression brings all the attributes in a set into scope. It exists purely for convenience, as it's often much more pleasant than using fully qualified names or lots of `let` bindings instead.
+
+[cols="1,2"]
+|====
+| qualified names a|
+[source,nix]
+----
+let
+  pkgs = import <nixpkgs> {};
+in
+  [pkgs.foo pkgs.bar pkgs.baz]
+----
+
+| local bindings a|
+[source,nix]
+----
+let
+  pkgs = import <nixpkgs> {};
+  foo = pkgs.foo;
+  bar = pkgs.bar;
+  baz = pkgs.baz;
+in
+  [foo bar baz]
+----
+
+| `with` expression a|
+[source,nix]
+----
+let
+  pkgs = import <nixpkgs> {};
+in
+  with pkgs;
+  [foo bar baz]
+----
+
+|====
+
+NOTE: All 3 above examples evaluate to the same thing.
+
+The one big caveat with `with` expressions is that a name bound by `with` _cannot shadow_ a name that was already bound. Another way to think about this is that _explicit_ `let` bindings take precedence over _implicit_ `with` bindings, _even if_ the `with` comes after.
+
+[source,nix]
+----
+let
+  item = "we want this";
+  suspiciousSet = {item = "we don't want this";};
+in
+  with suspiciousSet; item
+#-> "we want this"
+----
+
+This lets you use `with` on a set for convenience without fear that it might clobber your local bindings and break your code.
+
+=== Functions
+
+Basic function syntax is quite terse: you have an argument on the left and a function body on the right separated only by a `:`. It's sometimes easy to miss if you're not looking for it.
 
 Here is a function which simply adds `1` to its argument.
 
@@ -67,12 +365,7 @@ x: x + 1
 #-> «lambda»
 ----
 
-NOTE: Nix often calls functions "lambdas". There's no distinction.
-
-[quote]
-____
-this is quoted
-____
+Nix often calls a function a "lambda". There's no distinction. They aren't strings in disguise like in _some_ silly languages, so if you try to print one, Nix just says `«lambda»`.
 
 To apply a function to an argument, simply place the argument after the function.
 
@@ -82,11 +375,14 @@ let
   add1 = (x: x + 1);
 in
   add1 2
+#-> 3
 ----
 
-All functions in Nix take exactly 1 argument (they're "unary").
+==== Currying
 
-This isn't a limitation, since we can get something that looks and behaves like a multi-argument function by writing it in a curried style: you write a function which takes the first argument, and it returns _another_ function which takes the next argument, and when you have all your arguments in scope you can return the real result of the function.
+All functions in Nix take exactly 1 argument (they're "unary"). Technically speaking, you can't define a function which takes more than 1 argument.
+
+But this isn't a limitation! We can get something that looks and behaves like a multi-argument function by writing it in a curried style: you write a function which takes the first argument, and it returns _another_ function which takes the next argument, and when you have all your arguments in scope you can return the real result of the function.
 
 [source,nix]
 ----
@@ -100,7 +396,7 @@ You can drop those parentheses without changing how the expression is grouped, w
 x: y: x + y
 ----
 
-(The `:` in a function definition is "right associative".)
+The `:` in a function definition is "right associative", so `x: y: x + y` means the same thing as `(x: (y: (x + y)))`.
 
 To use a curried function, simply supply all the arguments.
 
@@ -110,18 +406,23 @@ let
   add = (x: y: x + y);
 in
   add 1 2
+#-> 3
 ----
 
-(Function application is "left associative".)
+Function application is "left associative", so `add 1 2` means the same thing as `(((add) 1) 2)`.
 
-Functions can also pattern match on attribute set arguments.
+NOTE: See <<_appendix_a_currying,Appendix A: Currying>> for more.
+
+==== Named arguments
+
+Functions can also destructure attribute set arguments.
 
 [source,nix]
 ----
 {x, y}: x + y
 ----
 
-This is often used to approximate named function arguments.
+The above function expects a single set argument which has two elements: `x` and `y`. This is often used to pass named arguments to a function.
 
 [source,nix]
 ----
@@ -131,11 +432,12 @@ let
   );
 in
   add {x = 1; y = 2;}
+#-> 3
 ----
 
 Note that such a function requires an attribute set which has _exactly_ the keys used in the pattern. Missing or unexpected keys will cause an error.
 
-To allow extra keys, which will be ignored, you can mention `...`.
+To allow extra keys to be ignored, you can mention `...`.
 
 [source,nix]
 ----
@@ -145,6 +447,7 @@ let
   );
 in
   hello {name = "world"; x = false;}
+#-> "Hello world"
 ----
 
 To allow missing keys, you can give them default values with `?`.
@@ -157,65 +460,32 @@ let
   );
 in
   hello {}
+#-> "Hello world"
 ----
 
-== variables and scopes
-
-You can bind a variable to a value with `let ...; in ...`.
+=== Paths
 
 [source,nix]
-----
-let x = "value"; in {key = x;}
- #-> { key = "value"; }
-----
-
-[source,nix]
-----
-let x = {item = "value";}; in (with x; item)
-----
-
-== attribute sets
-
-(like JSON's "Object", Ruby's "Hash", Python's "dict", etc., but with an obscure name)
-
-[source,nix]
-----
-let x = {key = "value";}; in x.key
-
-let name = "key"; x = {"${name}" = "value";}; in x."${name}"
-
-let x = 1; y = 2; in {inherit x y;}
-
-let attrset = {x = 1; y = 2;}; in {inherit (attrset) x y;}
-
-let foo = {x = 1;}; bar = {y = 2;}; in (foo // bar)
-----
-
-== strings
-
-[source,nix]
-----
-"str"
-
-let name = "foo"; in "${name}"
-
-let name = "world"; in
-''
-  # This can be any text, like a bash script
-  echo "Hello ${name}"
-''
-
-let name = "world"; in "Hello " + name
-----
-
-== paths
-
-[source,nix]
-----
 let path = ./config.yml; in "${path}"
-----
 
 [source,bash]
-----
 nix-instantiate -I mypath=./ --eval "<mypath>"
+
+== Appendix
+
+=== #Appendix A: Currying#
+If you're unfamiliar with currying, here's how a curried `add` function could be written and used in Javascript.
+
+[source,javascript]
 ----
+const add = (x) => {return ((y) => {return x + y})};
+add(1);
+//-> (y) => {return x + y}
+add(1)(2);
+//-> 3
+const add1 = add(1);
+add1(2);
+//-> 3
+----
+
+If you'd like to read up more on currying, introductory blog posts abound. You can google for one in your language of choice. If you understand what's going on above, though, that's really all there is to it.
