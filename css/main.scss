@@ -199,14 +199,26 @@ body {
       font-size: .85em;
     }
     .entry-meta-item {
-      &:after {
+      &:before {
         display: inline-block;
         content: " • ";
         color: $gray-x-light;
-        margin:{left: .8em; right: .5em;}
+        margin:{left: .5em; right: .8em;}
       }
-      &:last-child:after {
+      &:first-child:before {
         display: none;
+      }
+    }
+    div.toc {
+      font-family: $serif;
+      line-height: 1.5em;
+      font-size: 12px;
+      ul {
+        padding-left: 0;
+        list-style: none;
+        ul {
+          padding-left: 2em;
+        }
       }
     }
   }
@@ -227,6 +239,7 @@ body {
         font-size: 0.85em;
         background: transparentize($gray-med, 0.8);
         padding: 0.1em 0.3em;
+        white-space: nowrap;
         @include border-radius(2px);
       }
     }
@@ -254,13 +267,21 @@ body {
         left: 25px;
       }
     }
-    p {
-      margin:{top: 1.5em; bottom: 1.5em;}
+    p, h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.3em;
     }
-    ul li p {
-      // ascii doc wraps list items in <p>
-      margin-top: .5em;
-      margin-bottom: .5em;
+    p {
+      margin-bottom: 1.3em;
+    }
+    ul {
+      padding-left: 1.1em;
+      li {
+        p {
+          // ascii doc wraps list items in <p>
+          margin-top: .5em;
+          margin-bottom: .5em;
+        }
+      }
     }
     pre {
       display: block;
@@ -278,6 +299,70 @@ body {
       @include border-radius(3px);
       background-color: $gray-xx-light;
       color: $gray-dark;
+    }
+    blockquote {
+      border-left: solid 4px $gray-x-light;
+      margin: 0;
+      padding-left: 1em;
+      color: $gray-dark;
+    }
+    div.admonition {
+      font-size: .85em;
+      margin: .8em 0;
+      padding: .5em .8em;
+      @include border-radius(3px);
+      background-color: $gray-xx-light;
+      color: $gray-dark;
+      & p:first-child {
+        margin-top: 0;
+        &:before {
+          font-weight: bold;
+          display: inline;
+        }
+      }
+      & p:last-child {
+        margin-bottom: 0;
+      }
+
+      &.note p:first-child:before {
+        /* content: "Note: " */
+      }
+    }
+    table {
+      /* max-width: 100%; */
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      thead {
+        tr.header {
+          font-family: $sans-serif;
+          th {
+            border: solid 2px $gray-xx-light;
+            padding: .3em .5em;
+          }
+        }
+      }
+      tbody {
+        vertical-align: top;
+        tr {
+          &:nth-child(odd) {
+            background-color: rgba(0,0,0,0.03);
+          }
+          td {
+            border: solid 2px $gray-xx-light;
+            margin: 0;
+            padding: .3em .5em;
+            p, pre {
+              &:first-child {
+                margin-top: 0;
+              }
+              &:last-child {
+                margin-bottom: 0;
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
