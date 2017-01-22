@@ -56,9 +56,8 @@ Nix has most of the same primitive value types as JSON, namely: numbers, boolean
 |====
 |        |Nix     |JSON
 |Number  |`1`     |`1`
-|Float   | n/a    |`3.14`
+|Float   |_n/a_   |`3.14`
 |Boolean |`true`  |`true`
-|Boolean |`false` |`false`
 |String  |`"str"` |`"str"`
 |Null    |`null`  |`null`
 |====
@@ -113,37 +112,132 @@ It's common in the nixpkgs repo for bash code snippets and other config files to
 
 === Integers
 
-===== TODO: Ints
+Integers in Nix are as you might expect.
+
+[source,nix]
+2 * 4 - 8 / (5 - 1)
+#-> 6
+
+If you must know, ints in Nix are 64 bits.
+
+[source,nix]
+9223372036854775807 + 1
+#-> -9223372036854775808
+
+Because Nix has no floating point numbers, all division is integer division.
+
+[source,nix]
+5 / 3
+#-> 1
+
+Just don't write a division without spaces.
+
+[source,nix]
+2/1
+#-> /Users/ryanartecona/blog/2/1
+
+What? This happens because `/` without surrounding spaces gets interpreted as a path separator, so `2/1` gets interpreted as a relative path instead of arithmetic, and that path gets expanded to an absolute path automatically. More about <<_paths,Paths>> below.
+
 
 === Booleans
 
-There's not much to note about booleans. There's conjunction with `&&`.
+The main boolean operators are probably familiar to you.
 
+[options="header",cols="1,2"]
+|====
+| Operation | Expression
+| Conjunction a|
 [source,nix]
 true && false
 #-> false
 
-There's disjunction with `||`.
-
+| Disjunction a|
 [source,nix]
-true || false
+----
+true \|\| false
 #-> true
+----
 
-There's negation with `!`.
-
+| Negation a|
 [source,nix]
 !false
 #-> true
 
+| Implication a|
+[source,nix]
+true -> false
+#-> false
+|====
+
 The one boolean operator you may be less familiar with is `->` for implication.
 
+You can read `p -> q` as "_p_ implies _q_". This means if _p_ is true, then _q_ must be true. It's logically equivalent to `!p || q`, if that helps.
+
+The `->` operator is usually only used to assert mutually consistent configuration options. Imagine you write a package which allows setting two feature flags, `includeGUI` and `useFancyGUITheme`. If it only makes sense for `useFancyGUITheme` to be true if `includeGUI` is _also_ true, then you might write `assert useFancyGUITheme -> includeGUI;` to ensure your package won't try to include a GUI theme without including the GUI.
+
+==== Conditionals
+
+You can write a conditional expression with `if ... then ... else ...`.
+
 [source,nix]
-true -> true
+if true
+  then "it was true"
+  else "it was false"
+#-> "it was true"
+
+Just remember that this is an `if` _expression_, not an `if` _statement_. It evaluates to either the expression in the `then` branch or the expression in the `else` branch, but it's not "executed". Since there's also no mutability or side effects in the Nix language, there would be little point to an `if ... then ...` without an `else` branch, so you must always give both the `then` branch and the `else` branch.
+
+There's special syntax for chaining conditionals (no `elif` or `elsif`), but because they're just ordinary expressions, you can nest them however you like. You might also like to keep indentation to a minimum with a little clever formatting.
+
+[source,nix]
+let
+  x = 1;
+in
+  if x < 0 then
+    "negative"
+  else if x > 0 then
+    "positive"
+  else
+    "zero"
+#-> "positive"
+
+==== Equality
+
+Test for equality with `==`.
+
+[source,nix]
+1 == 1
 #-> true
 
-You can read `p -> q` as "_p_ implies _q_". This means if _p_ is true, then _q_ must be true. It's logically equivalent to `!(p && !q)`, if that helps.
+You can test for equality with values of different type, and the test will just evaluate to `false`.
 
-The `->` operator is usually only used to assert mutually consistent configuration options. If you write a package which allows setting two feature flags, `includeGUI` and `useFancyGUITheme`, and it only makes sense for `useFancyGUITheme` to be true if `includeGUI` is _also_ true, then you might write `assert useFancyGUITheme -> includeGUI;` to ensure your package won't try to include a GUI theme without including the GUI.
+[source,nix]
+true == "true"
+#-> false
+
+Two expressions are equal if they evaluate to the same value. Arrays and attribute sets are equal if and only if all their elements are equal.
+
+[source,nix]
+{
+  arrayEq = [1 2] == [1 2];
+  setEq = { x = "x"; } == { x = "x"; };
+}
+#-> { arrayEq = true; setEq = true; }
+
+One big thing to keep in mind is that functions always test as unequal to all other functions, even themselves.
+
+[source,nix]
+let
+  f = (x: x);
+in
+  f == f
+#-> false
+
+This also means testing two arrays or attribute sets for equality, if _either one_ of them contains any functions, will _always_ return `false`, even if they are otherwise equal.
+
+[source,nix]
+{a = 1; f = (x: x);} == {a = 1; f = (x: x);}
+#-> false
 
 === Arrays
 
@@ -166,7 +260,7 @@ An attribute name must be a string, but it can be any string. The value can be a
 
 [source,nix]
 let
-  x = {"my key" = 1 + 2;};
+  x = { "my key" = 1 + 2; };
 in
   x."my key"
 #-> 3
@@ -185,12 +279,45 @@ You can also merge the attributes of two sets into one with `//`. The right hand
 
 [source,nix]
 let
-  foo = {x = 1; z = {a = "a";};};
-  bar = {y = 3; z = {b = "b";};};
+  foo = { x = 1; z = { a = "a"; }; };
+  bar = { y = 3; z = { b = "b"; }; };
 in
   (foo // bar)
 #-> { x = 1; y = 3; z = { b = "b"; }; }
 
+==== Attribute membership
+
+If you try to access a nonexistent attribute on a set, you get an error.
+
+[source,nix]
+{ x = 1; }.y
+#-> error: attribute ‘y’ missing, at (string):1:1
+
+You can use `?` to check if a set has a certain key before trying to access it.
+
+[source,nix]
+{ x = 1; } ? y
+#-> false
+
+==== Recursive sets
+
+Usually, when you define a set, the attributes cannot refer to each other.
+
+[source,nix]
+{
+  name = "hello-${version}";
+  version = "1.0";
+}
+#-> error: undefined variable ‘version’ at (string):2:19
+
+You can always get around this by using a `let` binding, but often it's more convenient to define a "recursive" set instead, which lets attributes refer to each other. You do this with the `rec` keyword.
+
+[source,nix]
+rec {
+  name = "hello-${version}";
+  version = "1.0";
+}
+#-> { name = "hello-1.0"; version = "1.0"; }
 
 ==== Inheriting
 
@@ -470,6 +597,20 @@ let path = ./config.yml; in "${path}"
 
 [source,bash]
 nix-instantiate -I mypath=./ --eval "<mypath>"
+
+=== Imports
+
+===== TODO: Imports
+
+== Evaluation
+
+===== TODO: Evaluation
+
+== Standard library
+=== builtins
+===== TODO: builtins
+=== `nixpkgs/lib`
+===== TODO: nixpkgs/lib
 
 == Appendix
 
