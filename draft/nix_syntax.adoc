@@ -15,6 +15,52 @@ I assume no prior familiarity with Nix, so you can start here from scratch. Fami
 - https://learnxinyminutes.com/docs/nix/
 - https://nixcloud.io/tour
 
+== Basics
+
+=== What to expect
+
+Before getting to details, here's some orientation.
+
+- Nix expressions are **immutable**.
+- Nix expressions have **no side effects**.
+- Nix expressions are **lazily evaluated**.
+- Nix expressions are **dynamically typed**.
+- Nix expressions require **no compilation**.
+- Nix expressions are **insensitive to whitespace**.
+
+Nix is fundamentally a _configuration language_, not a general-purpose programming language. You can't use it (alone) to write a web server, or a kernel extension, or a Chrome extension, or an Android app. I have come to think of Nix as more like a "programmable JSON" than anything, where by "programmable" I mean proper _lambda calculus_, not some half-measure like http://docs.ansible.com/ansible/[YAML with embedded string templates] or https://docs.mongodb.com/manual/meta/aggregation-quick-reference/[a part-JSON, part-SQL exquisite corpse].
+
+The purpose of the Nix language is to _deterministically create files and directories and manage their interdependencies_. If you have a Nix expression for a software package, you want it to build the same exact package every time, in all contexts, even if you have other versions of the same package already installed, even if you build it on a totally different computer, and even if you walk away from it and come back to it in a year.
+
+To that end, the Nix language itself is geared to be deterministic. Immutability and the lack of side effects help make it very difficult to write non-deterministic expressions. There _are_ a few pieces of context a nix expression can choose to be sensitive to -- environment variables, contents of other local files, platform of current computer -- but those are only used when necessary. On top of the immutable, side effect-free foundation, lazy evaluation lends flexibility and efficiency, especially with large expressions like the nixpkgs package set.
+
+=== JSON types
+
+Nix has most of the same primitive value types as JSON, namely: numbers, booleans, strings, and `null`. One notable exception is that Nix does not have floats, so all numbers are integers.
+
+[options="header",cols="1,2,2"]
+|====
+|        |Nix     |JSON
+|Number  |`1`     |`1`
+|Float   |_n/a_   |`3.14`
+|Boolean |`true`  |`true`
+|String  |`"str"` |`"str"`
+|Null    |`null`  |`null`
+|====
+
+Also like JSON, Nix has lists and objects, albeit with slightly different syntax. Note that what JSON calls "objects", Nix calls "attribute sets" or sometimes just "sets".
+
+[options="header",cols="1,2,2"]
+|====
+|           |Nix                            |JSON
+|List       |`[1 2 3]`                      |`[1, 2, 3]`
+|Object/Set |`{foo = "bar"; baz = "quux";}` |`{"foo": "bar", "baz": "quux"}`
+|====
+
+Beyond these, Nix also has _**function**_, _**path**_, and _**derivation**_ values and a few other sorts of expressions for writing actual programs.
+
+We'll cover all these below except for derivations, because derivations deserve their own primer.
+
 === Running the examples
 
 The `#` character begins line comments, so I will use `#->` in examples to denote what an expression evaluates to. I will write standalone examples whenever possible so they can be easily copied and run from your REPL.
@@ -32,48 +78,6 @@ If you have already installed Nix on your computer, you may already know that yo
 - `nix-instantiate`
 +
 If you already have Nix installed, you may also evaluate individual expressions with `nix-instantiate --eval --strict --expr '...'` or files with `nix-instantiate --eval --strict path/to/file.nix`. A Nix file just contains one big expression. If you want to paste examples verbatim into your terminal, something like `pbpaste | tee /dev/stderr | nix-instantiate --eval --strict -` should work fine (it's how I've checked my examples).
-
-== Basics
-
-=== What to expect
-
-Before getting to details, here's some orientation.
-
-- Nix expressions have **no side effects**.
-- Nix expressions are **lazily evaluated**.
-- Nix expressions are **immutable**.
-- Nix expressions are **dynamically typed**.
-- Nix expressions require **no compilation**.
-- Nix expressions are **insensitive to whitespace**.
-
-Nix is fundamentally a _configuration language_, not a general-purpose programming language. Its purpose is to ...
-
-=== JSON types
-
-Nix has most of the same primitive value types as JSON, namely: numbers, booleans, strings, and `null`. One notable exception is that Nix does not have floats, so all numbers are integers.
-
-[options="header",cols="1,2,2"]
-|====
-|        |Nix     |JSON
-|Number  |`1`     |`1`
-|Float   |_n/a_   |`3.14`
-|Boolean |`true`  |`true`
-|String  |`"str"` |`"str"`
-|Null    |`null`  |`null`
-|====
-
-Also like JSON, Nix has arrays and objects, albeit with slightly different syntax. Note that what JSON calls "objects", Nix calls "attribute sets" or sometimes just "sets".
-
-[options="header",cols="1,2,2"]
-|====
-|           |Nix                            |JSON
-|Array      |`[1 2 3]`                      |`[1, 2, 3]`
-|Object/Set |`{foo = "bar"; baz = "quux";}` |`{"foo": "bar", "baz": "quux"}`
-|====
-
-Beyond these, Nix also has _**function**_, _**path**_, and _**derivation**_ values and a few other sorts of expressions for writing actual programs.
-
-We'll cover all these below except for derivations, because derivations deserve their own primer.
 
 == Expression forms
 
@@ -215,14 +219,14 @@ You can test for equality with values of different type, and the test will just 
 true == "true"
 #-> false
 
-Two expressions are equal if they evaluate to the same value. Arrays and attribute sets are equal if and only if all their elements are equal.
+Two expressions are equal if they evaluate to the same value. Lists and attribute sets are equal if and only if all their elements are equal.
 
 [source,nix]
 {
-  arrayEq = [1 2] == [1 2];
+  listEq = [1 2] == [1 2];
   setEq = { x = "x"; } == { x = "x"; };
 }
-#-> { arrayEq = true; setEq = true; }
+#-> { listEq = true; setEq = true; }
 
 One big thing to keep in mind is that functions always test as unequal to all other functions, even themselves.
 
@@ -233,15 +237,37 @@ in
   f == f
 #-> false
 
-This also means testing two arrays or attribute sets for equality, if _either one_ of them contains any functions, will _always_ return `false`, even if they are otherwise equal.
+This also means testing two lists or attribute sets for equality, if _either one_ of them contains any functions, will _always_ return `false`, even if they are otherwise equal.
 
 [source,nix]
 {a = 1; f = (x: x);} == {a = 1; f = (x: x);}
 #-> false
 
-=== Arrays
+=== Lists
 
-===== TODO: Arrays
+Lists in Nix are written in square brackets with just whitespace separating elements.
+
+[source,nix]
+----
+[ 1 true null ]
+#-> [ 1 true null ]
+----
+
+Concatenate lists with `++`.
+
+[source,nix]
+----
+[ 1 2 ] ++ [ 3 4 ]
+#-> [ 1 2 3 4 ]
+----
+
+There's no special syntax for indexing into a list. If you need to, you can use `builtins.elemAt`.
+
+[source,nix]
+builtins.elemAt [1 2 3] 1
+#-> 2
+
+NOTE: The `builtins` here is, well, an attribute set full of inbuilt functions. See <<_builtins,builtins>>.
 
 === Attribute sets
 
@@ -489,10 +515,10 @@ Here is a function which simply adds `1` to its argument.
 [source,nix]
 ----
 x: x + 1
-#-> «lambda»
+#-> <LAMBDA>
 ----
 
-Nix often calls a function a "lambda". There's no distinction. They aren't strings in disguise like in _some_ silly languages, so if you try to print one, Nix just says `«lambda»`.
+Nix calls functions "lambdas". There's no distinction, and I only use "function" to avoid negative connotations from some languages where lambdas are second class. More importantly, aren't strings in disguise like in _some_ silly languages, so if you try to print one, Nix just says `«lambda»`.
 
 To apply a function to an argument, simply place the argument after the function.
 
@@ -504,6 +530,19 @@ in
   add1 2
 #-> 3
 ----
+
+Just be careful to to use parentheses with function applications inside list literals, or else the function and arguments will become individual elements instead.
+
+[source,nix]
+let
+  add1 = (x: x + 1);
+in
+  [
+    1
+    add1 2
+    (add1 2)
+  ]
+#-> [ 1 <LAMBDA> 2 3 ]
 
 ==== Currying
 
