@@ -209,42 +209,61 @@ body {
         display: none;
       }
     }
-    div.toc {
-      font-family: $serif;
-      line-height: 1.5em;
-      font-size: 12px;
-      ul {
-        padding-left: 0;
-        list-style: none;
-        ul {
-          padding-left: 2em;
-        }
-      }
-    }
   }
   .entry-content {
     color: $gray-x-dark;
 
     @include center-column;
     font-size: 18px;
+    overflow-wrap: break-word;
     @include screen-narrow {
       font-size: 14px;
+    }
+    div.toc {
+      font-family: $serif;
+      line-height: 1.5em;
+      font-size: 14px;
+      float: right;
+      max-width: 35%;
+      margin-left: 2em;
+      padding-left: 1em;
+      border-left: solid 2px $gray-xx-light;
+      margin-bottom: 1em;
+      @include screen-narrow {
+        font-size: 12px;
+        float: none;
+        max-width: auto;
+        margin-left: 0;
+        padding-left: 0;
+        border: none;
+        margin-top: 1em;
+        margin-bottom: 0;
+      }
+      ul {
+        padding-left: 0;
+        margin: 0;
+        list-style: none;
+        ul {
+          padding-left: 2em;
+        }
+      }
     }
 
     p, blockquote, ul, ol {
       line-height: 1.7;
-
+    }
+    h1, h2, h3, h4 {
+      font-family: $sans-serif;
+    }
+    p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6 {
       code {
         font-family: $monospace;
         font-size: 0.85em;
         background: transparentize($gray-med, 0.8);
         padding: 0.1em 0.3em;
-        white-space: nowrap;
+        /* white-space: nowrap; */
         @include border-radius(2px);
       }
-    }
-    h1, h2, h3, h4 {
-      font-family: $sans-serif;
     }
     hr {
       border: none;
@@ -292,6 +311,7 @@ body {
       font-size: .85em;
       line-height: 1.3;
       overflow-x: scroll;
+      overflow-wrap: normal;
     }
     small {
       display: block;
@@ -336,6 +356,7 @@ body {
       thead {
         tr.header {
           font-family: $sans-serif;
+          text-align: left;
           th {
             border: solid 2px $gray-xx-light;
             padding: .3em .5em;
@@ -352,6 +373,8 @@ body {
             border: solid 2px $gray-xx-light;
             margin: 0;
             padding: .3em .5em;
+            overflow: auto;
+            overflow-wrap: break-word;
             p, pre {
               &:first-child {
                 margin-top: 0;
