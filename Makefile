@@ -13,8 +13,10 @@ clean: stack-build
 	mkdir -p _site
 	echo "gitdir: ../.git/modules/_site" > _site/.git
 
+HOST := 127.0.0.1
+PORT := 8000
 watch: stack-build posts
-	${HAKYLL} watch
+	${HAKYLL} watch --host ${HOST} --port ${PORT}
 
 # Because of how github pages work, I keep hakyll, scss, and other source files
 # in the develop branch, and the master branch is just the rendered _site/
