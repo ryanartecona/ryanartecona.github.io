@@ -1,7 +1,7 @@
 Nix Syntax Primer
 =================
 
-== Preliminaries
+== Intro
 
 Nix is the name shared by both the https://nixos.org/nix/manual[Nix package manager] and its https://nixos.org/nix/manual#ch-expression-language[Nix expression language]. The expression language is used extensively in working with Nix-the-package-manager and everything built on top of it, including for configuring the https://nixos.org/nixos/manual[NixOS] Linux distribution. This is a primer on the Nix expression language.
 
@@ -89,7 +89,7 @@ Concatenate with `+`.
 "Hello " + "world"
 #-> "Hello world"
 
-Nix has string interpolation with `${...}`. You can put any expression in those braces.
+Nix has string interpolation with `${...}`, though in Nix land it usually goes by the less familiar name of "antiquotation". You can put any expression in those braces.
 
 [source,nix]
 let
@@ -122,7 +122,7 @@ Integers in Nix are as you might expect.
 2 * 4 - 8 / (5 - 1)
 #-> 6
 
-If you must know, ints in Nix are 64 bits.
+Integers are 64 or 32 bits, depending on your system.
 
 [source,nix]
 9223372036854775807 + 1
@@ -179,6 +179,12 @@ You can read `p -> q` as "_p_ implies _q_". This means if _p_ is true, then _q_ 
 
 The `->` operator is usually only used to assert mutually consistent configuration options. Imagine you write a package which allows setting two feature flags, `includeGUI` and `useFancyGUITheme`. If it only makes sense for `useFancyGUITheme` to be true if `includeGUI` is _also_ true, then you might write `assert useFancyGUITheme -> includeGUI;` to ensure your package won't try to include a GUI theme without including the GUI.
 
+All boolean operators in Nix expect proper boolean values. They won't coerce non-boolean values to booleans, so there's no notion of "truthy" or "falsy" values like in some languages.
+
+[source,nix]
+true && null
+#-> error: value is null while a Boolean was expected, at (string):1:1
+
 ==== Conditionals
 
 You can write a conditional expression with `if ... then ... else ...`.
@@ -191,7 +197,7 @@ if true
 
 Just remember that this is an `if` _expression_, not an `if` _statement_. It evaluates to either the expression in the `then` branch or the expression in the `else` branch, but it's not "executed". Since there's also no mutability or side effects in the Nix language, there would be little point to an `if ... then ...` without an `else` branch, so you must always give both the `then` branch and the `else` branch.
 
-There's special syntax for chaining conditionals (no `elif` or `elsif`), but because they're just ordinary expressions, you can nest them however you like. You might also like to keep indentation to a minimum with a little clever formatting.
+There's no special syntax for chaining conditionals (no `elif` or `elsif`), but because they're just ordinary expressions, you can nest them however you like. You might also like to keep indentation to a minimum with a little clever formatting.
 
 [source,nix]
 let
@@ -432,7 +438,17 @@ in
 #-> 3
 ----
 
-You should also know that a `let` binding is just another type of expression, so you can use one inside another.
+`let` bindings are recursive, so names on the same level can refer to each other just like names in recursive sets.
+
+[source,nix]
+let
+  name = "hello-${version}";
+  version = "1.0";
+in
+  name
+#-> "hello-1.0"
+
+You should also know that a `let` binding is just another type of expression, so you can nest them.
 
 [source,nix]
 ----
@@ -530,6 +546,8 @@ in
   add1 2
 #-> 3
 ----
+
+NOTE: The `add1 2` here could be called a "function call" or, equivalently, a "function application". Nix favors "application", so I will too, but just know that there's no difference.
 
 Just be careful to to use parentheses with function applications inside list literals, or else the function and arguments will become individual elements instead.
 
@@ -631,8 +649,67 @@ in
 
 === Paths
 
+Where most languages treat file paths as simple strings, Nix has a special value type for paths. Roughly speaking, any word with `/` characters in it is parsed as a path literal.
+
 [source,nix]
-let path = ./config.yml; in "${path}"
+builtins.typeOf /etc/nixos/configuration.nix
+#-> "path"
+
+If you write a relative path, it will automatically be resolved to an absolute path relative to the Nix file it's written in (or relative to the current directory in `nix-repl` or `nix-instantiate`). Be sure to write it beginning with a `./` so it gets properly parsed as a path.
+
+[options="header"]
+|====
+| ~/blog/file.nix
+a|
+[source,nix]
+----
+./.gitignore
+#-> /Users/ryanartecona/blog/.gitignore
+----
+|====
+
+You can just as well use a path literal for directories, too. If referring to the directory of the current Nix file, be sure to spell it `./.` so it contains a slash.
+
+[options="header"]
+|====
+| ~/blog/file.nix
+a|
+[source,nix]
+----
+./.
+#-> /Users/ryanartecona/blog
+----
+|====
+
+You can append a path to a base path with `+`.
+
+[source,nix]
+/path/to/project + /path/to/file.txt
+#-> /path/to/project/path/to/file.txt
+
+Just be sure the right-hand path is absolute, because if it's relative, it almost certainly won't be what you expect!
+
+[source,nix]
+/path/to/project + path/to/file.txt
+#-> /path/to/project/Users/ryanartecona/blog/path/to/file.txt
+
+So paths totally aren't strings. But if you ever need to, you can freely cast them back and forth.
+
+[source,nix]
+toString /path/to/file.txt
+#-> "/path/to/file.txt"
+
+[source,nix]
+/. + "/path/to/file.txt"
+#-> /path/to/file.txt
+
+NOTE: There is also a `builtins.toPath` function to cast a string to a path, but it's link::https://github.com/NixOS/nix/issues/1074[currently broken]. In the meantime, this is a workaround.
+
+Paths are useful for relative imports, which you will see next. Later on, you'll also see that they have special semantics -- different than strings! -- when used in derivations.
+
+===== TODO: antiquoted paths in derivations (?)
+
+===== TODO: `NIX_PATH` & `<path>`
 
 [source,bash]
 nix-instantiate -I mypath=./ --eval "<mypath>"
@@ -641,9 +718,205 @@ nix-instantiate -I mypath=./ --eval "<mypath>"
 
 ===== TODO: Imports
 
+At any point in a Nix expression, you may import some other Nix expression from a different file.
+
+[options="header"]
+|====
+| file.nix
+a|
+[source,nix]
+{ hello = "world"; }
+|====
+
+[source,nix]
+import ./file.nix
+#-> { hello = "world"; }
+
+Because Nix is expressions all the way down, importing is quite simple to explain: a Nix file (e.g. `file.nix`) contains a single well-formed Nix expression, and when you import that file with `import ./file.nix`, it's as if the `import ./file.nix` expression just gets replaced with the contents of `file.nix`.
+
+For example, it's common to extract common library functions into their own file, and `import` them where needed. Your library, call it `lib.nix`, will just be a big attribute set of functions or whatever other values, and the importing files can use `.` access syntax to use what they need.
+
+[options="header"]
+|====
+| lib.nix
+a|
+[source,nix]
+{
+  hello = (name:
+    "Hello, ${name}!"
+  );
+}
+|====
+
+[source,nix]
+let
+  lib = import ./lib.nix;
+in
+  lib.hello "world"
+#-> "Hello, world!"
+
+Since `let` expressions are already available to create local bindings, you can use them to create private helpers that don't get exposed publicly.
+
+[options="header"]
+|====
+| lib.nix
+a|
+[source,nix]
+let
+  greet = ({ pre, post}: name:
+    pre + (toString name) + post
+  );
+  hello = greet { pre = "Hello, "; post = "!"; };
+  goodbye = greet { pre = "Goodbye, "; post = "."; };
+in
+  { inherit hello goodbye; }
+|====
+
+[source,nix]
+let
+  lib = import ./lib.nix;
+in
+  [ (lib ? hello) (lib ? greet) ]
+#-> [ true false ]
+
+For Nix files which are libraries (attribute sets) of functions, it's a common pattern to import the file and immediately bring all its elements into scope using `with`.
+
+[source,nix]
+with import ./lib.nix;
+hello "Nix"
+#-> "Hello, Nix!"
+
 == Evaluation
 
-===== TODO: Evaluation
+Evaluation in Nix is _lazy_. This is important to understand, but if you're not already comfortable with a lazy language (e.g. Haskell), it may sound foreign and daunting. But don't worry! Though it's true that most languages aren't pervasively lazy, it's also true that lots of programming languages have _some_ lazy elements, so laziness is likely just a familiar concept by an unfamiliar name.
+
+Take the following Javascript snippet.
+
+[source,js]
+----
+function getTrue() {
+  return true;
+}
+function throwError() {
+  throw new Error('derp');
+}
+
+getTrue() || throwError()
+----
+
+Does the above snippet throw an error? No it doesn't! But why?
+
+If you understand why, you know it's because `||` only evaluates its right-hand side if its left-hand side evaluates to `false` (or something falsy). If the left-hand side is `true` (or truthy), then the whole compound expression can evaluate to whatever was on the left-hand side _without_ evaluating the right-hand side at all. In the above example, the left-hand side is indeed `true`, so the right-hand side never gets evaluated, so we never see a thrown error.
+
+This behavior is usually called "short-circuiting", especially in the context of boolean operators. Turns out, this is also lazy evaluation! You could just as accurately say `||` and `&&` are lazy operators.
+
+So, of course, Nix's `||` and `&&` and other boolean operators are lazy, too.
+
+[source,nix]
+true || (null + null)
+#-> true
+
+We know this didn't evaluate the right-hand side, because if it did, we would've gotten an error.
+
+[source,nix]
+null + null
+#-> error: cannot coerce null to a string, at (string):1:1
+
+So what does it mean for the _whole language_ to be lazy? Well, in general, all expressions will avoid evaluating any of their subexpressions unless and until absolutely necessary.
+
+A `let ... in ...` expression won't evaluate one of its bound values until that value's name is evaluated in the `in ...` body. We can prove this to ourselves by putting an _intentional bug_ in our program, and if we never see an error, that will mean the buggy expression never got evaluated.
+
+[source,nix]
+let
+  bug = (null + null);
+  foo = "bar";
+in
+  foo
+#-> "bar"
+
+An attribute set won't evaluate one of its values unless and until its corresponding key is accessed.
+
+[source,nix]
+let
+  bug = (null + null);
+  set = { foo = "bar"; ohnoes = bug; };
+in
+  set.foo
+#-> "bar"
+
+A list also won't evaluate its elements unless and until they are accessed.
+
+[source,nix]
+let
+  bug = (null + null);
+  list = [ true bug ];
+in
+  builtins.elemAt list 0
+#-> true
+
+An import of another Nix file won't actually go open the file unless and until it's evaluated.
+
+[source,nix]
+with import /a/path/to/some/file/that/does/not/exist.nix;
+"coolio"
+#-> "coolio"
+
+Now, here's the extra weird one. Most programming languages will evaluate a functions' arguments _before_ calling a function with the supplied arguments. Nix doesn't. When you apply a function to an argument (or arguments, in curried style), that argument _may not_ have already been evaluated when the application evaluates. Moreover, if the function body avoids evaluating that argument, it may _remain_ unevaluated even after the function "returns" (or more precisely, after the application fully evaluates)!
+
+Here's an example. If I write a function `const` which takes 2 curried arguments, and just gives back the first argument without evaluating the second argument, then I can give `const` a buggy expression as its second argument and _still_ never see a resulting error.
+
+[source,nix]
+let
+  bug = (null + null);
+  const = (x: y:
+    x
+  );
+in
+  const true bug
+#-> true
+
+In contrast, here's an example of a function `ifThenElse` that I've often wished I could write in Javascript.
+
+[source,js]
+----
+function ifThenElse(condition, thenBranch, elseBranch) {
+  if (condition) {
+    return thenBranch;
+  } else {
+    return elseBranch;
+  }
+}
+function throwError() {
+  throw new Error('derp');
+}
+
+ifThenElse(true, "coolio", throwError());
+#-> Uncaught Error: derp
+----
+
+Do you see why this doesn't work? The `throwError()` argument is evaluated before `ifThenElse` is even called, so our program derps out instead of just returning `"coolio"`. This is why you can't write a function that short-circuits quite the same as an `if` statement or a `&&` operator, because function arguments get evaluated before the function gets called. (You can work around this limitation in Javascript with anonymous functions and the like, but it's not quite the same.)
+
+But in Nix, this would work!
+
+[source,nix]
+let
+  ifThenElse = (condition: thenBranch: elseBranch:
+    if condition then
+      thenBranch
+    else
+      elseBranch
+  );
+  throwError = ({}:
+    null + null
+  );
+in
+  ifThenElse true "coolio" (throwError {})
+#-> "coolio"
+
+Coolio indeed. This works without throwing an error because Nix is a pervasively lazy language. _That's_ what it means for a language to be lazy.
+
+===== TODO: Traces
+===== TODO: Errors (exceptions, assertions, aborts)
 
 == Standard library
 === builtins
