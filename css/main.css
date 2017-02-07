@@ -656,15 +656,6 @@ body {
       margin-right: .8em; }
     .article .entry-meta .entry-meta-item:first-child:before {
       display: none; }
-    .article .entry-meta div.toc {
-      font-family: Georgia, "Times New Roman", serif;
-      line-height: 1.5em;
-      font-size: 12px; }
-      .article .entry-meta div.toc ul {
-        padding-left: 0;
-        list-style: none; }
-        .article .entry-meta div.toc ul ul {
-          padding-left: 2em; }
   .article .entry-content {
     color: #333;
     max-width: 800px;
@@ -673,23 +664,50 @@ body {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
-    font-size: 18px; }
+    font-size: 18px;
+    overflow-wrap: break-word; }
     @media screen and (max-width: 560px) {
       .article .entry-content {
         font-size: 14px; } }
+    .article .entry-content div.toc {
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.5em;
+      font-size: 14px;
+      float: right;
+      max-width: 35%;
+      margin-left: 2em;
+      padding-left: 1em;
+      border-left: solid 2px #e7e7e7;
+      margin-bottom: 1em; }
+      @media screen and (max-width: 560px) {
+        .article .entry-content div.toc {
+          font-size: 12px;
+          float: none;
+          max-width: auto;
+          margin-left: 0;
+          padding-left: 0;
+          border: none;
+          margin-top: 1em;
+          margin-bottom: 0; } }
+      .article .entry-content div.toc ul {
+        padding-left: 0;
+        margin: 0;
+        list-style: none; }
+        .article .entry-content div.toc ul ul {
+          padding-left: 2em; }
     .article .entry-content p, .article .entry-content blockquote, .article .entry-content ul, .article .entry-content ol {
       line-height: 1.7; }
-      .article .entry-content p code, .article .entry-content blockquote code, .article .entry-content ul code, .article .entry-content ol code {
-        font-family: PragmataPro, FiraCode, "Source Code Pro", Menlo, Consolas, "Lucida Console", monospace;
-        font-size: 0.85em;
-        background: rgba(136, 136, 136, 0.2);
-        padding: 0.1em 0.3em;
-        white-space: nowrap;
-        -moz-border-radius: 2px;
-        -webkit-border-radius: 2px;
-        border-radius: 2px; }
     .article .entry-content h1, .article .entry-content h2, .article .entry-content h3, .article .entry-content h4 {
       font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif; }
+    .article .entry-content p code, .article .entry-content blockquote code, .article .entry-content ul code, .article .entry-content ol code, .article .entry-content h1 code, .article .entry-content h2 code, .article .entry-content h3 code, .article .entry-content h4 code, .article .entry-content h5 code, .article .entry-content h6 code {
+      font-family: PragmataPro, FiraCode, "Source Code Pro", Menlo, Consolas, "Lucida Console", monospace;
+      font-size: 0.85em;
+      background: rgba(136, 136, 136, 0.2);
+      padding: 0.1em 0.3em;
+      /* white-space: nowrap; */
+      -moz-border-radius: 2px;
+      -webkit-border-radius: 2px;
+      border-radius: 2px; }
     .article .entry-content hr {
       border: none; }
       .article .entry-content hr, .article .entry-content hr:before, .article .entry-content hr:after {
@@ -724,7 +742,8 @@ body {
       font-family: PragmataPro, FiraCode, "Source Code Pro", Menlo, Consolas, "Lucida Console", monospace;
       font-size: .85em;
       line-height: 1.3;
-      overflow-x: scroll; }
+      overflow-x: scroll;
+      overflow-wrap: normal; }
     .article .entry-content small {
       display: block;
       padding: .5em .8em;
@@ -762,7 +781,8 @@ body {
       table-layout: fixed;
       border-collapse: collapse; }
       .article .entry-content table thead tr.header {
-        font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif; }
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
+        text-align: left; }
         .article .entry-content table thead tr.header th {
           border: solid 2px #e7e7e7;
           padding: .3em .5em; }
@@ -773,7 +793,9 @@ body {
         .article .entry-content table tbody tr td {
           border: solid 2px #e7e7e7;
           margin: 0;
-          padding: .3em .5em; }
+          padding: .3em .5em;
+          overflow: auto;
+          overflow-wrap: break-word; }
           .article .entry-content table tbody tr td p:first-child, .article .entry-content table tbody tr td pre:first-child {
             margin-top: 0; }
           .article .entry-content table tbody tr td p:last-child, .article .entry-content table tbody tr td pre:last-child {
