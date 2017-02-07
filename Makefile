@@ -28,7 +28,11 @@ watch: stack-build posts
 REVISION = $(shell git rev-parse HEAD)
 GIT_SITE = git -C _site/
 deploy: stack-build clean build
-	@git diff-index --quiet HEAD || ( echo "ERROR: Dirty working directory detected" && false )
+	@git diff-index --quiet --ignore-submodules=dirty HEAD || { \
+	  echo "ERROR: Dirty working directory detected" ;\
+	  git diff-index --ignore-submodules=dirty --stat HEAD ;\
+	  exit 1 ;\
+	}
 	${GIT_SITE} checkout master
 	${GIT_SITE} add -A
 	${GIT_SITE} diff HEAD --stat
