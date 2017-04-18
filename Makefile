@@ -33,7 +33,7 @@ deploy: stack-build clean build
 	  git diff-index --ignore-submodules=dirty --stat HEAD ;\
 	  exit 1 ;\
 	}
-	${GIT_SITE} reset --soft master
+	${GIT_SITE} checkout master
 	${GIT_SITE} add -A
 	${GIT_SITE} diff HEAD --stat
 	${GIT_SITE} commit -m "Deploy from develop branch at ${REVISION}"
