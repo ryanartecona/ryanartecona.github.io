@@ -95,13 +95,16 @@
 <li><a href="#_todo_antiquoted_paths_in_derivations">TODO: antiquoted paths in derivations (?)</a></li>
 <li><a href="#_todo_literal_nix_path_literal_amp_literal_lt_path_gt_literal">TODO: <code>NIX_PATH</code> &amp; <code>&lt;path&gt;</code></a></li>
 </ul></li>
-<li><a href="#_imports">Imports</a><ul>
-<li><a href="#_todo_imports">TODO: Imports</a></li>
-</ul></li>
+<li><a href="#_imports">Imports</a></li>
 </ul></li>
 <li><a href="#_evaluation">Evaluation</a><ul>
+<li><a href="#_what_is_emphasis_lazy_evaluation_emphasis">What is <em>lazy evaluation</em>?</a></li>
+<li><a href="#_traces_amp_debug_logging">Traces &amp; debug logging</a><ul>
 <li><a href="#_todo_traces">TODO: Traces</a></li>
+</ul></li>
+<li><a href="#_errors">Errors</a><ul>
 <li><a href="#_todo_errors_exceptions_assertions_aborts">TODO: Errors (exceptions, assertions, aborts)</a></li>
+</ul></li>
 </ul></li>
 <li><a href="#_standard_library">Standard library</a><ul>
 <li><a href="#_builtins">builtins</a><ul>
@@ -130,12 +133,12 @@
 <h2 id="_what_to_expect">What to expect</h2>
 <p>Before getting to details, here’s some orientation.</p>
 <ul>
-<li><p>Nix expressions are <strong>immutable</strong>.</p></li>
+<li><p>Nix expression values are <strong>immutable</strong>.</p></li>
 <li><p>Nix expressions have <strong>no side effects</strong>.</p></li>
 <li><p>Nix expressions are <strong>lazily evaluated</strong>.</p></li>
-<li><p>Nix expressions are <strong>dynamically typed</strong>.</p></li>
+<li><p>Nix expression values are <strong>dynamically typed</strong>.</p></li>
 <li><p>Nix expressions require <strong>no compilation</strong>.</p></li>
-<li><p>Nix expressions are <strong>insensitive to whitespace</strong>.</p></li>
+<li><p>Nix expression syntax is <strong>insensitive to whitespace</strong>.</p></li>
 </ul>
 <p>Nix is fundamentally a <em>configuration language</em>, not a general-purpose programming language. You can’t use it (alone) to write a web server, or a kernel extension, or a Chrome extension, or an Android app. I have come to think of Nix as more like a &quot;programmable JSON&quot; than anything, where by &quot;programmable&quot; I mean proper <em>lambda calculus</em>, not some half-measure like <a href="http://docs.ansible.com/ansible/">YAML with embedded string templates</a> or <a href="https://docs.mongodb.com/manual/meta/aggregation-quick-reference/">a part-JSON, part-SQL exquisite corpse</a>.</p>
 <p>The purpose of the Nix language is to <em>deterministically create files and directories and manage their interdependencies</em>. If you have a Nix expression for a software package, you want it to build the same exact package every time, in all contexts, even if you have other versions of the same package already installed, even if you build it on a totally different computer, and even if you walk away from it and come back to it in a year.</p>
@@ -221,8 +224,15 @@
 <li><p><code>nix-repl</code></p>
 <p>If you have already installed Nix on your computer, you may already know that you can install <code>nix-repl</code> with <code>nix-env --install nix-repl</code>. It’s nothing fancy, but it’s better than no REPL. Use <code>:?</code> for help with commands. One unfortunate caveat is <code>nix-repl</code> doesn’t support multiline expressions, though sometimes it’s still worth it to explore unfamiliar territory with its tab completion.</p></li>
 <li><p><code>nix-instantiate</code></p>
-<p>If you already have Nix installed, you may also evaluate individual expressions with <code>nix-instantiate --eval --strict --expr '...'</code> or files with <code>nix-instantiate --eval --strict path/to/file.nix</code>. A Nix file just contains one big expression. If you want to paste examples verbatim into your terminal, something like <code>pbpaste | tee /dev/stderr | nix-instantiate --eval --strict -</code> should work fine (it’s how I’ve checked my examples).</p></li>
+<p>If you already have Nix installed, you may also evaluate individual expressions with <code>nix-instantiate --eval --strict --expr '...'</code> or files with <code>nix-instantiate --eval --strict path/to/file.nix</code>. A Nix file just contains one big expression. If you want to paste examples verbatim into your terminal, something like the following should work fine.</p>
+<div class="highlight"><pre>pbpaste <span class="p">|</span> tee /dev/stderr <span class="p">|</span> nix-instantiate --eval --strict -
+</pre></div>
+
+<p>(This is how I’ve checked my examples.)</p></li>
 </ul>
+<div class="admonition note">
+<p>Since Nix expressions are whitespace-insensitive, the formatting of examples is all just my own preference. I try at least to be consistent throughout, and to use indentation in ways that are least misleading.</p>
+</div>
 <h1 id="_expression_forms">Expression forms</h1>
 <h2 id="_strings">Strings</h2>
 <p>Concatenate with <code>+</code>.</p>
@@ -230,7 +240,7 @@
 <span class="c1">#-&gt; &quot;Hello world&quot;</span>
 </pre></div>
 
-<p>Nix has string interpolation with <code>${...}</code>, though in Nix land it usually goes by the less familiar name of &quot;antiquotation&quot;. You can put any expression in those braces.</p>
+<p>Nix has string interpolation with <code>${...}</code>, though in Nix land it usually goes by the less familiar name of &quot;antiquotation&quot;. You can put any expression in those braces, including other strings.</p>
 <div class="highlight"><pre><span class="k">let</span>
   <span class="ss">name =</span> <span class="s2">&quot;world&quot;</span><span class="p">;</span>
 <span class="k">in</span>
@@ -250,7 +260,7 @@
 </pre></div>
 
 <div class="admonition note">
-<p>Once you start using this, you’ll wish every language had multiline strings that were so pleasant. I know I do.</p>
+<p>Once you start using this, you’ll wish every language had multiline strings that were so pleasant. I know I do!</p>
 </div>
 <p>It’s common in the nixpkgs repo for bash code snippets and other config files to be written in strings this way.</p>
 <h2 id="_integers">Integers</h2>
@@ -274,9 +284,9 @@
 <span class="c1">#-&gt; /Users/ryanartecona/blog/2/1</span>
 </pre></div>
 
-<p>What? This happens because <code>/</code> without surrounding spaces gets interpreted as a path separator, so <code>2/1</code> gets interpreted as a relative path instead of arithmetic, and that path gets expanded to an absolute path automatically. More about <a href="#_paths">Paths</a> below.</p>
+<p>What? This happens because <code>/</code> without surrounding spaces gets interpreted as a path separator. <code>2/1</code> gets interpreted as a relative path instead of arithmetic, and that path gets expanded to an absolute path automatically. More about <a href="#_paths">Paths</a> below.</p>
 <h2 id="_booleans">Booleans</h2>
-<p>The main boolean operators are probably familiar to you.</p>
+<p>The boolean operators include the usual suspects.</p>
 <table>
 <colgroup>
 <col width="33%" />
@@ -361,14 +371,15 @@
 </pre></div>
 
 <p>Two expressions are equal if they evaluate to the same value. Lists and attribute sets are equal if and only if all their elements are equal.</p>
-<div class="highlight"><pre><span class="p">{</span>
-  <span class="ss">listEq =</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">];</span>
-  <span class="ss">setEq =</span> <span class="p">{</span> <span class="ss">x =</span> <span class="s2">&quot;x&quot;</span><span class="p">;</span> <span class="p">}</span> <span class="o">==</span> <span class="p">{</span> <span class="ss">x =</span> <span class="s2">&quot;x&quot;</span><span class="p">;</span> <span class="p">};</span>
-<span class="p">}</span>
-<span class="c1">#-&gt; { listEq = true; setEq = true; }</span>
+<div class="highlight"><pre><span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span>
+<span class="c1">#-&gt; true</span>
 </pre></div>
 
-<p>One big thing to keep in mind is that functions always test as unequal to all other functions, even themselves.</p>
+<div class="highlight"><pre><span class="p">{</span> <span class="ss">x =</span> <span class="s2">&quot;x&quot;</span><span class="p">;</span> <span class="p">}</span> <span class="o">==</span> <span class="p">{</span> <span class="ss">x =</span> <span class="s2">&quot;x&quot;</span><span class="p">;</span> <span class="p">}</span>
+<span class="c1">#-&gt; true</span>
+</pre></div>
+
+<p>Perhaps surprisingly, functions always test as unequal to all other functions, even themselves.</p>
 <div class="highlight"><pre><span class="k">let</span>
   <span class="ss">f =</span> <span class="p">(</span>x<span class="p">:</span> x<span class="p">);</span>
 <span class="k">in</span>
@@ -409,7 +420,7 @@
 <span class="c1">#-&gt; &quot;value&quot;</span>
 </pre></div>
 
-<p>An attribute name must be a string, but it can be any string. The value can be anything.</p>
+<p>An attribute name must be a string, but it can be any string. If it doesn’t happen to be a valid identifier (i.e. it includes spaces or special characters), you can write the name as a string literal with quotes. The value, of course, can be expression.</p>
 <div class="highlight"><pre><span class="k">let</span>
   <span class="ss">x =</span> <span class="p">{</span> <span class="s2">&quot;my key&quot;</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span> <span class="p">};</span>
 <span class="k">in</span>
@@ -420,10 +431,13 @@
 <p>You can use string interpolation in attribute names, if you need to, both while defining and accessing.</p>
 <div class="highlight"><pre><span class="k">let</span>
   <span class="ss">name =</span> <span class="s2">&quot;key&quot;</span><span class="p">;</span>
-  <span class="ss">x =</span> <span class="p">{</span> <span class="s2">&quot;</span><span class="si">${</span>name<span class="si">}</span><span class="s2">&quot;</span> <span class="o">=</span> <span class="s2">&quot;value&quot;</span><span class="p">;</span> <span class="p">};</span>
+  <span class="ss">x =</span> <span class="p">{</span>
+    <span class="s2">&quot;</span><span class="si">${</span>name<span class="si">}</span><span class="s2"> 1&quot;</span> <span class="o">=</span> <span class="s2">&quot;value #1&quot;</span><span class="p">;</span>
+    <span class="s2">&quot;key 2&quot;</span> <span class="o">=</span> <span class="s2">&quot;value #2&quot;</span><span class="p">;</span>
+  <span class="p">};</span>
 <span class="k">in</span>
-  x<span class="o">.</span><span class="s2">&quot;</span><span class="si">${</span>name<span class="si">}</span><span class="s2">&quot;</span>
-<span class="c1">#-&gt; &quot;value&quot;</span>
+  x<span class="o">.</span><span class="s2">&quot;</span><span class="si">${</span>name<span class="si">}</span><span class="s2"> 2&quot;</span>
+<span class="c1">#-&gt; &quot;value #2&quot;</span>
 </pre></div>
 
 <p>You can also merge the attributes of two sets into one with <code>//</code>. The right hand side wins if attribute names conflict, and the merge is shallow.</p>
@@ -461,6 +475,21 @@
   <span class="ss">version =</span> <span class="s2">&quot;1.0&quot;</span><span class="p">;</span>
 <span class="p">}</span>
 <span class="c1">#-&gt; { name = &quot;hello-1.0&quot;; version = &quot;1.0&quot;; }</span>
+</pre></div>
+
+<p>Once defined, a normal attribute set and a recursive attribute set behave exactly the same. Whether a set is recursive or not affects how you can write it, but it doesn’t change how you can use it. It’s just syntactic sugar.</p>
+<p>In particular, it’s <em>not</em> the case that changing the value of one attribute in a recursive set will automatically change the value of other attributes that used it in their definition, even though it might look like it!</p>
+<div class="highlight"><pre><span class="k">let</span>
+  <span class="ss">hello1 =</span> <span class="k">rec</span> <span class="p">{</span>
+    <span class="ss">name =</span> <span class="s2">&quot;hello-</span><span class="si">${</span>version<span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span>
+    <span class="ss">version =</span> <span class="s2">&quot;1.0&quot;</span><span class="p">;</span>
+  <span class="p">};</span>
+  <span class="ss">v2 =</span> <span class="p">{</span>
+    <span class="ss">version =</span> <span class="s2">&quot;2.0&quot;</span><span class="p">;</span>
+  <span class="p">};</span>
+<span class="k">in</span>
+  <span class="p">(</span>hello1 <span class="o">//</span> v2<span class="p">)</span>
+<span class="c1">#-&gt; { name = &quot;hello-1.0&quot;; version = &quot;2.0&quot;; }</span>
 </pre></div>
 
 <h3 id="_inheriting">Inheriting</h3>
@@ -542,7 +571,7 @@
 <span class="c1">#-&gt; &quot;hello-1.0&quot;</span>
 </pre></div>
 
-<p>You should also know that a <code>let</code> binding is just another type of expression, so you can nest them.</p>
+<p>And, of course, a <code>let</code> binding is just another type of expression, so you can nest them.</p>
 <div class="highlight"><pre><span class="k">let</span>
   <span class="ss">first =</span> <span class="p">(</span>
     <span class="k">let</span>
@@ -559,7 +588,7 @@
 </pre></div>
 
 <h3 id="_literal_with_literal_expression"><code>with</code> expression</h3>
-<p>A <code>with</code> expression brings all the attributes in a set into scope. It exists purely for convenience, as it’s often much more pleasant than using fully qualified names or lots of <code>let</code> bindings instead.</p>
+<p>A <code>with</code> expression brings all the attributes of a set into scope. It exists purely for convenience, as it’s often much more pleasant than using fully qualified names or lots of <code>let</code> bindings instead.</p>
 <table>
 <colgroup>
 <col width="33%" />
@@ -600,7 +629,7 @@
 </tbody>
 </table>
 <div class="admonition note">
-<p>All 3 above examples evaluate to the same thing.</p>
+<p>All 3 of these are different ways of writing the same thing.</p>
 </div>
 <p>The one big caveat with <code>with</code> expressions is that a name bound by <code>with</code> <em>cannot shadow</em> a name that was already bound. Another way to think about this is that <em>explicit</em> <code>let</code> bindings take precedence over <em>implicit</em> <code>with</code> bindings, <em>even if</em> the <code>with</code> comes after.</p>
 <div class="highlight"><pre><span class="k">let</span>
@@ -619,7 +648,7 @@
 <span class="c1">#-&gt; &lt;LAMBDA&gt;</span>
 </pre></div>
 
-<p>Nix calls functions &quot;lambdas&quot;. There’s no distinction, and I only use &quot;function&quot; to avoid negative connotations from some languages where lambdas are second class. More importantly, aren’t strings in disguise like in <em>some</em> silly languages, so if you try to print one, Nix just says <code>«lambda»</code>.</p>
+<p>Nix calls functions &quot;lambdas&quot;. There’s no distinction, and I only use &quot;function&quot; to avoid negative connotations from some languages where lambdas are second class. More importantly, functions in Nix aren’t strings in disguise like in <em>some</em> silly languages, so if you try to print one, Nix just says <code>&lt;LAMBDA&gt;</code> (or sometimes <code>«lambda»</code>).</p>
 <p>To apply a function to an argument, simply place the argument after the function.</p>
 <div class="highlight"><pre><span class="k">let</span>
   <span class="ss">add1 =</span> <span class="p">(</span>x<span class="p">:</span> x <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
@@ -629,9 +658,9 @@
 </pre></div>
 
 <div class="admonition note">
-<p>The <code>add1 2</code> here could be called a &quot;function call&quot; or, equivalently, a &quot;function application&quot;. Nix favors &quot;application&quot;, so I will too, but just know that there’s no difference.</p>
+<p>The <code>add1 2</code> here could be called a &quot;function call&quot; or, equivalently, a &quot;function application&quot;. Nix calls them &quot;applications&quot;, so I will too. Just know that there’s no difference.</p>
 </div>
-<p>Just be careful to to use parentheses with function applications inside list literals, or else the function and arguments will become individual elements instead.</p>
+<p>Be careful to to use parentheses with function applications inside list literals, or else the function and arguments will become individual elements instead.</p>
 <div class="highlight"><pre><span class="k">let</span>
   <span class="ss">add1 =</span> <span class="p">(</span>x<span class="p">:</span> x <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
 <span class="k">in</span>
@@ -682,13 +711,22 @@
 </pre></div>
 
 <p>Note that such a function requires an attribute set which has <em>exactly</em> the keys used in the pattern. Missing or unexpected keys will cause an error.</p>
+<div class="highlight"><pre><span class="k">let</span>
+  <span class="ss">hello =</span> <span class="p">({</span>name<span class="p">}:</span>
+    <span class="s2">&quot;Hello </span><span class="si">${</span>name<span class="si">}</span><span class="s2">&quot;</span>
+  <span class="p">);</span>
+<span class="k">in</span>
+  hello <span class="p">{</span> <span class="ss">name =</span> <span class="s2">&quot;world&quot;</span><span class="p">;</span> <span class="ss">x =</span> <span class="no">false</span><span class="p">;</span> <span class="p">}</span>
+<span class="c1">#-&gt; error: ‘hello’ at (string):2:12 called with unexpected argument ‘x’, at (string):6:3</span>
+</pre></div>
+
 <p>To allow extra keys to be ignored, you can mention <code>...</code>.</p>
 <div class="highlight"><pre><span class="k">let</span>
   <span class="ss">hello =</span> <span class="p">({</span>name<span class="p">,</span> <span class="o">...</span><span class="p">}:</span>
     <span class="s2">&quot;Hello </span><span class="si">${</span>name<span class="si">}</span><span class="s2">&quot;</span>
   <span class="p">);</span>
 <span class="k">in</span>
-  hello <span class="p">{</span><span class="ss">name =</span> <span class="s2">&quot;world&quot;</span><span class="p">;</span> <span class="ss">x =</span> <span class="no">false</span><span class="p">;}</span>
+  hello <span class="p">{</span> <span class="ss">name =</span> <span class="s2">&quot;world&quot;</span><span class="p">;</span> <span class="ss">x =</span> <span class="no">false</span><span class="p">;</span> <span class="p">}</span>
 <span class="c1">#-&gt; &quot;Hello world&quot;</span>
 </pre></div>
 
@@ -727,6 +765,7 @@
 </tr>
 </tbody>
 </table>
+<p>This is similar to how you might manipulate paths starting from <code>__FILE__</code> in Ruby, <code>__file__</code> in Python, <code>__filename</code> in Node.js, etc., except you write the relative path as a literal, and Nix knows to resolve it to an absolute path automatically.</p>
 <p>You can just as well use a path literal for directories, too. If referring to the directory of the current Nix file, be sure to spell it <code>./.</code> so it contains a slash.</p>
 <table>
 <colgroup>
@@ -775,7 +814,6 @@
 </pre></div>
 
 <h2 id="_imports">Imports</h2>
-<h3 id="_todo_imports">TODO: Imports</h3>
 <p>At any point in a Nix expression, you may import some other Nix expression from a different file.</p>
 <table>
 <colgroup>
@@ -867,6 +905,7 @@ hello <span class="s2">&quot;Nix&quot;</span>
 </pre></div>
 
 <h1 id="_evaluation">Evaluation</h1>
+<h2 id="_what_is_emphasis_lazy_evaluation_emphasis">What is <em>lazy evaluation</em>?</h2>
 <p>Evaluation in Nix is <em>lazy</em>. This is important to understand, but if you’re not already comfortable with a lazy language (e.g. Haskell), it may sound foreign and daunting. But don’t worry! Though it’s true that most languages aren’t pervasively lazy, it’s also true that lots of programming languages have <em>some</em> lazy elements, so laziness is likely just a familiar concept by an unfamiliar name.</p>
 <p>Take the following Javascript snippet.</p>
 <div class="highlight"><pre><span class="kd">function</span> <span class="nx">getTrue</span><span class="p">()</span> <span class="p">{</span>
@@ -972,9 +1011,14 @@ hello <span class="s2">&quot;Nix&quot;</span>
 </pre></div>
 
 <p>Coolio indeed. This works without throwing an error because Nix is a pervasively lazy language. <em>That’s</em> what it means for a language to be lazy.</p>
-<h2 id="_todo_traces">TODO: Traces</h2>
-<h2 id="_todo_errors_exceptions_assertions_aborts">TODO: Errors (exceptions, assertions, aborts)</h2>
+<h2 id="_traces_amp_debug_logging">Traces &amp; debug logging</h2>
+<h3 id="_todo_traces">TODO: Traces</h3>
+<h2 id="_errors">Errors</h2>
+<h3 id="_todo_errors_exceptions_assertions_aborts">TODO: Errors (exceptions, assertions, aborts)</h3>
 <h1 id="_standard_library">Standard library</h1>
+<p>The Nix standard library has two parts, practically speaking.</p>
+<p>Nix itself ships with some primitives called <code>builtins</code>. These are all you have available if you use a plain <code>nix-repl</code> or <code>nix-instantiate</code>. Nix has no foreign function interface (FFI), so everything written in Nix is limited to what the <code>builtins</code> allow you to express. For example, it’s not possible to interactively prompt a user for confirmation inside Nix, because nothing in <code>builtins</code> lets you read from <code>stdin</code> (or any other file descriptor), and there’s no facility in Nix for adding that capability via a library.</p>
+<p>The <code>nixpkgs</code> package set ships with its own library of functions and helpers in <code>&lt;nixpkgs/lib&gt;</code> (often seen in Nix code as <code>pkgs.lib</code>, <code>stdenv.lib</code>, or just <code>lib</code>). Some of what’s there is geared specifically toward writing Nix derivations or working with NixOS configuration modules, but most of it is very generic. Everything there is built on top of <code>builtins</code> as a foundation (there’s no other way!), but <code>&lt;nixpkgs/lib&gt;</code> often provides better ergonomics. <code>nixpkgs</code> itself is ubiquitous in the Nix ecosystem, so since <code>&lt;nixpkgs/lib&gt;</code> is available anywhere <code>nixpkgs</code> is, it’s a sort of <em>de facto</em> standard library.</p>
 <h2 id="_builtins">builtins</h2>
 <h3 id="_todo_builtins">TODO: builtins</h3>
 <h2 id="_literal_nixpkgs_lib_literal"><code>nixpkgs/lib</code></h2>
