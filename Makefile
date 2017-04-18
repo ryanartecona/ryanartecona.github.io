@@ -38,6 +38,9 @@ deploy: stack-build clean build
 	${GIT_SITE} diff HEAD --stat
 	${GIT_SITE} commit -m "Deploy from develop branch at ${REVISION}"
 	${GIT_SITE} push origin
+	git add _site/
+	git diff --staged
+  git commit -m "Deploy to master"
 
 posts: post/2015-05-21-refactoring-in-ruby-in-haskell.md
 
