@@ -21,12 +21,12 @@ I assume no prior familiarity with Nix, so you can start here from scratch. Fami
 
 Before getting to details, here's some orientation.
 
-- Nix expressions are **immutable**.
+- Nix expression values are **immutable**.
 - Nix expressions have **no side effects**.
 - Nix expressions are **lazily evaluated**.
-- Nix expressions are **dynamically typed**.
+- Nix expression values are **dynamically typed**.
 - Nix expressions require **no compilation**.
-- Nix expressions are **insensitive to whitespace**.
+- Nix expression syntax is **insensitive to whitespace**.
 
 Nix is fundamentally a _configuration language_, not a general-purpose programming language. You can't use it (alone) to write a web server, or a kernel extension, or a Chrome extension, or an Android app. I have come to think of Nix as more like a "programmable JSON" than anything, where by "programmable" I mean proper _lambda calculus_, not some half-measure like http://docs.ansible.com/ansible/[YAML with embedded string templates] or https://docs.mongodb.com/manual/meta/aggregation-quick-reference/[a part-JSON, part-SQL exquisite corpse].
 
@@ -77,7 +77,14 @@ If you have already installed Nix on your computer, you may already know that yo
 
 - `nix-instantiate`
 +
-If you already have Nix installed, you may also evaluate individual expressions with `nix-instantiate --eval --strict --expr '...'` or files with `nix-instantiate --eval --strict path/to/file.nix`. A Nix file just contains one big expression. If you want to paste examples verbatim into your terminal, something like `pbpaste | tee /dev/stderr | nix-instantiate --eval --strict -` should work fine (it's how I've checked my examples).
+If you already have Nix installed, you may also evaluate individual expressions with `nix-instantiate --eval --strict --expr '...'` or files with `nix-instantiate --eval --strict path/to/file.nix`. A Nix file just contains one big expression. If you want to paste examples verbatim into your terminal, something like  the following should work fine.
++
+[source,sh]
+pbpaste | tee /dev/stderr | nix-instantiate --eval --strict -
++
+(This is how I've checked my examples.)
+
+NOTE: Since Nix expressions are whitespace-insensitive, the formatting of examples is all just my own preference. I try at least to be consistent throughout, and to use indentation in ways that are least misleading.
 
 == Expression forms
 
@@ -89,7 +96,7 @@ Concatenate with `+`.
 "Hello " + "world"
 #-> "Hello world"
 
-Nix has string interpolation with `${...}`, though in Nix land it usually goes by the less familiar name of "antiquotation". You can put any expression in those braces.
+Nix has string interpolation with `${...}`, though in Nix land it usually goes by the less familiar name of "antiquotation". You can put any expression in those braces, including other strings.
 
 [source,nix]
 let
@@ -110,7 +117,7 @@ in
   ''
 #-> "# This can be any text!\necho \"Hello world\"\n"
 
-NOTE: Once you start using this, you'll wish every language had multiline strings that were so pleasant. I know I do.
+NOTE: Once you start using this, you'll wish every language had multiline strings that were so pleasant. I know I do!
 
 It's common in the nixpkgs repo for bash code snippets and other config files to be written in strings this way.
 
@@ -140,12 +147,12 @@ Just don't write a division without spaces.
 2/1
 #-> /Users/ryanartecona/blog/2/1
 
-What? This happens because `/` without surrounding spaces gets interpreted as a path separator, so `2/1` gets interpreted as a relative path instead of arithmetic, and that path gets expanded to an absolute path automatically. More about <<_paths,Paths>> below.
+What? This happens because `/` without surrounding spaces gets interpreted as a path separator. `2/1` gets interpreted as a relative path instead of arithmetic, and that path gets expanded to an absolute path automatically. More about <<_paths,Paths>> below.
 
 
 === Booleans
 
-The main boolean operators are probably familiar to you.
+The boolean operators include the usual suspects.
 
 [options="header",cols="1,2"]
 |====
@@ -228,13 +235,16 @@ true == "true"
 Two expressions are equal if they evaluate to the same value. Lists and attribute sets are equal if and only if all their elements are equal.
 
 [source,nix]
-{
-  listEq = [1 2] == [1 2];
-  setEq = { x = "x"; } == { x = "x"; };
-}
-#-> { listEq = true; setEq = true; }
+----
+[1 2] == [1 2]
+#-> true
+----
 
-One big thing to keep in mind is that functions always test as unequal to all other functions, even themselves.
+[source,nix]
+{ x = "x"; } == { x = "x"; }
+#-> true
+
+Perhaps surprisingly, functions always test as unequal to all other functions, even themselves.
 
 [source,nix]
 let
@@ -288,7 +298,7 @@ in
 #-> "value"
 ----
 
-An attribute name must be a string, but it can be any string. The value can be anything.
+An attribute name must be a string, but it can be any string. If it doesn't happen to be a valid identifier (i.e. it includes spaces or special characters), you can write the name as a string literal with quotes. The value, of course, can be expression.
 
 [source,nix]
 let
@@ -302,10 +312,13 @@ You can use string interpolation in attribute names, if you need to, both while 
 [source,nix]
 let
   name = "key";
-  x = { "${name}" = "value"; };
+  x = {
+    "${name} 1" = "value #1";
+    "key 2" = "value #2";
+  };
 in
-  x."${name}"
-#-> "value"
+  x."${name} 2"
+#-> "value #2"
 
 You can also merge the attributes of two sets into one with `//`. The right hand side wins if attribute names conflict, and the merge is shallow.
 
@@ -350,6 +363,23 @@ rec {
   version = "1.0";
 }
 #-> { name = "hello-1.0"; version = "1.0"; }
+
+Once defined, a normal attribute set and a recursive attribute set behave exactly the same. Whether a set is recursive or not affects how you can write it, but it doesn't change how you can use it. It's just syntactic sugar.
+
+In particular, it's _not_ the case that changing the value of one attribute in a recursive set will automatically change the value of other attributes that used it in their definition, even though it might look like it!
+
+[source,nix]
+let
+  hello1 = rec {
+    name = "hello-${version}";
+    version = "1.0";
+  };
+  v2 = {
+    version = "2.0";
+  };
+in
+  (hello1 // v2)
+#-> { name = "hello-1.0"; version = "2.0"; }
 
 ==== Inheriting
 
@@ -448,7 +478,7 @@ in
   name
 #-> "hello-1.0"
 
-You should also know that a `let` binding is just another type of expression, so you can nest them.
+And, of course, a `let` binding is just another type of expression, so you can nest them.
 
 [source,nix]
 ----
@@ -469,7 +499,7 @@ in
 
 ==== `with` expression
 
-A `with` expression brings all the attributes in a set into scope. It exists purely for convenience, as it's often much more pleasant than using fully qualified names or lots of `let` bindings instead.
+A `with` expression brings all the attributes of a set into scope. It exists purely for convenience, as it's often much more pleasant than using fully qualified names or lots of `let` bindings instead.
 
 [cols="1,2"]
 |====
@@ -506,7 +536,7 @@ in
 
 |====
 
-NOTE: All 3 above examples evaluate to the same thing.
+NOTE: All 3 of these are different ways of writing the same thing.
 
 The one big caveat with `with` expressions is that a name bound by `with` _cannot shadow_ a name that was already bound. Another way to think about this is that _explicit_ `let` bindings take precedence over _implicit_ `with` bindings, _even if_ the `with` comes after.
 
@@ -534,7 +564,7 @@ x: x + 1
 #-> <LAMBDA>
 ----
 
-Nix calls functions "lambdas". There's no distinction, and I only use "function" to avoid negative connotations from some languages where lambdas are second class. More importantly, aren't strings in disguise like in _some_ silly languages, so if you try to print one, Nix just says `«lambda»`.
+Nix calls functions "lambdas". There's no distinction, and I only use "function" to avoid negative connotations from some languages where lambdas are second class. More importantly, functions in Nix aren't strings in disguise like in _some_ silly languages, so if you try to print one, Nix just says `<LAMBDA>` (or sometimes `«lambda»`).
 
 To apply a function to an argument, simply place the argument after the function.
 
@@ -547,9 +577,9 @@ in
 #-> 3
 ----
 
-NOTE: The `add1 2` here could be called a "function call" or, equivalently, a "function application". Nix favors "application", so I will too, but just know that there's no difference.
+NOTE: The `add1 2` here could be called a "function call" or, equivalently, a "function application". Nix calls them "applications", so I will too. Just know that there's no difference.
 
-Just be careful to to use parentheses with function applications inside list literals, or else the function and arguments will become individual elements instead.
+Be careful to to use parentheses with function applications inside list literals, or else the function and arguments will become individual elements instead.
 
 [source,nix]
 let
@@ -621,6 +651,17 @@ in
 
 Note that such a function requires an attribute set which has _exactly_ the keys used in the pattern. Missing or unexpected keys will cause an error.
 
+[source,nix]
+----
+let
+  hello = ({name}:
+    "Hello ${name}"
+  );
+in
+  hello { name = "world"; x = false; }
+#-> error: ‘hello’ at (string):2:12 called with unexpected argument ‘x’, at (string):6:3
+----
+
 To allow extra keys to be ignored, you can mention `...`.
 
 [source,nix]
@@ -630,7 +671,7 @@ let
     "Hello ${name}"
   );
 in
-  hello {name = "world"; x = false;}
+  hello { name = "world"; x = false; }
 #-> "Hello world"
 ----
 
@@ -667,6 +708,8 @@ a|
 #-> /Users/ryanartecona/blog/.gitignore
 ----
 |====
+
+This is similar to how you might manipulate paths starting from `__FILE__` in Ruby, `__file__` in Python, `__filename` in Node.js, etc., except you write the relative path as a literal, and Nix knows to resolve it to an absolute path automatically.
 
 You can just as well use a path literal for directories, too. If referring to the directory of the current Nix file, be sure to spell it `./.` so it contains a slash.
 
@@ -715,8 +758,6 @@ Paths are useful for relative imports, which you will see next. Later on, you'll
 nix-instantiate -I mypath=./ --eval "<mypath>"
 
 === Imports
-
-===== TODO: Imports
 
 At any point in a Nix expression, you may import some other Nix expression from a different file.
 
@@ -787,6 +828,8 @@ hello "Nix"
 #-> "Hello, Nix!"
 
 == Evaluation
+
+=== What is _lazy evaluation_?
 
 Evaluation in Nix is _lazy_. This is important to understand, but if you're not already comfortable with a lazy language (e.g. Haskell), it may sound foreign and daunting. But don't worry! Though it's true that most languages aren't pervasively lazy, it's also true that lots of programming languages have _some_ lazy elements, so laziness is likely just a familiar concept by an unfamiliar name.
 
@@ -915,10 +958,19 @@ in
 
 Coolio indeed. This works without throwing an error because Nix is a pervasively lazy language. _That's_ what it means for a language to be lazy.
 
+=== Traces & debug logging
 ===== TODO: Traces
+=== Errors
 ===== TODO: Errors (exceptions, assertions, aborts)
 
 == Standard library
+
+The Nix standard library has two parts, practically speaking.
+
+Nix itself ships with some primitives called `builtins`. These are all you have available if you use a plain `nix-repl` or `nix-instantiate`. Nix has no foreign function interface (FFI), so everything written in Nix is limited to what the `builtins` allow you to express. For example, it's not possible to interactively prompt a user for confirmation inside Nix, because nothing in `builtins` lets you read from `stdin` (or any other file descriptor), and there's no facility in Nix for adding that capability via a library.
+
+The `nixpkgs` package set ships with its own library of functions and helpers in `<nixpkgs/lib>` (often seen in Nix code as `pkgs.lib`, `stdenv.lib`, or just `lib`). Some of what's there is geared specifically toward writing Nix derivations or working with NixOS configuration modules, but most of it is very generic. Everything there is built on top of `builtins` as a foundation (there's no other way!), but `<nixpkgs/lib>` often provides better ergonomics. `nixpkgs` itself is ubiquitous in the Nix ecosystem, so since `<nixpkgs/lib>` is available anywhere `nixpkgs` is, it's a sort of _de facto_ standard library.
+
 === builtins
 ===== TODO: builtins
 === `nixpkgs/lib`
