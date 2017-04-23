@@ -40,7 +40,7 @@ deploy: stack-build clean build
 	${GIT_SITE} push origin
 	git add _site/
 	git diff --staged
-  git commit -m "Deploy to master"
+	git commit -m "Deploy to master"
 
 posts: post/2015-05-21-refactoring-in-ruby-in-haskell.md
 
