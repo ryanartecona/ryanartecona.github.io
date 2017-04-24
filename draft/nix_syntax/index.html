@@ -92,8 +92,7 @@
 <li><a href="#_named_arguments">Named arguments</a></li>
 </ul></li>
 <li><a href="#_paths">Paths</a><ul>
-<li><a href="#_todo_antiquoted_paths_in_derivations">TODO: antiquoted paths in derivations (?)</a></li>
-<li><a href="#_todo_literal_nix_path_literal_amp_literal_lt_path_gt_literal">TODO: <code>NIX_PATH</code> &amp; <code>&lt;path&gt;</code></a></li>
+<li><a href="#_named_search_paths">Named search paths</a></li>
 </ul></li>
 <li><a href="#_imports">Imports</a></li>
 </ul></li>
@@ -808,11 +807,38 @@
 <p>There is also a <code>builtins.toPath</code> function to cast a string to a path, but it’s <a href=":https://github.com/NixOS/nix/issues/1074">currently broken</a>. In the meantime, this is a workaround.</p>
 </div>
 <p>Paths are useful for relative imports, which you will see next. Later on, you’ll also see that they have special semantics — different than strings! — when used in derivations.</p>
-<h3 id="_todo_antiquoted_paths_in_derivations">TODO: antiquoted paths in derivations (?)</h3>
-<h3 id="_todo_literal_nix_path_literal_amp_literal_lt_path_gt_literal">TODO: <code>NIX_PATH</code> &amp; <code>&lt;path&gt;</code></h3>
-<div class="highlight"><pre>nix-instantiate -I <span class="nv">mypath</span><span class="o">=</span>./ --eval <span class="s2">&quot;&lt;mypath&gt;&quot;</span>
+<h3 id="_named_search_paths">Named search paths</h3>
+<p>In addition to relative and absolute path literals, Nix has a facility to lookup Nix files by name from a configurable search path.</p>
+<p>You can lookup an item from the search path with angle brackets, like so.</p>
+<div class="highlight"><pre><span class="p">{</span> <span class="ss">nixpkgsDir =</span> <span class="l">&lt;nixpkgs&gt;</span><span class="p">;</span> <span class="p">}</span>
+<span class="c1">#-&gt; { nixpkgsDir = /Users/ryanartecona/.nix-defexpr/channels/nixpkgs; }</span>
 </pre></div>
 
+<p>If you’ve installed Nix via the installer script, then <code>&lt;nixpkgs&gt;</code> will be the only item on your search path to start out with, and it points to <code>~/.nix-defexpr/channels/nixpkgs</code>. You can update and manage the <code>nixpkgs</code> that lives there with the <code>nix-channel</code> tool. Unless you override it, anytime you <code>import &lt;nixpkgs&gt;</code> in your own Nix code, the Nix expression that will be imported is whatever version of <code>nixpkgs</code> happens to currently live at that path, i.e. whatever the latest version was when you last ran <code>nix-channel --update</code>.</p>
+<p>Most Nix tools support an <code>-I</code> option which will add an item to the search path. You can give it a value like <code>name=/path/to/dir</code> to make occurrences of <code>&lt;name&gt;</code> resolve to <code>/path/to/dir</code> inside the Nix expressions the tool evaluates.</p>
+<div class="highlight"><pre><span class="nv">$ </span>nix-instantiate -I <span class="s1">'myhome=/Users/ryanartecona'</span> --eval --expr <span class="s2">&quot;&lt;myhome&gt;&quot;</span>
+/Users/ryanartecona
+</pre></div>
+
+<p>Of course, you can add more than one item to the search path at once.</p>
+<div class="highlight"><pre><span class="nv">$ </span>nix-instantiate -I <span class="s1">'null=/dev/null'</span> -I <span class="s1">'urandom=/dev/urandom'</span> --eval --expr --strict <span class="s2">&quot;[ &lt;null&gt; &lt;urandom&gt; ]&quot;</span>
+<span class="o">[</span> /dev/null /dev/urandom <span class="o">]</span>
+</pre></div>
+
+<p>If you don’t give a search path item a name, you will essentially add all of its subdirectories to the search path, as though each were given their individual names.</p>
+<div class="highlight"><pre><span class="nv">$ </span>mkdir -p /tmp/nix-search/path
+<span class="nv">$ </span>nix-instantiate -I <span class="s1">'/tmp/nix-search'</span> --eval --expr --strict <span class="s2">&quot;&lt;path&gt;&quot;</span>
+/tmp/nix-search/path
+</pre></div>
+
+<p>You can also add a URL to the search path, provided the URL is the address of a tarball. For example, you can use this feature together with GitHub’s tarball archives to to ensure that if some Nix expression uses <code>&lt;nixpkgs&gt;</code>, it ignores whatever version of <code>nixpkgs</code> is in your channels, and instead uses a copy of <code>nixpkgs</code> at a specific commit.</p>
+<div class="highlight"><pre><span class="nv">$ </span>nix-instantiate -I <span class="s1">'nixpkgs=https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz'</span> --eval --expr --strict <span class="s2">&quot;with import &lt;nixpkgs&gt; {}; nix.version&quot;</span>
+downloading ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz’... <span class="o">[</span>10944/0 KiB, 1337.0 KiB/s<span class="o">]</span>
+unpacking ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz’...
+<span class="s2">&quot;1.11.8&quot;</span>
+</pre></div>
+
+<p>You can also use the environment variable <code>NIX_PATH</code> much the same as the <code>-I</code> option, with the exception that multiple search path items are separated by <code>:</code>.</p>
 <h2 id="_imports">Imports</h2>
 <p>At any point in a Nix expression, you may import some other Nix expression from a different file.</p>
 <table>
@@ -904,6 +930,32 @@ hello <span class="s2">&quot;Nix&quot;</span>
 <span class="c1">#-&gt; &quot;Hello, Nix!&quot;</span>
 </pre></div>
 
+<p>It’s also possible to import a directory. To make a directory importable from a Nix expression, the directory only needs to contain a file named <code>default.nix</code>.</p>
+<table>
+<colgroup>
+<col width="100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>lib/default.nix</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><div class="highlight"><pre><span class="p">{</span>
+  <span class="ss">myDir =</span> <span class="o">.</span><span class="l">/.</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span class="k">with</span> <span class="nb">import</span> <span class="o">.</span><span class="l">/lib</span><span class="p">;</span>
+myDir
+<span class="c1">#-&gt; /Users/ryanartecona/blog/lib</span>
+</pre></div>
+
+<p>When you import a path from a Nix expression, and Nix detects the path is a directory, it will try to import whatever is in <code>default.nix</code> in that directory, or it will fail if it doesn’t exist. If you are familiar with Python, this is similar to <code>__init__.py</code>.</p>
 <h1 id="_evaluation">Evaluation</h1>
 <h2 id="_what_is_emphasis_lazy_evaluation_emphasis">What is <em>lazy evaluation</em>?</h2>
 <p>Evaluation in Nix is <em>lazy</em>. This is important to understand, but if you’re not already comfortable with a lazy language (e.g. Haskell), it may sound foreign and daunting. But don’t worry! Though it’s true that most languages aren’t pervasively lazy, it’s also true that lots of programming languages have <em>some</em> lazy elements, so laziness is likely just a familiar concept by an unfamiliar name.</p>
@@ -1017,20 +1069,23 @@ hello <span class="s2">&quot;Nix&quot;</span>
 <h3 id="_todo_errors_exceptions_assertions_aborts">TODO: Errors (exceptions, assertions, aborts)</h3>
 <h1 id="_standard_library">Standard library</h1>
 <p>The Nix standard library has two parts, practically speaking.</p>
-<p>Nix itself ships with some primitives called <code>builtins</code>. These are all you have available if you use a plain <code>nix-repl</code> or <code>nix-instantiate</code>. Nix has no foreign function interface (FFI), so everything written in Nix is limited to what the <code>builtins</code> allow you to express. For example, it’s not possible to interactively prompt a user for confirmation inside Nix, because nothing in <code>builtins</code> lets you read from <code>stdin</code> (or any other file descriptor), and there’s no facility in Nix for adding that capability via a library.</p>
-<p>The <code>nixpkgs</code> package set ships with its own library of functions and helpers in <code>&lt;nixpkgs/lib&gt;</code> (often seen in Nix code as <code>pkgs.lib</code>, <code>stdenv.lib</code>, or just <code>lib</code>). Some of what’s there is geared specifically toward writing Nix derivations or working with NixOS configuration modules, but most of it is very generic. Everything there is built on top of <code>builtins</code> as a foundation (there’s no other way!), but <code>&lt;nixpkgs/lib&gt;</code> often provides better ergonomics. <code>nixpkgs</code> itself is ubiquitous in the Nix ecosystem, so since <code>&lt;nixpkgs/lib&gt;</code> is available anywhere <code>nixpkgs</code> is, it’s a sort of <em>de facto</em> standard library.</p>
+<p>Nix itself ships with some primitives called <code>builtins</code>. These are all you have available if you use a plain <code>nix-repl</code> or <code>nix-instantiate</code>. Nix has no foreign function interface (FFI), so everything written in Nix is limited to what the <code>builtins</code> allow you to express. For example, it’s not possible to interactively prompt a user for confirmation inside Nix, because nothing in <code>builtins</code> lets you read from <code>stdin</code>, and there’s no facility in Nix for adding that capability via a library.</p>
+<p>The <code>nixpkgs</code> package set ships with its own library of functions and helpers in <code>&lt;nixpkgs/lib&gt;</code> (often seen in Nix code as <code>pkgs.lib</code>, <code>stdenv.lib</code>, or just <code>lib</code>). Some of what’s there is geared specifically toward writing Nix derivations or working with NixOS configuration modules, but most of it is very generic. Everything there is built on top of <code>builtins</code> as a foundation (there’s no other way!), but <code>&lt;nixpkgs/lib&gt;</code> often provides better ergonomics for common tasks. <code>nixpkgs</code> itself is ubiquitous in the Nix ecosystem, and since <code>&lt;nixpkgs/lib&gt;</code> is available anywhere <code>nixpkgs</code> is, <code>&lt;nixpkgs/lib&gt;</code> is a sort of <em>de facto</em> standard library.</p>
 <h2 id="_builtins">builtins</h2>
 <h3 id="_todo_builtins">TODO: builtins</h3>
 <h2 id="_literal_nixpkgs_lib_literal"><code>nixpkgs/lib</code></h2>
 <h3 id="_todo_nixpkgs_lib">TODO: nixpkgs/lib</h3>
 <h1 id="_appendix">Appendix</h1>
 <h2 id="_appendix_a_currying">Appendix A: Currying</h2>
-<p>If you’re unfamiliar with currying, here’s how a curried <code>add</code> function could be written and used in Javascript.</p>
+<p>In case it would help to seen an example of currying in perhaps a more familiar language, here’s how a curried <code>add</code> function could be written and used in JavaScript.</p>
 <div class="highlight"><pre><span class="kr">const</span> <span class="nx">add</span> <span class="o">=</span> <span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="k">return</span> <span class="p">((</span><span class="nx">y</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="k">return</span> <span class="nx">x</span> <span class="o">+</span> <span class="nx">y</span><span class="p">})};</span>
+
 <span class="nx">add</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
 <span class="c1">//-&gt; (y) =&gt; {return x + y}</span>
+
 <span class="nx">add</span><span class="p">(</span><span class="mi">1</span><span class="p">)(</span><span class="mi">2</span><span class="p">);</span>
 <span class="c1">//-&gt; 3</span>
+
 <span class="kr">const</span> <span class="nx">add1</span> <span class="o">=</span> <span class="nx">add</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
 <span class="nx">add1</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
 <span class="c1">//-&gt; 3</span>
