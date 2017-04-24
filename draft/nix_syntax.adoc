@@ -791,7 +791,16 @@ downloading ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46
 unpacking ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz’...
 "1.11.8"
 
-You can also use the environment variable `NIX_PATH` much the same as the `-I` option, with the exception that multiple search path items are separated by `:`.
+===== `NIX_PATH`
+
+You can also use the environment variable `NIX_PATH` much the same as the `-I` option described above, with the exception that multiple search path items are separated by `:`.
+
+[source,bash]
+----
+$ export NIX_PATH="null=/dev/null:urandom=/dev/urandom:$NIX_PATH"
+$ nix-instantiate --eval --expr --strict "{ null = <null>; urandom = <urandom>; }"
+{ null = /dev/null; urandom = /dev/urandom; }
+----
 
 === Imports
 
