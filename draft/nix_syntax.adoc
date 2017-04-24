@@ -750,12 +750,48 @@ NOTE: There is also a `builtins.toPath` function to cast a string to a path, but
 
 Paths are useful for relative imports, which you will see next. Later on, you'll also see that they have special semantics -- different than strings! -- when used in derivations.
 
-===== TODO: antiquoted paths in derivations (?)
+==== Named search paths
 
-===== TODO: `NIX_PATH` & `<path>`
+In addition to relative and absolute path literals, Nix has a facility to lookup Nix files by name from a configurable search path.
+
+You can lookup an item from the search path with angle brackets, like so.
+
+[source,nix]
+{ nixpkgsDir = <nixpkgs>; }
+#-> { nixpkgsDir = /Users/ryanartecona/.nix-defexpr/channels/nixpkgs; }
+
+If you've installed Nix via the installer script, then `<nixpkgs>` will be the only item on your search path to start out with, and it points to `~/.nix-defexpr/channels/nixpkgs`. You can update and manage the `nixpkgs` that lives there with the `nix-channel` tool. Unless you override it, anytime you `import <nixpkgs>` in your own Nix code, the Nix expression that will be imported is whatever version of `nixpkgs` happens to currently live at that path, i.e. whatever the latest version was when you last ran `nix-channel --update`.
+
+Most Nix tools support an `-I` option which will add an item to the search path. You can give it a value like `name=/path/to/dir` to make occurrences of `<name>` resolve to `/path/to/dir` inside the Nix expressions the tool evaluates.
 
 [source,bash]
-nix-instantiate -I mypath=./ --eval "<mypath>"
+$ nix-instantiate -I 'myhome=/Users/ryanartecona' --eval --expr "<myhome>"
+/Users/ryanartecona
+
+Of course, you can add more than one item to the search path at once.
+
+[source,bash]
+----
+$ nix-instantiate -I 'null=/dev/null' -I 'urandom=/dev/urandom' --eval --expr --strict "[ <null> <urandom> ]"
+[ /dev/null /dev/urandom ]
+----
+
+If you don't give a search path item a name, you will essentially add all of its subdirectories to the search path, as though each were given their individual names.
+
+[source,bash]
+$ mkdir -p /tmp/nix-search/path
+$ nix-instantiate -I '/tmp/nix-search' --eval --expr --strict "<path>"
+/tmp/nix-search/path
+
+You can also add a URL to the search path, provided the URL is the address of a tarball. For example, you can use this feature together with GitHub's tarball archives to to ensure that if some Nix expression uses `<nixpkgs>`, it ignores whatever version of `nixpkgs` is in your channels, and instead uses a copy of `nixpkgs` at a specific commit.
+
+[source,bash]
+$ nix-instantiate -I 'nixpkgs=https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz' --eval --expr --strict "with import <nixpkgs> {}; nix.version"
+downloading ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz’... [10944/0 KiB, 1337.0 KiB/s]
+unpacking ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz’...
+"1.11.8"
+
+You can also use the environment variable `NIX_PATH` much the same as the `-I` option, with the exception that multiple search path items are separated by `:`.
 
 === Imports
 
@@ -826,6 +862,25 @@ For Nix files which are libraries (attribute sets) of functions, it's a common p
 with import ./lib.nix;
 hello "Nix"
 #-> "Hello, Nix!"
+
+It's also possible to import a directory. To make a directory importable from a Nix expression, the directory only needs to contain a file named `default.nix`.
+
+[options="header"]
+|====
+| lib/default.nix
+a|
+[source,nix]
+{
+  myDir = ./.;
+}
+|====
+
+[source,nix]
+with import ./lib;
+myDir
+#-> /Users/ryanartecona/blog/lib
+
+When you import a path from a Nix expression, and Nix detects the path is a directory, it will try to import whatever is in `default.nix` in that directory, or it will fail if it doesn't exist. If you are familiar with Python, this is similar to `__init__.py`.
 
 == Evaluation
 
@@ -967,9 +1022,9 @@ Coolio indeed. This works without throwing an error because Nix is a pervasively
 
 The Nix standard library has two parts, practically speaking.
 
-Nix itself ships with some primitives called `builtins`. These are all you have available if you use a plain `nix-repl` or `nix-instantiate`. Nix has no foreign function interface (FFI), so everything written in Nix is limited to what the `builtins` allow you to express. For example, it's not possible to interactively prompt a user for confirmation inside Nix, because nothing in `builtins` lets you read from `stdin` (or any other file descriptor), and there's no facility in Nix for adding that capability via a library.
+Nix itself ships with some primitives called `builtins`. These are all you have available if you use a plain `nix-repl` or `nix-instantiate`. Nix has no foreign function interface (FFI), so everything written in Nix is limited to what the `builtins` allow you to express. For example, it's not possible to interactively prompt a user for confirmation inside Nix, because nothing in `builtins` lets you read from `stdin`, and there's no facility in Nix for adding that capability via a library.
 
-The `nixpkgs` package set ships with its own library of functions and helpers in `<nixpkgs/lib>` (often seen in Nix code as `pkgs.lib`, `stdenv.lib`, or just `lib`). Some of what's there is geared specifically toward writing Nix derivations or working with NixOS configuration modules, but most of it is very generic. Everything there is built on top of `builtins` as a foundation (there's no other way!), but `<nixpkgs/lib>` often provides better ergonomics. `nixpkgs` itself is ubiquitous in the Nix ecosystem, so since `<nixpkgs/lib>` is available anywhere `nixpkgs` is, it's a sort of _de facto_ standard library.
+The `nixpkgs` package set ships with its own library of functions and helpers in `<nixpkgs/lib>` (often seen in Nix code as `pkgs.lib`, `stdenv.lib`, or just `lib`). Some of what's there is geared specifically toward writing Nix derivations or working with NixOS configuration modules, but most of it is very generic. Everything there is built on top of `builtins` as a foundation (there's no other way!), but `<nixpkgs/lib>` often provides better ergonomics for common tasks. `nixpkgs` itself is ubiquitous in the Nix ecosystem, and since `<nixpkgs/lib>` is available anywhere `nixpkgs` is, `<nixpkgs/lib>` is a sort of _de facto_ standard library.
 
 === builtins
 ===== TODO: builtins
@@ -979,15 +1034,18 @@ The `nixpkgs` package set ships with its own library of functions and helpers in
 == Appendix
 
 === #Appendix A: Currying#
-If you're unfamiliar with currying, here's how a curried `add` function could be written and used in Javascript.
+In case it would help to seen an example of currying in perhaps a more familiar language, here's how a curried `add` function could be written and used in JavaScript.
 
 [source,javascript]
 ----
 const add = (x) => {return ((y) => {return x + y})};
+
 add(1);
 //-> (y) => {return x + y}
+
 add(1)(2);
 //-> 3
+
 const add1 = add(1);
 add1(2);
 //-> 3
