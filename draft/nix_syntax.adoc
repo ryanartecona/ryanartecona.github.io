@@ -750,7 +750,7 @@ NOTE: There is also a `builtins.toPath` function to cast a string to a path, but
 
 Paths are useful for relative imports, which you will see next. Later on, you'll also see that they have special semantics -- different than strings! -- when used in derivations.
 
-==== Named search paths
+==== Search paths
 
 In addition to relative and absolute path literals, Nix has a facility to lookup Nix files by name from a configurable search path.
 
@@ -808,6 +808,15 @@ a|
 [source,nix]
 import ./file.nix
 #-> { hello = "world"; }
+
+Of course, you can also import a search path.
+
+[source,nix]
+let
+  pkgs = import <nixpkgs> {};
+in
+  pkgs.nix.version
+#-> "1.11.8"
 
 Because Nix is expressions all the way down, importing is quite simple to explain: a Nix file (e.g. `file.nix`) contains a single well-formed Nix expression, and when you import that file with `import ./file.nix`, it's as if the `import ./file.nix` expression just gets replaced with the contents of `file.nix`.
 
