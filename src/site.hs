@@ -55,8 +55,8 @@ main = hakyll $ do
         >>= loadAndApplyTemplate "templates/default.html" aboutCtx
         >>= relativizeUrls
 
-    match "index.html" $ do
-      route $ idRoute
+    match "posts.html" $ do
+      route $ customRoute $ \t -> t |> toFilePath |> dropExtension |> (</> "index.html")
       compile $ do
         posts <- recentFirst =<< loadAllSnapshots "post/*" "source"
         let indexCtx = mconcat [
@@ -67,6 +67,9 @@ main = hakyll $ do
           >>= applyAsTemplate indexCtx
           >>= loadAndApplyTemplate "templates/default.html" indexCtx
           >>= relativizeUrls
+
+    redirect "index.html"
+             "about.html"
 
     redirect "2013/10/26/decorated-anonymous-functions-in-python/index.html"
              "post/2013-10-26-decorated-anonymous-functions-in-python.md"
