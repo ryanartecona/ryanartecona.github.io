@@ -68,14 +68,14 @@
 <p><small>This is a working literate Haskell program, which you can <a href="../../../../../downloads/refactoring_1.lhs">download here</a>. You can load it in <code>ghci</code> with <code>:load refactoring_1.lhs</code>, and inspect any value defined here. If you need to install Haskell first, follow <a href="https://github.com/bitemyapp/learnhaskell/blob/master/install.md">this guide</a>.</small></p>
 <hr />
 <p>First, some basic imports.</p>
-<div class="highlight"><pre><span class="kr">module</span> <span class="nn">Refactoring</span> <span class="kr">where</span>
+<div class="highlight"><pre><span></span><span class="kr">module</span> <span class="nn">Refactoring</span> <span class="kr">where</span>
 <span class="kr">import</span> <span class="nn">Data.List</span> <span class="p">(</span><span class="nf">intercalate</span><span class="p">)</span>
 </pre></div>
 
 <h2 id="the-starting-point">The Starting Point</h2>
 <p>The stated purpose of the example program is “to calculate and print a statement of a customer’s charges at a video store.”</p>
 <p>First a Ruby snippet, followed by its Haskell translation.</p>
-<div class="highlight"><pre><span class="k">class</span> <span class="nc">Movie</span>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Movie</span>
   <span class="no">REGULAR</span> <span class="o">=</span> <span class="mi">0</span>
   <span class="no">NEW_RELEASE</span> <span class="o">=</span> <span class="mi">1</span>
   <span class="no">CHILDRENS</span> <span class="o">=</span> <span class="mi">2</span>
@@ -89,13 +89,13 @@
 <span class="k">end</span>
 </pre></div>
 
-<div class="highlight"><pre><span class="kr">data</span> <span class="kt">MovieType</span> <span class="ow">=</span> <span class="kt">Regular</span> <span class="o">|</span> <span class="kt">NewRelease</span> <span class="o">|</span> <span class="kt">Childrens</span>
+<div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">MovieType</span> <span class="ow">=</span> <span class="kt">Regular</span> <span class="o">|</span> <span class="kt">NewRelease</span> <span class="o">|</span> <span class="kt">Childrens</span>
 <span class="kr">data</span> <span class="kt">Movie</span> <span class="ow">=</span> <span class="kt">Movie</span> <span class="p">{</span><span class="n">title</span> <span class="ow">::</span> <span class="kt">String</span><span class="p">,</span> <span class="n">priceCode</span> <span class="ow">::</span> <span class="kt">MovieType</span><span class="p">}</span>
 </pre></div>
 
 <p>The movie price codes were defined as integer constants in Ruby, but their purpose was to be discriminated in a <code>case</code> statement as though they together formed an enum. Ruby doesn’t have enums, but Haskell does, as a simple use case of an <a href="https://wiki.haskell.org/Algebraic_data_type">algebraic data type</a>.</p>
 <p>Haskell doesn’t have classes, so our <code>Movie</code> is just a data type. This does nothing more than introduce the <code>Movie</code> type along with its only constructor, also named <code>Movie</code>, and the record of the two fields it represents.</p>
-<div class="highlight"><pre><span class="k">class</span> <span class="nc">Rental</span>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Rental</span>
   <span class="kp">attr_reader</span> <span class="ss">:movie</span><span class="p">,</span> <span class="ss">:days_rented</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">movie</span><span class="p">,</span> <span class="n">days_rented</span><span class="p">)</span>
     <span class="vi">@movie</span><span class="p">,</span> <span class="vi">@days_rented</span> <span class="o">=</span> <span class="n">movie</span><span class="p">,</span> <span class="n">days_rented</span>
@@ -103,12 +103,12 @@
 <span class="k">end</span>
 </pre></div>
 
-<div class="highlight"><pre><span class="kr">type</span> <span class="kt">DaysRented</span> <span class="ow">=</span> <span class="kt">Int</span>
+<div class="highlight"><pre><span></span><span class="kr">type</span> <span class="kt">DaysRented</span> <span class="ow">=</span> <span class="kt">Int</span>
 <span class="kr">data</span> <span class="kt">Rental</span> <span class="ow">=</span> <span class="kt">Rental</span> <span class="p">{</span><span class="n">movie</span> <span class="ow">::</span> <span class="kt">Movie</span><span class="p">,</span> <span class="n">daysRented</span> <span class="ow">::</span> <span class="kt">DaysRented</span><span class="p">}</span>
 </pre></div>
 
 <p>Our <code>Rental</code> type and constructor here work the same as <code>Movie</code> above. We give an alias to the <code>Int</code> type called <code>DaysRented</code> so that we can keep track of what that <code>Int</code> is supposed to represent. To be clear, this gets us no more type safety than using <code>Int</code> directly (the type system treats them as interchangeable), but it helps our type signatures better document programmer intent.</p>
-<div class="highlight"><pre><span class="k">class</span> <span class="nc">Customer</span>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Customer</span>
   <span class="kp">attr_reader</span> <span class="ss">:name</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
     <span class="vi">@name</span> <span class="o">=</span> <span class="nb">name</span>
@@ -119,14 +119,14 @@
   <span class="k">end</span>
 </pre></div>
 
-<div class="highlight"><pre><span class="kr">data</span> <span class="kt">Customer</span> <span class="ow">=</span> <span class="kt">Customer</span> <span class="p">{</span><span class="n">name</span> <span class="ow">::</span> <span class="kt">String</span><span class="p">,</span> <span class="n">rentals</span> <span class="ow">::</span> <span class="p">[</span><span class="kt">Rental</span><span class="p">]}</span>
+<div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">Customer</span> <span class="ow">=</span> <span class="kt">Customer</span> <span class="p">{</span><span class="n">name</span> <span class="ow">::</span> <span class="kt">String</span><span class="p">,</span> <span class="n">rentals</span> <span class="ow">::</span> <span class="p">[</span><span class="kt">Rental</span><span class="p">]}</span>
 
 <span class="nf">addRental</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">Rental</span> <span class="ow">-&gt;</span> <span class="kt">Customer</span>
 <span class="nf">addRental</span> <span class="n">cust</span> <span class="n">rental</span> <span class="ow">=</span> <span class="n">cust</span> <span class="p">{</span><span class="n">rentals</span> <span class="ow">=</span> <span class="n">rental</span> <span class="kt">:</span> <span class="n">rentals</span> <span class="n">cust</span><span class="p">}</span>
 </pre></div>
 
 <p>This <code>Customer</code> type and constructor should look familiar. The <code>addRental</code> function creates a new Customer with the <code>name</code> and <code>rentals</code> of the given <code>Customer</code>, except with an additional rental pushed onto the front of the list with the <code>:</code> operator (pronounced ‘cons’). The <code>cust {rentals = ...}</code> bit is called <em>record update syntax</em>, and it’s how you create a new record by updating the field of an existing record. Unmentioned fields like <code>name</code> get passed through unchanged.</p>
-<div class="highlight"><pre><span class="c1"># inside Customer class</span>
+<div class="highlight"><pre><span></span><span class="c1"># inside Customer class</span>
   <span class="k">def</span> <span class="nf">statement</span>
     <span class="n">total_amount</span><span class="p">,</span> <span class="n">frequent_renter_points</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
     <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;Rental Record for </span><span class="si">#{</span><span class="vi">@name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -163,7 +163,7 @@
 <span class="k">end</span>
 </pre></div>
 
-<div class="highlight"><pre><span class="nf">statement</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">String</span>
+<div class="highlight"><pre><span></span><span class="nf">statement</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">String</span>
 <span class="nf">statement</span> <span class="n">c</span> <span class="ow">=</span> <span class="n">unlines</span>
     <span class="p">[</span> <span class="s">&quot;Rental record for &quot;</span> <span class="o">++</span> <span class="n">name</span> <span class="n">c</span>
     <span class="p">,</span> <span class="n">intercalate</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="n">rentalReportLines</span>
@@ -203,7 +203,7 @@
 <h2 id="decomposing-and-redistributing-the-statement-method-function">Decomposing and Redistributing the Statement <del>Method</del> Function</h2>
 <p>The authors’ first goal is to pull out the section of <code>statement</code> which handles calculating the amount to charge for each rental. The session proceeds in several stages. First, a preface is given regarding how to analyze the surrounding code to ensure we don’t affect what remains when we extract a chunk of it. This is followed by the actual extraction into a method in the <code>Customer</code> class, and then by renaming a now-local variable so that it makes more sense in its new context. Finally, the new method is moved to its natural home in the <code>Rental</code> class, with the call site in <code>statement</code> updated to reflect its new location.</p>
 <p>Eliding several intermediate steps, we end up with this Ruby.</p>
-<div class="highlight"><pre><span class="c1"># in Rental class</span>
+<div class="highlight"><pre><span></span><span class="c1"># in Rental class</span>
   <span class="k">def</span> <span class="nf">charge</span>
     <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">case</span> <span class="n">movie</span><span class="o">.</span><span class="n">price_code</span>
@@ -246,7 +246,7 @@
   <span class="k">end</span>
 </pre></div>
 
-<div class="highlight"><pre><span class="nf">charge</span> <span class="ow">::</span> <span class="kt">Rental</span> <span class="ow">-&gt;</span> <span class="kt">Double</span>
+<div class="highlight"><pre><span></span><span class="nf">charge</span> <span class="ow">::</span> <span class="kt">Rental</span> <span class="ow">-&gt;</span> <span class="kt">Double</span>
 <span class="nf">charge</span> <span class="p">(</span><span class="kt">Rental</span> <span class="n">m</span> <span class="n">nDays</span><span class="p">)</span> <span class="ow">=</span> <span class="kr">case</span> <span class="n">priceCode</span> <span class="n">m</span> <span class="kr">of</span>
   <span class="kt">Regular</span>    <span class="ow">-&gt;</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="kr">if</span> <span class="n">nDays</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="kr">then</span> <span class="p">(</span><span class="n">fromIntegral</span> <span class="n">nDays</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="kr">else</span> <span class="mi">0</span><span class="p">)</span>
   <span class="kt">NewRelease</span> <span class="ow">-&gt;</span> <span class="n">fromIntegral</span> <span class="n">nDays</span> <span class="o">*</span> <span class="mf">3.0</span>
@@ -257,7 +257,7 @@
 <p>The authors discuss a couple of concerns that are simply non-issues in Haskell. We <em>can’t</em> give a different local name to this function’s <code>Rental</code> argument (which was a refactoring step in the Ruby example), since we never gave it a name! We only pattern matched on its contents. We also <em>can’t</em> worry about whether to make it a method on <code>Customer</code> or on <code>Rental</code>, since data types aren’t namespaces like classes are, and Haskell functions don’t have a magic <code>self</code> argument to worry about like OO instance methods. Our <code>charge</code> function is simply a pure function in our module.</p>
 <h2 id="extracting-frequent-renter-points">Extracting Frequent Renter Points</h2>
 <p>The authors perform a similar extraction on the section of <code>statement</code> that deals with frequent renter points. The authors elide these steps to a single operation, so we can assume the same steps were taken as in the previous section which dealt with extracting the <code>charge</code> computation out of <code>statement</code>.</p>
-<div class="highlight"><pre><span class="c1"># in Customer class</span>
+<div class="highlight"><pre><span></span><span class="c1"># in Customer class</span>
   <span class="k">def</span> <span class="nf">statement</span>
     <span class="n">total_amount</span><span class="p">,</span> <span class="n">frequent_renter_points</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
     <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;Rental Record for </span><span class="si">#{</span><span class="vi">@name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -281,7 +281,7 @@
   <span class="k">end</span>
 </pre></div>
 
-<div class="highlight"><pre><span class="nf">frequentRenterPoints</span> <span class="ow">::</span> <span class="kt">Rental</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<div class="highlight"><pre><span></span><span class="nf">frequentRenterPoints</span> <span class="ow">::</span> <span class="kt">Rental</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
 <span class="nf">frequentRenterPoints</span> <span class="p">(</span><span class="kt">Rental</span> <span class="p">(</span><span class="kt">Movie</span> <span class="kr">_</span> <span class="kt">NewRelease</span><span class="p">)</span> <span class="n">nDays</span><span class="p">)</span> <span class="o">|</span> <span class="n">nDays</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">=</span> <span class="mi">2</span>
 <span class="nf">frequentRenterPoints</span> <span class="kr">_</span> <span class="ow">=</span> <span class="mi">1</span>
 </pre></div>
@@ -289,7 +289,7 @@
 <p>Again, this is a simple change in the Haskell example. We unindent <code>frequentRenterPoints</code> to bring it out into module scope, and the definition of the function needs no modification.</p>
 <h2 id="removing-temps">Removing Temps</h2>
 <p>For the sake of removing the accumulator variables used in computing the aggregate metrics over all rentals for a Customer, the authors pull <code>total_amount</code> and <code>frequent_renter_points</code> into their own <code>Customer</code> methods.</p>
-<div class="highlight"><pre><span class="k">class</span> <span class="nc">Customer</span>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Customer</span>
   <span class="k">def</span> <span class="nf">statement</span>
     <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;Rental Record for </span><span class="si">#{</span><span class="vi">@name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="vi">@rentals</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">element</span><span class="o">|</span>
@@ -313,7 +313,7 @@
 <span class="k">end</span>
 </pre></div>
 
-<div class="highlight"><pre><span class="nf">totalCharge</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">Double</span>
+<div class="highlight"><pre><span></span><span class="nf">totalCharge</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">Double</span>
 <span class="nf">totalCharge</span> <span class="n">cust</span> <span class="ow">=</span> <span class="n">sum</span> <span class="o">$</span> <span class="n">map</span> <span class="n">charge</span> <span class="o">$</span> <span class="n">rentals</span> <span class="n">cust</span>
 
 <span class="nf">totalFrequentRenterPoints</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
@@ -322,7 +322,7 @@
 
 <p>The analogous definitions in Haskell are just as short as the rather concise Ruby definitions. They get slightly shorter if we define them by composing functions instead of fully applying them, as in <code>totalFrequentRenterPoints</code>.</p>
 <p>And with that, we can rewrite our <code>statement</code> function to make use of our refactorings.</p>
-<div class="highlight"><pre><span class="nf">statement'</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">String</span>
+<div class="highlight"><pre><span></span><span class="nf">statement'</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">String</span>
 <span class="nf">statement'</span> <span class="n">c</span> <span class="ow">=</span> <span class="n">unlines</span>
     <span class="p">[</span> <span class="s">&quot;Rental record for &quot;</span> <span class="o">++</span> <span class="n">name</span> <span class="n">c</span>
     <span class="p">,</span> <span class="n">intercalate</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="n">rentalReportLines</span>
@@ -335,7 +335,7 @@
 </pre></div>
 
 <p>Finally, we can do what we set out to and write our html statement.</p>
-<div class="highlight"><pre><span class="c1"># in Customer class</span>
+<div class="highlight"><pre><span></span><span class="c1"># in Customer class</span>
   <span class="k">def</span> <span class="nf">html_statement</span>
     <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;&lt;h1&gt;Rentals for &lt;em&gt;</span><span class="si">#{</span><span class="vi">@name</span><span class="si">}</span><span class="s2">&lt;/em&gt;&lt;/h1&gt;&lt;p&gt;</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="vi">@rentals</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">element</span><span class="o">|</span>
@@ -351,7 +351,7 @@
   <span class="k">end</span>
 </pre></div>
 
-<div class="highlight"><pre><span class="nf">htmlStatement</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">String</span>
+<div class="highlight"><pre><span></span><span class="nf">htmlStatement</span> <span class="ow">::</span> <span class="kt">Customer</span> <span class="ow">-&gt;</span> <span class="kt">String</span>
 <span class="nf">htmlStatement</span> <span class="n">c</span> <span class="ow">=</span> <span class="n">unlines</span>
     <span class="p">[</span> <span class="s">&quot;&lt;h1&gt;Rentals for &lt;em&gt;&quot;</span> <span class="o">++</span> <span class="n">name</span> <span class="n">c</span> <span class="o">++</span> <span class="s">&quot;&lt;/em&gt;&lt;/h1&gt;&lt;p&gt;&quot;</span>
     <span class="p">,</span> <span class="n">intercalate</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="n">rentalReportLines</span>
@@ -376,7 +376,7 @@
 </ul>
 <p>to support the <code>charge</code> and <code>frequentRenterPoints</code> in a way that avoids using constants as enums. This is, in my opinion, <em>a nightmare</em>. Though some Ruby programmers may disagree that the original example is the best approach for the problem given, it’s tough to argue that the approach outlined here is <em>the most object-oriented</em>. I think all too many programmers would thereby consider it to be <em>the most praiseworthy</em>.</p>
 <p>After lots of incremental changes, the Ruby comes out looking like this.</p>
-<div class="highlight"><pre><span class="k">module</span> <span class="nn">DefaultPrice</span>
+<div class="highlight"><pre><span></span><span class="k">module</span> <span class="nn">DefaultPrice</span>
   <span class="k">def</span> <span class="nf">frequent_renter_points</span><span class="p">(</span><span class="n">days_rented</span><span class="p">)</span>
     <span class="mi">1</span>
   <span class="k">end</span>
@@ -421,7 +421,7 @@
 <p>There’s no Haskell translation for this ultimate refactoring. The Haskell examples already given don’t need to change, <em>at all</em>, for 2 reasons.</p>
 <p>First, Haskell has fantastic support for user-defined data types. Defining an enum is dead simple, and defining fancier algebraic data types (not shown here) is not much more difficult. Second, designing and organizing your functions and data types are completely separate concerns from organizing your namespaces. This is in stark contrast with Ruby and most other OO languages, where both are concerns are painfully intertwined, as exhibited here.</p>
 <p>I want to pause and note, again, that the primary motivation for this whole section of changes, which take no fewer than <em>16 pages</em> in the book, boils down to a lack of enums or sum types in Ruby. In Haskell, we can define what kinds of movies we know about, in a single place, as a data type. We started and finished with this.</p>
-<div class="highlight"><pre><span class="kr">data</span> <span class="kt">MovieType</span> <span class="ow">=</span> <span class="kt">Regular</span> <span class="o">|</span> <span class="kt">NewRelease</span> <span class="o">|</span> <span class="kt">Childrens</span>
+<div class="highlight"><pre><span></span><span class="kr">data</span> <span class="kt">MovieType</span> <span class="ow">=</span> <span class="kt">Regular</span> <span class="o">|</span> <span class="kt">NewRelease</span> <span class="o">|</span> <span class="kt">Childrens</span>
 </pre></div>
 
 <p>The compiler could thereafter detect when we failed to consider one of these possible values, or when we tried to treat one as something it’s not, or even when we did something silly like spell one of their names wrong.</p>

@@ -92,7 +92,7 @@
 <li><a href="#_named_arguments">Named arguments</a></li>
 </ul></li>
 <li><a href="#_paths">Paths</a><ul>
-<li><a href="#_named_search_paths">Named search paths</a></li>
+<li><a href="#_search_paths">Search paths</a></li>
 </ul></li>
 <li><a href="#_imports">Imports</a></li>
 </ul></li>
@@ -224,7 +224,7 @@
 <p>If you have already installed Nix on your computer, you may already know that you can install <code>nix-repl</code> with <code>nix-env --install nix-repl</code>. It’s nothing fancy, but it’s better than no REPL. Use <code>:?</code> for help with commands. One unfortunate caveat is <code>nix-repl</code> doesn’t support multiline expressions, though sometimes it’s still worth it to explore unfamiliar territory with its tab completion.</p></li>
 <li><p><code>nix-instantiate</code></p>
 <p>If you already have Nix installed, you may also evaluate individual expressions with <code>nix-instantiate --eval --strict --expr '...'</code> or files with <code>nix-instantiate --eval --strict path/to/file.nix</code>. A Nix file just contains one big expression. If you want to paste examples verbatim into your terminal, something like the following should work fine.</p>
-<div class="highlight"><pre>pbpaste <span class="p">|</span> tee /dev/stderr <span class="p">|</span> nix-instantiate --eval --strict -
+<div class="highlight"><pre><span></span>pbpaste <span class="p">|</span> tee /dev/stderr <span class="p">|</span> nix-instantiate --eval --strict -
 </pre></div>
 
 <p>(This is how I’ve checked my examples.)</p></li>
@@ -235,12 +235,12 @@
 <h1 id="_expression_forms">Expression forms</h1>
 <h2 id="_strings">Strings</h2>
 <p>Concatenate with <code>+</code>.</p>
-<div class="highlight"><pre><span class="s2">&quot;Hello &quot;</span> <span class="o">+</span> <span class="s2">&quot;world&quot;</span>
+<div class="highlight"><pre><span></span><span class="s2">&quot;Hello &quot;</span> <span class="o">+</span> <span class="s2">&quot;world&quot;</span>
 <span class="c1">#-&gt; &quot;Hello world&quot;</span>
 </pre></div>
 
 <p>Nix has string interpolation with <code>${...}</code>, though in Nix land it usually goes by the less familiar name of &quot;antiquotation&quot;. You can put any expression in those braces, including other strings.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">name =</span> <span class="s2">&quot;world&quot;</span><span class="p">;</span>
 <span class="k">in</span>
   <span class="s2">&quot;Hello </span><span class="si">${</span>name <span class="o">+</span> <span class="s2">&quot;!&quot;</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -248,7 +248,7 @@
 </pre></div>
 
 <p>You can also write strings inside double single-quotes, <code>''like this''</code>. This form allows multiline strings, and it will intelligently strip indentation!</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">name =</span> <span class="s2">&quot;world&quot;</span><span class="p">;</span>
 <span class="k">in</span>
   <span class="s1">''</span>
@@ -264,22 +264,22 @@
 <p>It’s common in the nixpkgs repo for bash code snippets and other config files to be written in strings this way.</p>
 <h2 id="_integers">Integers</h2>
 <p>Integers in Nix are as you might expect.</p>
-<div class="highlight"><pre><span class="mi">2</span> <span class="err">*</span> <span class="mi">4</span> <span class="err">-</span> <span class="mi">8</span> <span class="err">/</span> <span class="p">(</span><span class="mi">5</span> <span class="err">-</span> <span class="mi">1</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="mi">2</span> <span class="err">*</span> <span class="mi">4</span> <span class="err">-</span> <span class="mi">8</span> <span class="err">/</span> <span class="p">(</span><span class="mi">5</span> <span class="err">-</span> <span class="mi">1</span><span class="p">)</span>
 <span class="c1">#-&gt; 6</span>
 </pre></div>
 
 <p>Integers are 64 or 32 bits, depending on your system.</p>
-<div class="highlight"><pre><span class="mi">9223372036854775807</span> <span class="o">+</span> <span class="mi">1</span>
+<div class="highlight"><pre><span></span><span class="mi">9223372036854775807</span> <span class="o">+</span> <span class="mi">1</span>
 <span class="c1">#-&gt; -9223372036854775808</span>
 </pre></div>
 
 <p>Because Nix has no floating point numbers, all division is integer division.</p>
-<div class="highlight"><pre><span class="mi">5</span> <span class="err">/</span> <span class="mi">3</span>
+<div class="highlight"><pre><span></span><span class="mi">5</span> <span class="err">/</span> <span class="mi">3</span>
 <span class="c1">#-&gt; 1</span>
 </pre></div>
 
 <p>Just don’t write a division without spaces.</p>
-<div class="highlight"><pre><span class="mi">2</span><span class="l">/1</span>
+<div class="highlight"><pre><span></span><span class="mi">2</span><span class="l">/1</span>
 <span class="c1">#-&gt; /Users/ryanartecona/blog/2/1</span>
 </pre></div>
 
@@ -300,28 +300,28 @@
 <tbody>
 <tr class="odd">
 <td><p>Conjunction</p></td>
-<td><div class="highlight"><pre><span class="no">true</span> <span class="o">&amp;&amp;</span> <span class="no">false</span>
+<td><div class="highlight"><pre><span></span><span class="no">true</span> <span class="o">&amp;&amp;</span> <span class="no">false</span>
 <span class="c1">#-&gt; false</span>
 </pre></div>
 </td>
 </tr>
 <tr class="even">
 <td><p>Disjunction</p></td>
-<td><div class="highlight"><pre><span class="no">true</span> <span class="o">||</span> <span class="no">false</span>
+<td><div class="highlight"><pre><span></span><span class="no">true</span> <span class="o">||</span> <span class="no">false</span>
 <span class="c1">#-&gt; true</span>
 </pre></div>
 </td>
 </tr>
 <tr class="odd">
 <td><p>Negation</p></td>
-<td><div class="highlight"><pre><span class="o">!</span><span class="no">false</span>
+<td><div class="highlight"><pre><span></span><span class="o">!</span><span class="no">false</span>
 <span class="c1">#-&gt; true</span>
 </pre></div>
 </td>
 </tr>
 <tr class="even">
 <td><p>Implication</p></td>
-<td><div class="highlight"><pre><span class="no">true</span> <span class="o">-&gt;</span> <span class="no">false</span>
+<td><div class="highlight"><pre><span></span><span class="no">true</span> <span class="o">-&gt;</span> <span class="no">false</span>
 <span class="c1">#-&gt; false</span>
 </pre></div>
 </td>
@@ -332,13 +332,13 @@
 <p>You can read <code>p -&gt; q</code> as &quot;<em>p</em> implies <em>q</em>&quot;. This means if <em>p</em> is true, then <em>q</em> must be true. It’s logically equivalent to <code>!p || q</code>, if that helps.</p>
 <p>The <code>-&gt;</code> operator is usually only used to assert mutually consistent configuration options. Imagine you write a package which allows setting two feature flags, <code>includeGUI</code> and <code>useFancyGUITheme</code>. If it only makes sense for <code>useFancyGUITheme</code> to be true if <code>includeGUI</code> is <em>also</em> true, then you might write <code>assert useFancyGUITheme -&gt; includeGUI;</code> to ensure your package won’t try to include a GUI theme without including the GUI.</p>
 <p>All boolean operators in Nix expect proper boolean values. They won’t coerce non-boolean values to booleans, so there’s no notion of &quot;truthy&quot; or &quot;falsy&quot; values like in some languages.</p>
-<div class="highlight"><pre><span class="no">true</span> <span class="o">&amp;&amp;</span> <span class="no">null</span>
+<div class="highlight"><pre><span></span><span class="no">true</span> <span class="o">&amp;&amp;</span> <span class="no">null</span>
 <span class="c1">#-&gt; error: value is null while a Boolean was expected, at (string):1:1</span>
 </pre></div>
 
 <h3 id="_conditionals">Conditionals</h3>
 <p>You can write a conditional expression with <code>if ... then ... else ...</code>.</p>
-<div class="highlight"><pre><span class="k">if</span> <span class="no">true</span>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="no">true</span>
   <span class="k">then</span> <span class="s2">&quot;it was true&quot;</span>
   <span class="k">else</span> <span class="s2">&quot;it was false&quot;</span>
 <span class="c1">#-&gt; &quot;it was true&quot;</span>
@@ -346,7 +346,7 @@
 
 <p>Just remember that this is an <code>if</code> <em>expression</em>, not an <code>if</code> <em>statement</em>. It evaluates to either the expression in the <code>then</code> branch or the expression in the <code>else</code> branch, but it’s not &quot;executed&quot;. Since there’s also no mutability or side effects in the Nix language, there would be little point to an <code>if ... then ...</code> without an <code>else</code> branch, so you must always give both the <code>then</code> branch and the <code>else</code> branch.</p>
 <p>There’s no special syntax for chaining conditionals (no <code>elif</code> or <code>elsif</code>), but because they’re just ordinary expressions, you can nest them however you like. You might also like to keep indentation to a minimum with a little clever formatting.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">x =</span> <span class="mi">1</span><span class="p">;</span>
 <span class="k">in</span>
   <span class="k">if</span> x <span class="err">&lt;</span> <span class="mi">0</span> <span class="k">then</span>
@@ -360,26 +360,26 @@
 
 <h3 id="_equality">Equality</h3>
 <p>Test for equality with <code>==</code>.</p>
-<div class="highlight"><pre><span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span>
+<div class="highlight"><pre><span></span><span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span>
 <span class="c1">#-&gt; true</span>
 </pre></div>
 
 <p>You can test for equality with values of different type, and the test will just evaluate to <code>false</code>.</p>
-<div class="highlight"><pre><span class="no">true</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span>
+<div class="highlight"><pre><span></span><span class="no">true</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span>
 <span class="c1">#-&gt; false</span>
 </pre></div>
 
 <p>Two expressions are equal if they evaluate to the same value. Lists and attribute sets are equal if and only if all their elements are equal.</p>
-<div class="highlight"><pre><span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span>
 <span class="c1">#-&gt; true</span>
 </pre></div>
 
-<div class="highlight"><pre><span class="p">{</span> <span class="ss">x =</span> <span class="s2">&quot;x&quot;</span><span class="p">;</span> <span class="p">}</span> <span class="o">==</span> <span class="p">{</span> <span class="ss">x =</span> <span class="s2">&quot;x&quot;</span><span class="p">;</span> <span class="p">}</span>
+<div class="highlight"><pre><span></span><span class="p">{</span> <span class="ss">x =</span> <span class="s2">&quot;x&quot;</span><span class="p">;</span> <span class="p">}</span> <span class="o">==</span> <span class="p">{</span> <span class="ss">x =</span> <span class="s2">&quot;x&quot;</span><span class="p">;</span> <span class="p">}</span>
 <span class="c1">#-&gt; true</span>
 </pre></div>
 
 <p>Perhaps surprisingly, functions always test as unequal to all other functions, even themselves.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">f =</span> <span class="p">(</span>x<span class="p">:</span> x<span class="p">);</span>
 <span class="k">in</span>
   <span class="ss">f =</span><span class="o">=</span> f
@@ -387,23 +387,23 @@
 </pre></div>
 
 <p>This also means testing two lists or attribute sets for equality, if <em>either one</em> of them contains any functions, will <em>always</em> return <code>false</code>, even if they are otherwise equal.</p>
-<div class="highlight"><pre><span class="p">{</span><span class="ss">a =</span> <span class="mi">1</span><span class="p">;</span> <span class="ss">f =</span> <span class="p">(</span>x<span class="p">:</span> x<span class="p">);}</span> <span class="o">==</span> <span class="p">{</span><span class="ss">a =</span> <span class="mi">1</span><span class="p">;</span> <span class="ss">f =</span> <span class="p">(</span>x<span class="p">:</span> x<span class="p">);}</span>
+<div class="highlight"><pre><span></span><span class="p">{</span><span class="ss">a =</span> <span class="mi">1</span><span class="p">;</span> <span class="ss">f =</span> <span class="p">(</span>x<span class="p">:</span> x<span class="p">);}</span> <span class="o">==</span> <span class="p">{</span><span class="ss">a =</span> <span class="mi">1</span><span class="p">;</span> <span class="ss">f =</span> <span class="p">(</span>x<span class="p">:</span> x<span class="p">);}</span>
 <span class="c1">#-&gt; false</span>
 </pre></div>
 
 <h2 id="_lists">Lists</h2>
 <p>Lists in Nix are written in square brackets with just whitespace separating elements.</p>
-<div class="highlight"><pre><span class="p">[</span> <span class="mi">1</span> <span class="no">true</span> <span class="no">null</span> <span class="p">]</span>
+<div class="highlight"><pre><span></span><span class="p">[</span> <span class="mi">1</span> <span class="no">true</span> <span class="no">null</span> <span class="p">]</span>
 <span class="c1">#-&gt; [ 1 true null ]</span>
 </pre></div>
 
 <p>Concatenate lists with <code>++</code>.</p>
-<div class="highlight"><pre><span class="p">[</span> <span class="mi">1</span> <span class="mi">2</span> <span class="p">]</span> <span class="o">++</span> <span class="p">[</span> <span class="mi">3</span> <span class="mi">4</span> <span class="p">]</span>
+<div class="highlight"><pre><span></span><span class="p">[</span> <span class="mi">1</span> <span class="mi">2</span> <span class="p">]</span> <span class="o">++</span> <span class="p">[</span> <span class="mi">3</span> <span class="mi">4</span> <span class="p">]</span>
 <span class="c1">#-&gt; [ 1 2 3 4 ]</span>
 </pre></div>
 
 <p>There’s no special syntax for indexing into a list. If you need to, you can use <code>builtins.elemAt</code>.</p>
-<div class="highlight"><pre><span class="nb">builtins</span><span class="o">.</span>elemAt <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span> <span class="mi">1</span>
+<div class="highlight"><pre><span></span><span class="nb">builtins</span><span class="o">.</span>elemAt <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span> <span class="mi">1</span>
 <span class="c1">#-&gt; 2</span>
 </pre></div>
 
@@ -412,7 +412,7 @@
 </div>
 <h2 id="_attribute_sets">Attribute sets</h2>
 <p>An attribute set is like JSON’s &quot;Object&quot;, Ruby’s &quot;Hash&quot;, Python’s &quot;dict&quot;, etc., but with an obscure name. It’s a mapping from names to values.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">x =</span> <span class="p">{</span> <span class="ss">key =</span> <span class="s2">&quot;value&quot;</span><span class="p">;</span> <span class="p">};</span>
 <span class="k">in</span>
   x<span class="o">.</span>key
@@ -420,7 +420,7 @@
 </pre></div>
 
 <p>An attribute name must be a string, but it can be any string. If it doesn’t happen to be a valid identifier (i.e. it includes spaces or special characters), you can write the name as a string literal with quotes. The value, of course, can be expression.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">x =</span> <span class="p">{</span> <span class="s2">&quot;my key&quot;</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span> <span class="p">};</span>
 <span class="k">in</span>
   x<span class="o">.</span><span class="s2">&quot;my key&quot;</span>
@@ -428,7 +428,7 @@
 </pre></div>
 
 <p>You can use string interpolation in attribute names, if you need to, both while defining and accessing.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">name =</span> <span class="s2">&quot;key&quot;</span><span class="p">;</span>
   <span class="ss">x =</span> <span class="p">{</span>
     <span class="s2">&quot;</span><span class="si">${</span>name<span class="si">}</span><span class="s2"> 1&quot;</span> <span class="o">=</span> <span class="s2">&quot;value #1&quot;</span><span class="p">;</span>
@@ -440,7 +440,7 @@
 </pre></div>
 
 <p>You can also merge the attributes of two sets into one with <code>//</code>. The right hand side wins if attribute names conflict, and the merge is shallow.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">foo =</span> <span class="p">{</span> <span class="ss">x =</span> <span class="mi">1</span><span class="p">;</span> <span class="ss">z =</span> <span class="p">{</span> <span class="ss">a =</span> <span class="s2">&quot;a&quot;</span><span class="p">;</span> <span class="p">};</span> <span class="p">};</span>
   <span class="ss">bar =</span> <span class="p">{</span> <span class="ss">y =</span> <span class="mi">3</span><span class="p">;</span> <span class="ss">z =</span> <span class="p">{</span> <span class="ss">b =</span> <span class="s2">&quot;b&quot;</span><span class="p">;</span> <span class="p">};</span> <span class="p">};</span>
 <span class="k">in</span>
@@ -450,18 +450,18 @@
 
 <h3 id="_attribute_membership">Attribute membership</h3>
 <p>If you try to access a nonexistent attribute on a set, you get an error.</p>
-<div class="highlight"><pre><span class="p">{</span> <span class="ss">x =</span> <span class="mi">1</span><span class="p">;</span> <span class="p">}</span><span class="o">.</span>y
+<div class="highlight"><pre><span></span><span class="p">{</span> <span class="ss">x =</span> <span class="mi">1</span><span class="p">;</span> <span class="p">}</span><span class="o">.</span>y
 <span class="c1">#-&gt; error: attribute ‘y’ missing, at (string):1:1</span>
 </pre></div>
 
 <p>You can use <code>?</code> to check if a set has a certain key before trying to access it.</p>
-<div class="highlight"><pre><span class="p">{</span> <span class="ss">x =</span> <span class="mi">1</span><span class="p">;</span> <span class="p">}</span> <span class="o">?</span> y
+<div class="highlight"><pre><span></span><span class="p">{</span> <span class="ss">x =</span> <span class="mi">1</span><span class="p">;</span> <span class="p">}</span> <span class="o">?</span> y
 <span class="c1">#-&gt; false</span>
 </pre></div>
 
 <h3 id="_recursive_sets">Recursive sets</h3>
 <p>Usually, when you define a set, the attributes cannot refer to each other.</p>
-<div class="highlight"><pre><span class="p">{</span>
+<div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="ss">name =</span> <span class="s2">&quot;hello-</span><span class="si">${</span>version<span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span>
   <span class="ss">version =</span> <span class="s2">&quot;1.0&quot;</span><span class="p">;</span>
 <span class="p">}</span>
@@ -469,7 +469,7 @@
 </pre></div>
 
 <p>You can always get around this by using a <code>let</code> binding, but often it’s more convenient to define a &quot;recursive&quot; set instead, which lets attributes refer to each other. You do this with the <code>rec</code> keyword.</p>
-<div class="highlight"><pre><span class="k">rec</span> <span class="p">{</span>
+<div class="highlight"><pre><span></span><span class="k">rec</span> <span class="p">{</span>
   <span class="ss">name =</span> <span class="s2">&quot;hello-</span><span class="si">${</span>version<span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span>
   <span class="ss">version =</span> <span class="s2">&quot;1.0&quot;</span><span class="p">;</span>
 <span class="p">}</span>
@@ -478,7 +478,7 @@
 
 <p>Once defined, a normal attribute set and a recursive attribute set behave exactly the same. Whether a set is recursive or not affects how you can write it, but it doesn’t change how you can use it. It’s just syntactic sugar.</p>
 <p>In particular, it’s <em>not</em> the case that changing the value of one attribute in a recursive set will automatically change the value of other attributes that used it in their definition, even though it might look like it!</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">hello1 =</span> <span class="k">rec</span> <span class="p">{</span>
     <span class="ss">name =</span> <span class="s2">&quot;hello-</span><span class="si">${</span>version<span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span>
     <span class="ss">version =</span> <span class="s2">&quot;1.0&quot;</span><span class="p">;</span>
@@ -493,7 +493,7 @@
 
 <h3 id="_inheriting">Inheriting</h3>
 <p>If you want to turn a bound name into an attribute in a set, you can use <code>inherit ...;</code>.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">x =</span> <span class="mi">1</span><span class="p">;</span>
   <span class="ss">y =</span> <span class="mi">2</span><span class="p">;</span>
   <span class="ss">z =</span> <span class="mi">3</span><span class="p">;</span>
@@ -510,7 +510,7 @@
 </div>
 <p>This feature is similar to &quot;field punning&quot; in some languages or &quot;property value shorthand&quot; in ES6, so it may feel familiar if you can see past the <code>inherit</code> keyword.</p>
 <p>If want to cherry pick specific attributes in one set to include in another set, you may use an alternate form of <code>inherit</code>.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">foo =</span> <span class="p">{</span><span class="ss">x =</span> <span class="mi">1</span><span class="p">;</span> <span class="ss">y =</span> <span class="mi">2</span><span class="p">;};</span>
 <span class="k">in</span>
   <span class="p">{</span> <span class="k">inherit</span> <span class="p">(</span>foo<span class="p">)</span> x y<span class="p">;</span> <span class="p">}</span>
@@ -521,7 +521,7 @@
 <h3 id="_nested_definitions">Nested definitions</h3>
 <p>Sometimes when writing Nix code you have to work with deeply nested attribute sets, such as when writing a configuration file for a NixOS machine.</p>
 <p>Nix provides a shorthand for defining nested attribute sets which can make them easier to read and write.</p>
-<div class="highlight"><pre><span class="p">{</span>
+<div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="ss">explicit =</span> <span class="p">{</span>
     <span class="ss">a =</span> <span class="mi">1</span><span class="p">;</span>
     <span class="ss">b =</span> <span class="p">{</span>
@@ -535,7 +535,7 @@
 </pre></div>
 
 <p>Just know that you can’t mix and match these styles in an ambiguous way. Each key, at any level, can use one or the other style but not both.</p>
-<div class="highlight"><pre><span class="p">{</span>
+<div class="highlight"><pre><span></span><span class="p">{</span>
   foo<span class="o">.</span><span class="ss">a =</span> <span class="mi">1</span><span class="p">;</span>
   <span class="ss">foo =</span> <span class="p">{</span>
     <span class="ss">b =</span> <span class="mi">2</span><span class="p">;</span>
@@ -547,13 +547,13 @@
 <h2 id="_bindings_and_scopes">Bindings and scopes</h2>
 <h3 id="_literal_let_literal_binding"><code>let</code> binding</h3>
 <p>If you haven’t already guessed, you can bind a name to a value with <code>let ... = ...; in ...</code>.</p>
-<div class="highlight"><pre><span class="k">let</span> <span class="ss">x =</span> <span class="s2">&quot;value&quot;</span><span class="p">;</span> <span class="k">in</span> <span class="p">{</span><span class="ss">key =</span> x<span class="p">;}</span>
+<div class="highlight"><pre><span></span><span class="k">let</span> <span class="ss">x =</span> <span class="s2">&quot;value&quot;</span><span class="p">;</span> <span class="k">in</span> <span class="p">{</span><span class="ss">key =</span> x<span class="p">;}</span>
 <span class="c1">#-&gt; { key = &quot;value&quot;; }</span>
 </pre></div>
 
 <p>Note that these are constant bindings to immutable values. You can reuse a bound name in an inner scope (&quot;shadowing&quot; it), but you can’t reassign it or otherwise change a value once it’s assigned. These aren’t what most languages call &quot;variables&quot;.</p>
 <p>You can bind multiple names in a single <code>let</code> expression.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">x =</span> <span class="mi">1</span><span class="p">;</span>
   <span class="ss">y =</span> <span class="mi">2</span><span class="p">;</span>
 <span class="k">in</span>
@@ -562,7 +562,7 @@
 </pre></div>
 
 <p><code>let</code> bindings are recursive, so names on the same level can refer to each other just like names in recursive sets.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">name =</span> <span class="s2">&quot;hello-</span><span class="si">${</span>version<span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span>
   <span class="ss">version =</span> <span class="s2">&quot;1.0&quot;</span><span class="p">;</span>
 <span class="k">in</span>
@@ -571,7 +571,7 @@
 </pre></div>
 
 <p>And, of course, a <code>let</code> binding is just another type of expression, so you can nest them.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">first =</span> <span class="p">(</span>
     <span class="k">let</span>
       <span class="ss">second =</span> <span class="s2">&quot;Hello&quot;</span><span class="p">;</span>
@@ -596,7 +596,7 @@
 <tbody>
 <tr class="odd">
 <td><p>qualified names</p></td>
-<td><div class="highlight"><pre><span class="k">let</span>
+<td><div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">pkgs =</span> <span class="nb">import</span> <span class="l">&lt;nixpkgs&gt;</span> <span class="p">{};</span>
 <span class="k">in</span>
   <span class="p">[</span>pkgs<span class="o">.</span>foo pkgs<span class="o">.</span>bar pkgs<span class="o">.</span>baz<span class="p">]</span>
@@ -605,7 +605,7 @@
 </tr>
 <tr class="even">
 <td><p>local bindings</p></td>
-<td><div class="highlight"><pre><span class="k">let</span>
+<td><div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">pkgs =</span> <span class="nb">import</span> <span class="l">&lt;nixpkgs&gt;</span> <span class="p">{};</span>
   <span class="ss">foo =</span> pkgs<span class="o">.</span>foo<span class="p">;</span>
   <span class="ss">bar =</span> pkgs<span class="o">.</span>bar<span class="p">;</span>
@@ -617,7 +617,7 @@
 </tr>
 <tr class="odd">
 <td><p><code>with</code> expression</p></td>
-<td><div class="highlight"><pre><span class="k">let</span>
+<td><div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">pkgs =</span> <span class="nb">import</span> <span class="l">&lt;nixpkgs&gt;</span> <span class="p">{};</span>
 <span class="k">in</span>
   <span class="k">with</span> pkgs<span class="p">;</span>
@@ -631,7 +631,7 @@
 <p>All 3 of these are different ways of writing the same thing.</p>
 </div>
 <p>The one big caveat with <code>with</code> expressions is that a name bound by <code>with</code> <em>cannot shadow</em> a name that was already bound. Another way to think about this is that <em>explicit</em> <code>let</code> bindings take precedence over <em>implicit</em> <code>with</code> bindings, <em>even if</em> the <code>with</code> comes after.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">item =</span> <span class="s2">&quot;we want this&quot;</span><span class="p">;</span>
   <span class="ss">suspiciousSet =</span> <span class="p">{</span><span class="ss">item =</span> <span class="s2">&quot;we don't want this&quot;</span><span class="p">;};</span>
 <span class="k">in</span>
@@ -643,13 +643,13 @@
 <h2 id="_functions">Functions</h2>
 <p>Basic function syntax is quite terse: you have an argument on the left and a function body on the right separated only by a <code>:</code>. It’s sometimes easy to miss if you’re not looking for it.</p>
 <p>Here is a function which simply adds <code>1</code> to its argument.</p>
-<div class="highlight"><pre>x<span class="p">:</span> x <span class="o">+</span> <span class="mi">1</span>
+<div class="highlight"><pre><span></span>x<span class="p">:</span> x <span class="o">+</span> <span class="mi">1</span>
 <span class="c1">#-&gt; &lt;LAMBDA&gt;</span>
 </pre></div>
 
 <p>Nix calls functions &quot;lambdas&quot;. There’s no distinction, and I only use &quot;function&quot; to avoid negative connotations from some languages where lambdas are second class. More importantly, functions in Nix aren’t strings in disguise like in <em>some</em> silly languages, so if you try to print one, Nix just says <code>&lt;LAMBDA&gt;</code> (or sometimes <code>«lambda»</code>).</p>
 <p>To apply a function to an argument, simply place the argument after the function.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">add1 =</span> <span class="p">(</span>x<span class="p">:</span> x <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
 <span class="k">in</span>
   add1 <span class="mi">2</span>
@@ -660,7 +660,7 @@
 <p>The <code>add1 2</code> here could be called a &quot;function call&quot; or, equivalently, a &quot;function application&quot;. Nix calls them &quot;applications&quot;, so I will too. Just know that there’s no difference.</p>
 </div>
 <p>Be careful to to use parentheses with function applications inside list literals, or else the function and arguments will become individual elements instead.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">add1 =</span> <span class="p">(</span>x<span class="p">:</span> x <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
 <span class="k">in</span>
   <span class="p">[</span>
@@ -674,16 +674,16 @@
 <h3 id="_currying">Currying</h3>
 <p>All functions in Nix take exactly 1 argument (they’re &quot;unary&quot;). Technically speaking, you can’t define a function which takes more than 1 argument.</p>
 <p>But this isn’t a limitation! We can get something that looks and behaves like a multi-argument function by writing it in a curried style: you write a function which takes the first argument, and it returns <em>another</em> function which takes the next argument, and when you have all your arguments in scope you can return the real result of the function.</p>
-<div class="highlight"><pre><span class="p">(</span>x<span class="p">:</span> <span class="p">(</span>y<span class="p">:</span> x <span class="o">+</span> y<span class="p">))</span>
+<div class="highlight"><pre><span></span><span class="p">(</span>x<span class="p">:</span> <span class="p">(</span>y<span class="p">:</span> x <span class="o">+</span> y<span class="p">))</span>
 </pre></div>
 
 <p>You can drop those parentheses without changing how the expression is grouped, which makes curried functions easier to read and write.</p>
-<div class="highlight"><pre>x<span class="p">:</span> y<span class="p">:</span> x <span class="o">+</span> y
+<div class="highlight"><pre><span></span>x<span class="p">:</span> y<span class="p">:</span> x <span class="o">+</span> y
 </pre></div>
 
 <p>The <code>:</code> in a function definition is &quot;right associative&quot;, so <code>x: y: x + y</code> means the same thing as <code>(x: (y: (x + y)))</code>.</p>
 <p>To use a curried function, simply supply all the arguments.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">add =</span> <span class="p">(</span>x<span class="p">:</span> y<span class="p">:</span> x <span class="o">+</span> y<span class="p">);</span>
 <span class="k">in</span>
   add <span class="mi">1</span> <span class="mi">2</span>
@@ -696,11 +696,11 @@
 </div>
 <h3 id="_named_arguments">Named arguments</h3>
 <p>Functions can also destructure attribute set arguments.</p>
-<div class="highlight"><pre><span class="p">{</span>x<span class="p">,</span> y<span class="p">}:</span> x <span class="o">+</span> y
+<div class="highlight"><pre><span></span><span class="p">{</span>x<span class="p">,</span> y<span class="p">}:</span> x <span class="o">+</span> y
 </pre></div>
 
 <p>The above function expects a single set argument which has two elements: <code>x</code> and <code>y</code>. This is often used to pass named arguments to a function.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">add =</span> <span class="p">({</span>x<span class="p">,</span> y<span class="p">}:</span>
     x <span class="o">+</span> y
   <span class="p">);</span>
@@ -710,7 +710,7 @@
 </pre></div>
 
 <p>Note that such a function requires an attribute set which has <em>exactly</em> the keys used in the pattern. Missing or unexpected keys will cause an error.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">hello =</span> <span class="p">({</span>name<span class="p">}:</span>
     <span class="s2">&quot;Hello </span><span class="si">${</span>name<span class="si">}</span><span class="s2">&quot;</span>
   <span class="p">);</span>
@@ -720,7 +720,7 @@
 </pre></div>
 
 <p>To allow extra keys to be ignored, you can mention <code>...</code>.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">hello =</span> <span class="p">({</span>name<span class="p">,</span> <span class="o">...</span><span class="p">}:</span>
     <span class="s2">&quot;Hello </span><span class="si">${</span>name<span class="si">}</span><span class="s2">&quot;</span>
   <span class="p">);</span>
@@ -730,7 +730,7 @@
 </pre></div>
 
 <p>To allow missing keys, you can give them default values with <code>?</code>.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">hello =</span> <span class="p">({</span>name <span class="o">?</span> <span class="s2">&quot;world&quot;</span><span class="p">}:</span>
     <span class="s2">&quot;Hello </span><span class="si">${</span>name<span class="si">}</span><span class="s2">&quot;</span>
   <span class="p">);</span>
@@ -741,7 +741,7 @@
 
 <h2 id="_paths">Paths</h2>
 <p>Where most languages treat file paths as simple strings, Nix has a special value type for paths. Roughly speaking, any word with <code>/</code> characters in it is parsed as a path literal.</p>
-<div class="highlight"><pre><span class="nb">builtins</span><span class="o">.</span>typeOf <span class="l">/etc/nixos/configuration.nix</span>
+<div class="highlight"><pre><span></span><span class="nb">builtins</span><span class="o">.</span>typeOf <span class="l">/etc/nixos/configuration.nix</span>
 <span class="c1">#-&gt; &quot;path&quot;</span>
 </pre></div>
 
@@ -757,7 +757,7 @@
 </thead>
 <tbody>
 <tr class="odd">
-<td><div class="highlight"><pre><span class="o">.</span><span class="l">/.gitignore</span>
+<td><div class="highlight"><pre><span></span><span class="o">.</span><span class="l">/.gitignore</span>
 <span class="c1">#-&gt; /Users/ryanartecona/blog/.gitignore</span>
 </pre></div>
 </td>
@@ -777,7 +777,7 @@
 </thead>
 <tbody>
 <tr class="odd">
-<td><div class="highlight"><pre><span class="o">.</span><span class="l">/.</span>
+<td><div class="highlight"><pre><span></span><span class="o">.</span><span class="l">/.</span>
 <span class="c1">#-&gt; /Users/ryanartecona/blog</span>
 </pre></div>
 </td>
@@ -785,21 +785,21 @@
 </tbody>
 </table>
 <p>You can append a path to a base path with <code>+</code>.</p>
-<div class="highlight"><pre><span class="l">/path/to/project</span> <span class="o">+</span> <span class="l">/path/to/file.txt</span>
+<div class="highlight"><pre><span></span><span class="l">/path/to/project</span> <span class="o">+</span> <span class="l">/path/to/file.txt</span>
 <span class="c1">#-&gt; /path/to/project/path/to/file.txt</span>
 </pre></div>
 
 <p>Just be sure the right-hand path is absolute, because if it’s relative, it almost certainly won’t be what you expect!</p>
-<div class="highlight"><pre><span class="l">/path/to/project</span> <span class="o">+</span> <span class="l">path/to/file.txt</span>
+<div class="highlight"><pre><span></span><span class="l">/path/to/project</span> <span class="o">+</span> <span class="l">path/to/file.txt</span>
 <span class="c1">#-&gt; /path/to/project/Users/ryanartecona/blog/path/to/file.txt</span>
 </pre></div>
 
 <p>So paths totally aren’t strings. But if you ever need to, you can freely cast them back and forth.</p>
-<div class="highlight"><pre><span class="nb">toString</span> <span class="l">/path/to/file.txt</span>
+<div class="highlight"><pre><span></span><span class="nb">toString</span> <span class="l">/path/to/file.txt</span>
 <span class="c1">#-&gt; &quot;/path/to/file.txt&quot;</span>
 </pre></div>
 
-<div class="highlight"><pre><span class="l">/.</span> <span class="o">+</span> <span class="s2">&quot;/path/to/file.txt&quot;</span>
+<div class="highlight"><pre><span></span><span class="l">/.</span> <span class="o">+</span> <span class="s2">&quot;/path/to/file.txt&quot;</span>
 <span class="c1">#-&gt; /path/to/file.txt</span>
 </pre></div>
 
@@ -807,38 +807,44 @@
 <p>There is also a <code>builtins.toPath</code> function to cast a string to a path, but it’s <a href=":https://github.com/NixOS/nix/issues/1074">currently broken</a>. In the meantime, this is a workaround.</p>
 </div>
 <p>Paths are useful for relative imports, which you will see next. Later on, you’ll also see that they have special semantics — different than strings! — when used in derivations.</p>
-<h3 id="_named_search_paths">Named search paths</h3>
+<h3 id="_search_paths">Search paths</h3>
 <p>In addition to relative and absolute path literals, Nix has a facility to lookup Nix files by name from a configurable search path.</p>
 <p>You can lookup an item from the search path with angle brackets, like so.</p>
-<div class="highlight"><pre><span class="p">{</span> <span class="ss">nixpkgsDir =</span> <span class="l">&lt;nixpkgs&gt;</span><span class="p">;</span> <span class="p">}</span>
+<div class="highlight"><pre><span></span><span class="p">{</span> <span class="ss">nixpkgsDir =</span> <span class="l">&lt;nixpkgs&gt;</span><span class="p">;</span> <span class="p">}</span>
 <span class="c1">#-&gt; { nixpkgsDir = /Users/ryanartecona/.nix-defexpr/channels/nixpkgs; }</span>
 </pre></div>
 
 <p>If you’ve installed Nix via the installer script, then <code>&lt;nixpkgs&gt;</code> will be the only item on your search path to start out with, and it points to <code>~/.nix-defexpr/channels/nixpkgs</code>. You can update and manage the <code>nixpkgs</code> that lives there with the <code>nix-channel</code> tool. Unless you override it, anytime you <code>import &lt;nixpkgs&gt;</code> in your own Nix code, the Nix expression that will be imported is whatever version of <code>nixpkgs</code> happens to currently live at that path, i.e. whatever the latest version was when you last ran <code>nix-channel --update</code>.</p>
 <p>Most Nix tools support an <code>-I</code> option which will add an item to the search path. You can give it a value like <code>name=/path/to/dir</code> to make occurrences of <code>&lt;name&gt;</code> resolve to <code>/path/to/dir</code> inside the Nix expressions the tool evaluates.</p>
-<div class="highlight"><pre><span class="nv">$ </span>nix-instantiate -I <span class="s1">'myhome=/Users/ryanartecona'</span> --eval --expr <span class="s2">&quot;&lt;myhome&gt;&quot;</span>
+<div class="highlight"><pre><span></span>$ nix-instantiate -I <span class="s1">'myhome=/Users/ryanartecona'</span> --eval --expr <span class="s2">&quot;&lt;myhome&gt;&quot;</span>
 /Users/ryanartecona
 </pre></div>
 
 <p>Of course, you can add more than one item to the search path at once.</p>
-<div class="highlight"><pre><span class="nv">$ </span>nix-instantiate -I <span class="s1">'null=/dev/null'</span> -I <span class="s1">'urandom=/dev/urandom'</span> --eval --expr --strict <span class="s2">&quot;[ &lt;null&gt; &lt;urandom&gt; ]&quot;</span>
+<div class="highlight"><pre><span></span>$ nix-instantiate -I <span class="s1">'null=/dev/null'</span> -I <span class="s1">'urandom=/dev/urandom'</span> --eval --expr --strict <span class="s2">&quot;[ &lt;null&gt; &lt;urandom&gt; ]&quot;</span>
 <span class="o">[</span> /dev/null /dev/urandom <span class="o">]</span>
 </pre></div>
 
 <p>If you don’t give a search path item a name, you will essentially add all of its subdirectories to the search path, as though each were given their individual names.</p>
-<div class="highlight"><pre><span class="nv">$ </span>mkdir -p /tmp/nix-search/path
-<span class="nv">$ </span>nix-instantiate -I <span class="s1">'/tmp/nix-search'</span> --eval --expr --strict <span class="s2">&quot;&lt;path&gt;&quot;</span>
+<div class="highlight"><pre><span></span>$ mkdir -p /tmp/nix-search/path
+$ nix-instantiate -I <span class="s1">'/tmp/nix-search'</span> --eval --expr --strict <span class="s2">&quot;&lt;path&gt;&quot;</span>
 /tmp/nix-search/path
 </pre></div>
 
 <p>You can also add a URL to the search path, provided the URL is the address of a tarball. For example, you can use this feature together with GitHub’s tarball archives to to ensure that if some Nix expression uses <code>&lt;nixpkgs&gt;</code>, it ignores whatever version of <code>nixpkgs</code> is in your channels, and instead uses a copy of <code>nixpkgs</code> at a specific commit.</p>
-<div class="highlight"><pre><span class="nv">$ </span>nix-instantiate -I <span class="s1">'nixpkgs=https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz'</span> --eval --expr --strict <span class="s2">&quot;with import &lt;nixpkgs&gt; {}; nix.version&quot;</span>
-downloading ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz’... <span class="o">[</span>10944/0 KiB, 1337.0 KiB/s<span class="o">]</span>
+<div class="highlight"><pre><span></span>$ nix-instantiate -I <span class="s1">'nixpkgs=https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz'</span> --eval --expr --strict <span class="s2">&quot;with import &lt;nixpkgs&gt; {}; nix.version&quot;</span>
+downloading ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz’... <span class="o">[</span><span class="m">10944</span>/0 KiB, <span class="m">1337</span>.0 KiB/s<span class="o">]</span>
 unpacking ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a18b92a79c6031f0.tar.gz’...
 <span class="s2">&quot;1.11.8&quot;</span>
 </pre></div>
 
-<p>You can also use the environment variable <code>NIX_PATH</code> much the same as the <code>-I</code> option, with the exception that multiple search path items are separated by <code>:</code>.</p>
+<h4 id="_literal_nix_path_literal"><code>NIX_PATH</code></h4>
+<p>You can also use the environment variable <code>NIX_PATH</code> much the same as the <code>-I</code> option described above, with the exception that multiple search path items are separated by <code>:</code>.</p>
+<div class="highlight"><pre><span></span>$ <span class="nb">export</span> <span class="nv">NIX_PATH</span><span class="o">=</span><span class="s2">&quot;null=/dev/null:urandom=/dev/urandom:</span><span class="nv">$NIX_PATH</span><span class="s2">&quot;</span>
+$ nix-instantiate --eval --expr --strict <span class="s2">&quot;{ null = &lt;null&gt;; urandom = &lt;urandom&gt;; }&quot;</span>
+<span class="o">{</span> <span class="nv">null</span> <span class="o">=</span> /dev/null<span class="p">;</span> <span class="nv">urandom</span> <span class="o">=</span> /dev/urandom<span class="p">;</span> <span class="o">}</span>
+</pre></div>
+
 <h2 id="_imports">Imports</h2>
 <p>At any point in a Nix expression, you may import some other Nix expression from a different file.</p>
 <table>
@@ -852,14 +858,22 @@ unpacking ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a1
 </thead>
 <tbody>
 <tr class="odd">
-<td><div class="highlight"><pre><span class="p">{</span> <span class="ss">hello =</span> <span class="s2">&quot;world&quot;</span><span class="p">;</span> <span class="p">}</span>
+<td><div class="highlight"><pre><span></span><span class="p">{</span> <span class="ss">hello =</span> <span class="s2">&quot;world&quot;</span><span class="p">;</span> <span class="p">}</span>
 </pre></div>
 </td>
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span class="nb">import</span> <span class="o">.</span><span class="l">/file.nix</span>
+<div class="highlight"><pre><span></span><span class="nb">import</span> <span class="o">.</span><span class="l">/file.nix</span>
 <span class="c1">#-&gt; { hello = &quot;world&quot;; }</span>
+</pre></div>
+
+<p>Of course, you can also import a search path.</p>
+<div class="highlight"><pre><span></span><span class="k">let</span>
+  <span class="ss">pkgs =</span> <span class="nb">import</span> <span class="l">&lt;nixpkgs&gt;</span> <span class="p">{};</span>
+<span class="k">in</span>
+  pkgs<span class="o">.</span>nix<span class="o">.</span>version
+<span class="c1">#-&gt; &quot;1.11.8&quot;</span>
 </pre></div>
 
 <p>Because Nix is expressions all the way down, importing is quite simple to explain: a Nix file (e.g. <code>file.nix</code>) contains a single well-formed Nix expression, and when you import that file with <code>import ./file.nix</code>, it’s as if the <code>import ./file.nix</code> expression just gets replaced with the contents of <code>file.nix</code>.</p>
@@ -875,7 +889,7 @@ unpacking ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a1
 </thead>
 <tbody>
 <tr class="odd">
-<td><div class="highlight"><pre><span class="p">{</span>
+<td><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="ss">hello =</span> <span class="p">(</span>name<span class="p">:</span>
     <span class="s2">&quot;Hello, </span><span class="si">${</span>name<span class="si">}</span><span class="s2">!&quot;</span>
   <span class="p">);</span>
@@ -885,7 +899,7 @@ unpacking ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a1
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">lib =</span> <span class="nb">import</span> <span class="o">.</span><span class="l">/lib.nix</span><span class="p">;</span>
 <span class="k">in</span>
   lib<span class="o">.</span>hello <span class="s2">&quot;world&quot;</span>
@@ -904,7 +918,7 @@ unpacking ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a1
 </thead>
 <tbody>
 <tr class="odd">
-<td><div class="highlight"><pre><span class="k">let</span>
+<td><div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">greet =</span> <span class="p">({</span> pre<span class="p">,</span> post<span class="p">}:</span> name<span class="p">:</span>
     pre <span class="o">+</span> <span class="p">(</span><span class="nb">toString</span> name<span class="p">)</span> <span class="o">+</span> post
   <span class="p">);</span>
@@ -917,7 +931,7 @@ unpacking ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a1
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">lib =</span> <span class="nb">import</span> <span class="o">.</span><span class="l">/lib.nix</span><span class="p">;</span>
 <span class="k">in</span>
   <span class="p">[</span> <span class="p">(</span>lib <span class="o">?</span> hello<span class="p">)</span> <span class="p">(</span>lib <span class="o">?</span> greet<span class="p">)</span> <span class="p">]</span>
@@ -925,7 +939,7 @@ unpacking ‘https://github.com/NixOS/nixpkgs/archive/7025fc6d06dec04ca047ff46a1
 </pre></div>
 
 <p>For Nix files which are libraries (attribute sets) of functions, it’s a common pattern to import the file and immediately bring all its elements into scope using <code>with</code>.</p>
-<div class="highlight"><pre><span class="k">with</span> <span class="nb">import</span> <span class="o">.</span><span class="l">/lib.nix</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">import</span> <span class="o">.</span><span class="l">/lib.nix</span><span class="p">;</span>
 hello <span class="s2">&quot;Nix&quot;</span>
 <span class="c1">#-&gt; &quot;Hello, Nix!&quot;</span>
 </pre></div>
@@ -942,7 +956,7 @@ hello <span class="s2">&quot;Nix&quot;</span>
 </thead>
 <tbody>
 <tr class="odd">
-<td><div class="highlight"><pre><span class="p">{</span>
+<td><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="ss">myDir =</span> <span class="o">.</span><span class="l">/.</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
@@ -950,7 +964,7 @@ hello <span class="s2">&quot;Nix&quot;</span>
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span class="k">with</span> <span class="nb">import</span> <span class="o">.</span><span class="l">/lib</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">import</span> <span class="o">.</span><span class="l">/lib</span><span class="p">;</span>
 myDir
 <span class="c1">#-&gt; /Users/ryanartecona/blog/lib</span>
 </pre></div>
@@ -960,7 +974,7 @@ myDir
 <h2 id="_what_is_emphasis_lazy_evaluation_emphasis">What is <em>lazy evaluation</em>?</h2>
 <p>Evaluation in Nix is <em>lazy</em>. This is important to understand, but if you’re not already comfortable with a lazy language (e.g. Haskell), it may sound foreign and daunting. But don’t worry! Though it’s true that most languages aren’t pervasively lazy, it’s also true that lots of programming languages have <em>some</em> lazy elements, so laziness is likely just a familiar concept by an unfamiliar name.</p>
 <p>Take the following Javascript snippet.</p>
-<div class="highlight"><pre><span class="kd">function</span> <span class="nx">getTrue</span><span class="p">()</span> <span class="p">{</span>
+<div class="highlight"><pre><span></span><span class="kd">function</span> <span class="nx">getTrue</span><span class="p">()</span> <span class="p">{</span>
   <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
 <span class="p">}</span>
 <span class="kd">function</span> <span class="nx">throwError</span><span class="p">()</span> <span class="p">{</span>
@@ -974,18 +988,18 @@ myDir
 <p>If you understand why, you know it’s because <code>||</code> only evaluates its right-hand side if its left-hand side evaluates to <code>false</code> (or something falsy). If the left-hand side is <code>true</code> (or truthy), then the whole compound expression can evaluate to whatever was on the left-hand side <em>without</em> evaluating the right-hand side at all. In the above example, the left-hand side is indeed <code>true</code>, so the right-hand side never gets evaluated, so we never see a thrown error.</p>
 <p>This behavior is usually called &quot;short-circuiting&quot;, especially in the context of boolean operators. Turns out, this is also lazy evaluation! You could just as accurately say <code>||</code> and <code>&amp;&amp;</code> are lazy operators.</p>
 <p>So, of course, Nix’s <code>||</code> and <code>&amp;&amp;</code> and other boolean operators are lazy, too.</p>
-<div class="highlight"><pre><span class="no">true</span> <span class="o">||</span> <span class="p">(</span><span class="no">null</span> <span class="o">+</span> <span class="no">null</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="no">true</span> <span class="o">||</span> <span class="p">(</span><span class="no">null</span> <span class="o">+</span> <span class="no">null</span><span class="p">)</span>
 <span class="c1">#-&gt; true</span>
 </pre></div>
 
 <p>We know this didn’t evaluate the right-hand side, because if it did, we would’ve gotten an error.</p>
-<div class="highlight"><pre><span class="no">null</span> <span class="o">+</span> <span class="no">null</span>
+<div class="highlight"><pre><span></span><span class="no">null</span> <span class="o">+</span> <span class="no">null</span>
 <span class="c1">#-&gt; error: cannot coerce null to a string, at (string):1:1</span>
 </pre></div>
 
 <p>So what does it mean for the <em>whole language</em> to be lazy? Well, in general, all expressions will avoid evaluating any of their subexpressions unless and until absolutely necessary.</p>
 <p>A <code>let ... in ...</code> expression won’t evaluate one of its bound values until that value’s name is evaluated in the <code>in ...</code> body. We can prove this to ourselves by putting an <em>intentional bug</em> in our program, and if we never see an error, that will mean the buggy expression never got evaluated.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">bug =</span> <span class="p">(</span><span class="no">null</span> <span class="o">+</span> <span class="no">null</span><span class="p">);</span>
   <span class="ss">foo =</span> <span class="s2">&quot;bar&quot;</span><span class="p">;</span>
 <span class="k">in</span>
@@ -994,7 +1008,7 @@ myDir
 </pre></div>
 
 <p>An attribute set won’t evaluate one of its values unless and until its corresponding key is accessed.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">bug =</span> <span class="p">(</span><span class="no">null</span> <span class="o">+</span> <span class="no">null</span><span class="p">);</span>
   <span class="ss">set =</span> <span class="p">{</span> <span class="ss">foo =</span> <span class="s2">&quot;bar&quot;</span><span class="p">;</span> <span class="ss">ohnoes =</span> bug<span class="p">;</span> <span class="p">};</span>
 <span class="k">in</span>
@@ -1003,7 +1017,7 @@ myDir
 </pre></div>
 
 <p>A list also won’t evaluate its elements unless and until they are accessed.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">bug =</span> <span class="p">(</span><span class="no">null</span> <span class="o">+</span> <span class="no">null</span><span class="p">);</span>
   <span class="ss">list =</span> <span class="p">[</span> <span class="no">true</span> bug <span class="p">];</span>
 <span class="k">in</span>
@@ -1012,14 +1026,14 @@ myDir
 </pre></div>
 
 <p>An import of another Nix file won’t actually go open the file unless and until it’s evaluated.</p>
-<div class="highlight"><pre><span class="k">with</span> <span class="nb">import</span> <span class="l">/a/path/to/some/file/that/does/not/exist.nix</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">import</span> <span class="l">/a/path/to/some/file/that/does/not/exist.nix</span><span class="p">;</span>
 <span class="s2">&quot;coolio&quot;</span>
 <span class="c1">#-&gt; &quot;coolio&quot;</span>
 </pre></div>
 
 <p>Now, here’s the extra weird one. Most programming languages will evaluate a functions' arguments <em>before</em> calling a function with the supplied arguments. Nix doesn’t. When you apply a function to an argument (or arguments, in curried style), that argument <em>may not</em> have already been evaluated when the application evaluates. Moreover, if the function body avoids evaluating that argument, it may <em>remain</em> unevaluated even after the function &quot;returns&quot; (or more precisely, after the application fully evaluates)!</p>
 <p>Here’s an example. If I write a function <code>const</code> which takes 2 curried arguments, and just gives back the first argument without evaluating the second argument, then I can give <code>const</code> a buggy expression as its second argument and <em>still</em> never see a resulting error.</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">bug =</span> <span class="p">(</span><span class="no">null</span> <span class="o">+</span> <span class="no">null</span><span class="p">);</span>
   <span class="ss">const =</span> <span class="p">(</span>x<span class="p">:</span> y<span class="p">:</span>
     x
@@ -1030,7 +1044,7 @@ myDir
 </pre></div>
 
 <p>In contrast, here’s an example of a function <code>ifThenElse</code> that I’ve often wished I could write in Javascript.</p>
-<div class="highlight"><pre><span class="kd">function</span> <span class="nx">ifThenElse</span><span class="p">(</span><span class="nx">condition</span><span class="p">,</span> <span class="nx">thenBranch</span><span class="p">,</span> <span class="nx">elseBranch</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight"><pre><span></span><span class="kd">function</span> <span class="nx">ifThenElse</span><span class="p">(</span><span class="nx">condition</span><span class="p">,</span> <span class="nx">thenBranch</span><span class="p">,</span> <span class="nx">elseBranch</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">if</span> <span class="p">(</span><span class="nx">condition</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">thenBranch</span><span class="p">;</span>
   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
@@ -1047,7 +1061,7 @@ myDir
 
 <p>Do you see why this doesn’t work? The <code>throwError()</code> argument is evaluated before <code>ifThenElse</code> is even called, so our program derps out instead of just returning <code>&quot;coolio&quot;</code>. This is why you can’t write a function that short-circuits quite the same as an <code>if</code> statement or a <code>&amp;&amp;</code> operator, because function arguments get evaluated before the function gets called. (You can work around this limitation in Javascript with anonymous functions and the like, but it’s not quite the same.)</p>
 <p>But in Nix, this would work!</p>
-<div class="highlight"><pre><span class="k">let</span>
+<div class="highlight"><pre><span></span><span class="k">let</span>
   <span class="ss">ifThenElse =</span> <span class="p">(</span>condition<span class="p">:</span> thenBranch<span class="p">:</span> elseBranch<span class="p">:</span>
     <span class="k">if</span> condition <span class="k">then</span>
       thenBranch
@@ -1078,7 +1092,7 @@ myDir
 <h1 id="_appendix">Appendix</h1>
 <h2 id="_appendix_a_currying">Appendix A: Currying</h2>
 <p>In case it would help to seen an example of currying in perhaps a more familiar language, here’s how a curried <code>add</code> function could be written and used in JavaScript.</p>
-<div class="highlight"><pre><span class="kr">const</span> <span class="nx">add</span> <span class="o">=</span> <span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="k">return</span> <span class="p">((</span><span class="nx">y</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="k">return</span> <span class="nx">x</span> <span class="o">+</span> <span class="nx">y</span><span class="p">})};</span>
+<div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">add</span> <span class="o">=</span> <span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span><span class="k">return</span> <span class="p">((</span><span class="nx">y</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span><span class="k">return</span> <span class="nx">x</span> <span class="o">+</span> <span class="nx">y</span><span class="p">})};</span>
 
 <span class="nx">add</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
 <span class="c1">//-&gt; (y) =&gt; {return x + y}</span>
