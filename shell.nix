@@ -8,41 +8,18 @@ let
   opam2nix = import (builtins.fetchTarball "https://github.com/timbertson/opam2nix/archive/version-1.2.0.tar.gz") {};
   ocamlPackages = pkgs.ocaml-ng.ocamlPackages_4_08;
 
-  soupaultSrc = sources.soupault;
-
-  soupaultSrcResolved = pkgs.runCommand "soupault-src-resolved" {GIT_SSL_CAINFO = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";} ''
-    echo "resolving soupault dependencies..."
-    ${pkgs.rsync}/bin/rsync -r ${soupaultSrc}/ .
-    echo '###'
-    pwd
-    ls -al .
-    echo '###'
-    export HOME=$(pwd)/.home
-    ${opam2nix}/bin/opam2nix resolve --ocaml-version 4.08.1 soupault.opam
-    mkdir $out
-    cp -R . $out
-  '';
-
-  soupault = let
-    opamSubset = opam2nix.build {
-      ocaml = ocamlPackages.ocaml;
-      selection = "${soupaultSrcResolved}/opam-selection.nix";
-      src = soupaultSrcResolved;
-    };
-  in 
-    opamSubset.soupault;
-
-  # soupault = pkgs.ocamlPackages.buildDune2Package {
-  #   pname = "soupault";
-  #   version = soupaultSrc.rev;
-  #   buildInputs = [
-  #     pkgs.coreutils
-  #   ] ++ (with pkgs.ocamlPackages; [
-  #     ocaml
-  #     dune
-  #     lambdasoup
-  #   ]);
-  # };
+  soupault = pkgs.stdenv.mkDerivation rec {
+    name = "soupault";
+    version = "2.7.0";
+    src = (pkgs.fetchurl {
+      url = "https://github.com/dmbaturin/soupault/releases/download/${version}/soupault-${version}-macos-x86_64.tar.gz"; 
+      sha256 = "179vhgjgsp8gfn9rxdh28ncvrd2d6l83d4r3p6sj46lkzvm6kair";
+    });
+    installPhase = ''
+      mkdir -p $out/bin
+      cp soupault $out/bin/
+    '';
+  };
 
 in
   pkgs.stdenv.mkDerivation {
@@ -50,13 +27,12 @@ in
 
     buildInputs = [
       niv
-      # soupault
+      soupault
     ];
 
     passthru = {
       inherit
         opam2nix
-        soupaultSrc
         soupault;
     };
   }
