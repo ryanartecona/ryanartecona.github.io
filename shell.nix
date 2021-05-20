@@ -5,7 +5,6 @@ let
   pkgs = import sources.nixpkgs {};
   niv = (import sources.niv {}).niv;
 
-  opam2nix = import (builtins.fetchTarball "https://github.com/timbertson/opam2nix/archive/version-1.2.0.tar.gz") {};
   ocamlPackages = pkgs.ocaml-ng.ocamlPackages_4_08;
 
   soupault = pkgs.stdenv.mkDerivation rec {
@@ -23,7 +22,7 @@ let
 
 in
   pkgs.stdenv.mkDerivation {
-    name = "ryanartecona.github.io";
+    name = "ryanartecona-github-io";
 
     buildInputs = [
       niv
@@ -32,7 +31,7 @@ in
 
     passthru = {
       inherit
-        opam2nix
+        ocamlPackages
         soupault;
     };
   }
