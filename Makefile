@@ -1,13 +1,7 @@
-HAKYLL = stack exec -- ra-hakyll
+build: posts
+	soupault
 
-build: stack-build posts
-	${HAKYLL} build
-
-stack-build:
-	stack build
-
-clean: stack-build
-	${HAKYLL} clean
+clean:
 	git submodule update --init
 	rm -rf _site
 	mkdir -p _site
@@ -15,10 +9,11 @@ clean: stack-build
 
 HOST := 127.0.0.1
 PORT := 8000
-watch: stack-build posts
-	${HAKYLL} watch --host ${HOST} --port ${PORT}
+watch: posts
+	echo "noop watch"
+	exit 1
 
-# Because of how github pages work, I keep hakyll, scss, and other source files
+# Because of how github pages work, I keep config, scss, and other source files
 # in the develop branch, and the master branch is just the rendered _site/
 # directory.
 #
@@ -27,7 +22,7 @@ watch: stack-build posts
 #
 REVISION = $(shell git rev-parse HEAD)
 GIT_SITE = git -C _site/
-deploy: stack-build clean build
+deploy: clean build
 	@git diff-index --quiet --ignore-submodules=dirty HEAD || { \
 	  echo "ERROR: Dirty working directory detected" ;\
 	  git diff-index --ignore-submodules=dirty --stat HEAD ;\
@@ -42,9 +37,9 @@ deploy: stack-build clean build
 	git diff --staged
 	git commit -m "Deploy to master"
 
-posts: post/2015-05-21-refactoring-in-ruby-in-haskell.md
+posts: site/post/2015-05-21-refactoring-in-ruby-in-haskell.md
 
-post/2015-05-21-refactoring-in-ruby-in-haskell.md: downloads/refactoring_1.lhs
+site/post/2015-05-21-refactoring-in-ruby-in-haskell.md: site/downloads/refactoring_1.lhs
 	echo "---" > $@
 	echo "title: Refactoring in Ruby in Haskell" >> $@
 	echo "layout: post" >> $@

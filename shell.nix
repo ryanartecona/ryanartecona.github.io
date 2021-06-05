@@ -27,6 +27,10 @@ in
     buildInputs = [
       niv
       soupault
+      pkgs.asciidoctor
+      pkgs.cmark
+      # need pandoc for literate haskell post
+      pkgs.pandoc
     ];
 
     passthru = {
