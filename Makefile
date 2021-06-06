@@ -1,7 +1,11 @@
+GENERATED_POSTS := \
+	site/post/2015/05/21/refactoring-in-ruby-in-haskell.md
+
 build: posts
 	soupault
 
 clean:
+	rm ${GENERATED_POSTS}
 	git submodule update --init
 	rm -rf _site
 	mkdir -p _site
@@ -37,9 +41,10 @@ deploy: clean build
 	git diff --staged
 	git commit -m "Deploy to master"
 
-posts: site/post/2015-05-21-refactoring-in-ruby-in-haskell.md
+posts: ${GENERATED_POSTS}
 
-site/post/2015-05-21-refactoring-in-ruby-in-haskell.md: site/downloads/refactoring_1.lhs
+site/post/2015/05/21/refactoring-in-ruby-in-haskell.md: site/downloads/refactoring_1.lhs
+	mkdir -p $$(dirname $@)
 	echo "---" > $@
 	echo "title: Refactoring in Ruby in Haskell" >> $@
 	echo "layout: post" >> $@
