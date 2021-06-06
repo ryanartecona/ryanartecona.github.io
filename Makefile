@@ -46,4 +46,4 @@ site/post/2015-05-21-refactoring-in-ruby-in-haskell.md: site/downloads/refactori
 	echo "tags: code haskell ruby" >> $@
 	echo "---" >> $@
 	echo "" >> $@
-	pandoc -f markdown_github+lhs+strikeout -t markdown_github downloads/refactoring_1.lhs | sed "s/sourceCode$$/haskell/;" >> $@
+	pandoc -f markdown_github+lhs+strikeout -t markdown_github site/downloads/refactoring_1.lhs | sed "s/sourceCode$$/haskell/;" >> $@
