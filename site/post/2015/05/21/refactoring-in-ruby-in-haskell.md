@@ -7,19 +7,19 @@ tags: code haskell ruby
 Recently, my team at work read the first few chapters of [*Refactoring:
 Ruby
 Edition*](http://www.amazon.com/Refactoring-Edition-Addison-Wesley-Professional-Series/dp/0321984137),
-a 2009 translation by Jay Fields and Shane Harvie of Martin Fowler's
+a 2009 translation by Jay Fields and Shane Harvie of Martin Fowler’s
 [*Refactoring*](http://www.amazon.com/Refactoring-Improving-Design-Existing-Code/dp/0201485672)
 from 1999.
 
-The book's first chapter takes the reader through a refactoring of a
+The book’s first chapter takes the reader through a refactoring of a
 small example program, with incremental code changes and their
 motivations explained along the way. The chapter is presumably meant to
 give the reader a taste of what the authors consider a well-managed
 refactoring session.
 
-Of the chapters we read, except for a handful of points, I don't have a
-strong positive or negative opinion on the authors' arguments and
-insights, (given the book's context). The dominant frustration I *did*
+Of the chapters we read, except for a handful of points, I don’t have a
+strong positive or negative opinion on the authors’ arguments and
+insights, (given the book’s context). The dominant frustration I *did*
 have while reading the chapters was from the staggering proportion of
 considerations that would have been obviated by an expressive static
 type system.
@@ -31,7 +31,7 @@ There are significant differences from the Ruby examples and this
 Haskell translation. In translating, I tried to be faithful to (my
 reading of) the spirit of the Ruby examples by writing code that might
 have been written by a junior dev, hammered out in haste, or hacked
-together without intention of 'making it to production': it fulfills its
+together without intention of ‘making it to production’: it fulfills its
 stated purpose and nothing more. The point is this is straightforward
 Haskell code, and its differences from the Ruby examples are
 attributable to differences between the respective languages.
@@ -53,8 +53,8 @@ import Data.List (intercalate)
 
 ## The Starting Point
 
-The stated purpose of the example program is "to calculate and print a
-statement of a customer's charges at a video store."
+The stated purpose of the example program is “to calculate and print a
+statement of a customer’s charges at a video store.”
 
 First a Ruby snippet, followed by its Haskell translation.
 
@@ -80,11 +80,11 @@ data Movie = Movie {title :: String, priceCode :: MovieType}
 
 The movie price codes were defined as integer constants in Ruby, but
 their purpose was to be discriminated in a `case` statement as though
-they together formed an enum. Ruby doesn't have enums, but Haskell does,
+they together formed an enum. Ruby doesn’t have enums, but Haskell does,
 as a simple use case of an [algebraic data
 type](https://wiki.haskell.org/Algebraic_data_type).
 
-Haskell doesn't have classes, so our `Movie` is just a data type. This
+Haskell doesn’t have classes, so our `Movie` is just a data type. This
 does nothing more than introduce the `Movie` type along with its only
 constructor, also named `Movie`, and the record of the two fields it
 represents.
@@ -133,8 +133,8 @@ This `Customer` type and constructor should look familiar. The
 `addRental` function creates a new Customer with the `name` and
 `rentals` of the given `Customer`, except with an additional rental
 pushed onto the front of the list with the `:` operator (pronounced
-'cons'). The `cust {rentals = ...}` bit is called *record update
-syntax*, and it's how you create a new record by updating the field of
+‘cons’). The `cust {rentals = ...}` bit is called *record update
+syntax*, and it’s how you create a new record by updating the field of
 an existing record. Unmentioned fields like `name` get passed through
 unchanged.
 
@@ -214,23 +214,23 @@ The `statement` function is the meat of the original example, and its
 translation required the biggest departure from its Ruby counterpart.
 The Ruby version begins by initializing a few local accumulator
 variables which are added to or appended to throughout the method body.
-In Haskell, we don't have assignment operators, because our variables
-aren't references, they're immutable values (this is Haskell's purity).
+In Haskell, we don’t have assignment operators, because our variables
+aren’t references, they’re immutable values (this is Haskell’s purity).
 Instead, threading accumulator state through a computation is
 accomplished by folding over a list. The helper function `f` defines how
 to add or append to our accumulator values as we fold over the list of
-the customer's rentals.
+the customer’s rentals.
 
 It would have been arguably easier to build up a statement with a few
 maps instead of a single fold, but that would have left us with even
 less to refactor.
 
 We also have `charge` and `frequentRenterPoints` defined in
-`statement`'s local scope inside a `where` clause. In Haskell it is easy
+`statement`’s local scope inside a `where` clause. In Haskell it is easy
 and natural to define local helper functions like this without worrying
 about polluting any broader namespace. None of these helper functions or
 intermediate values are in any way visible outside the scope of
-`statement`, and we haven't done any preemptive modularization. We of
+`statement`, and we haven’t done any preemptive modularization. We of
 course could have put the definitions of `charge` and
 `frequentRenterPoints` in the `let` bindings of the `f` helper, where
 they are used, but in either case the pattern matching and guards would
@@ -249,9 +249,9 @@ it.
 
 Here, the authors say (paraphrased) that an efficient refactoring
 session will need to be supported by solid tests, so that we find out
-quickly if we introduce regressions. He doesn't give examples of the
+quickly if we introduce regressions. He doesn’t give examples of the
 tests, but I will note here that the Haskell translation has *barely
-any* testable surface area that isn't already covered by the type
+any* testable surface area that isn’t already covered by the type
 system.
 
 That is to say, expressive, statically checked types get us the same
@@ -261,12 +261,12 @@ investment required by hand-written tests, we are guaranteed full
 coverage, and most often we can display type errors directly in our
 editor *at the error site* instead of *at the broken test*.
 
-## Decomposing and Redistributing the Statement ~~Method~~ Function
+## Decomposing and Redistributing the Statement <s>Method</s> Function
 
-The authors' first goal is to pull out the section of `statement` which
+The authors’ first goal is to pull out the section of `statement` which
 handles calculating the amount to charge for each rental. The session
 proceeds in several stages. First, a preface is given regarding how to
-analyze the surrounding code to ensure we don't affect what remains when
+analyze the surrounding code to ensure we don’t affect what remains when
 we extract a chunk of it. This is followed by the actual extraction into
 a method in the `Customer` class, and then by renaming a now-local
 variable so that it makes more sense in its new context. Finally, the
@@ -334,16 +334,16 @@ that it gets raised from the `statement` local scope into the
 something else, or move it to a new file. Note that we would see a
 compiler error for any of these changes if we moved or renamed this
 function without updating its call sites. Also note that in all cases
-*its definition wouldn't need to change*, since it would have been less
+*its definition wouldn’t need to change*, since it would have been less
 convenient to write it any other way in the first place.
 
 The authors discuss a couple of concerns that are simply non-issues in
-Haskell. We *can't* give a different local name to this function's
+Haskell. We *can’t* give a different local name to this function’s
 `Rental` argument (which was a refactoring step in the Ruby example),
 since we never gave it a name! We only pattern matched on its contents.
-We also *can't* worry about whether to make it a method on `Customer` or
-on `Rental`, since data types aren't namespaces like classes are, and
-Haskell functions don't have a magic `self` argument to worry about like
+We also *can’t* worry about whether to make it a method on `Customer` or
+on `Rental`, since data types aren’t namespaces like classes are, and
+Haskell functions don’t have a magic `self` argument to worry about like
 OO instance methods. Our `charge` function is simply a pure function in
 our module.
 
@@ -486,7 +486,7 @@ htmlStatement c = unlines
 Note also that at this point in the book, several UML class diagrams had
 been given to keep the reader oriented among all the code changes at
 play. In Haskell, we almost always have type signatures to serve exactly
-that purpose, and when we don't, we can still interrogate the compiler
+that purpose, and when we don’t, we can still interrogate the compiler
 for the type of any value it knows about, and often do so without
 leaving our text editor!
 
@@ -514,7 +514,7 @@ no fewer than
 to support the `charge` and `frequentRenterPoints` in a way that avoids
 using constants as enums. This is, in my opinion, *a nightmare*. Though
 some Ruby programmers may disagree that the original example is the best
-approach for the problem given, it's tough to argue that the approach
+approach for the problem given, it’s tough to argue that the approach
 outlined here is *the most object-oriented*. I think all too many
 programmers would thereby consider it to be *the most praiseworthy*.
 
@@ -563,8 +563,8 @@ end
   end
 ```
 
-There's no Haskell translation for this ultimate refactoring. The
-Haskell examples already given don't need to change, *at all*, for 2
+There’s no Haskell translation for this ultimate refactoring. The
+Haskell examples already given don’t need to change, *at all*, for 2
 reasons.
 
 First, Haskell has fantastic support for user-defined data types.
@@ -586,14 +586,14 @@ data MovieType = Regular | NewRelease | Childrens
 ```
 
 The compiler could thereafter detect when we failed to consider one of
-these possible values, or when we tried to treat one as something it's
+these possible values, or when we tried to treat one as something it’s
 not, or even when we did something silly like spell one of their names
 wrong.
 
 In Ruby, the best we can do is give some special names to what are
 really just a handful of integers, and then hope our tests are good
 enough to catch when we make one of those mistakes. Unsurprisingly, this
-can make code feel pretty brittle. If this poor man's enum using integer
+can make code feel pretty brittle. If this poor man’s enum using integer
 constants approach makes a handful of classes and mixins and a little
 duck-typing look well-behaved by comparison, *maybe that is less a
 strength of OOP and more an inability for the language to express much
