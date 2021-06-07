@@ -4,7 +4,7 @@
 
 - [x] move posts to dated dirs
 - [x] get a dev http server running
-- [ ] get redirect pages working
+- [x] get redirect pages working
 - [ ] replace yaml front matter from posts with custom elements
 - [ ] fix sass compilation or ditch for something else
 - [ ] fix includes, e.g. GA script
