@@ -1,9 +1,11 @@
 GENERATED_POSTS := \
 	site/post/2015/05/21/refactoring-in-ruby-in-haskell.md
 
+.PHONY: build
 build: posts
 	soupault
 
+.PHONY: clean
 clean:
 	rm ${GENERATED_POSTS}
 	git submodule update --init
@@ -13,9 +15,9 @@ clean:
 
 HOST := 127.0.0.1
 PORT := 8000
+.PHONY: watch
 watch: posts
-	echo "noop watch"
-	exit 1
+	git ls-files | entr -cr bash -c "make build; echo; cd _site && python -m http.server --bind ${HOST} ${PORT}"
 
 # Because of how github pages work, I keep config, scss, and other source files
 # in the develop branch, and the master branch is just the rendered _site/

@@ -29,6 +29,7 @@ in
       soupault
       pkgs.asciidoctor
       pkgs.cmark
+      pkgs.entr
       # need pandoc for literate haskell post
       pkgs.pandoc
     ];
