@@ -1,5 +1,5 @@
 GENERATED_POSTS := \
-	site/post/2015/05/21/refactoring-in-ruby-in-haskell.md
+	site/blog/2015/05/21/refactoring-in-ruby-in-haskell.md
 
 .PHONY: build
 build: posts
@@ -45,6 +45,6 @@ deploy: clean build
 
 posts: ${GENERATED_POSTS}
 
-site/post/2015/05/21/refactoring-in-ruby-in-haskell.md: site/downloads/refactoring_1.lhs
+site/blog/2015/05/21/refactoring-in-ruby-in-haskell.md: site/downloads/refactoring_1.lhs
 	mkdir -p $$(dirname $@)
 	pandoc -f markdown+lhs+strikeout -t commonmark site/downloads/refactoring_1.lhs | sed "s/sourceCode$$/haskell/;" >> $@
