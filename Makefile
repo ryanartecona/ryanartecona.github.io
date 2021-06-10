@@ -17,7 +17,7 @@ HOST := 127.0.0.1
 PORT := 8000
 .PHONY: watch
 watch: posts
-	git ls-files | entr -cr bash -c "make build; echo; cd _site && python -m http.server --bind ${HOST} ${PORT}"
+	git ls-files | entr -cr bash -c "sleep 1; make build; echo; cd _site && exec python -m http.server --bind ${HOST} ${PORT}"
 
 # Because of how github pages work, I keep config, scss, and other source files
 # in the develop branch, and the master branch is just the rendered _site/
@@ -47,10 +47,4 @@ posts: ${GENERATED_POSTS}
 
 site/post/2015/05/21/refactoring-in-ruby-in-haskell.md: site/downloads/refactoring_1.lhs
 	mkdir -p $$(dirname $@)
-	echo "---" > $@
-	echo "title: Refactoring in Ruby in Haskell" >> $@
-	echo "layout: post" >> $@
-	echo "tags: code haskell ruby" >> $@
-	echo "---" >> $@
-	echo "" >> $@
 	pandoc -f markdown+lhs+strikeout -t commonmark site/downloads/refactoring_1.lhs | sed "s/sourceCode$$/haskell/;" >> $@

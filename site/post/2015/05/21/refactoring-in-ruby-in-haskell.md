@@ -1,8 +1,8 @@
----
-title: Refactoring in Ruby in Haskell
-layout: post
-tags: code haskell ruby
----
+# Refactoring in Ruby in Haskell
+
+<date>2015-05-21</date>
+
+<tags>code haskell ruby</tags>
 
 Recently, my team at work read the first few chapters of [*Refactoring:
 Ruby

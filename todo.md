@@ -5,7 +5,10 @@
 - [x] move posts to dated dirs
 - [x] get a dev http server running
 - [x] get redirect pages working
-- [ ] replace yaml front matter from posts with custom elements
+- [x] replace yaml front matter from posts with custom elements
+  - [x] figure out soupault index settings
+  - [ ] move posts out of dated dirs into /blog
+  - [ ] add redirects from old post paths
 - [ ] fix sass compilation or ditch for something else
 - [ ] fix includes, e.g. GA script
 - [ ] install active nav tagger plugin

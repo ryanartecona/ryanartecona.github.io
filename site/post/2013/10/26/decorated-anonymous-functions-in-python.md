@@ -1,8 +1,8 @@
----
-title: Decorated Anonymous Functions in Python
-layout: post
-tags: code python fp
----
+# Decorated Anonymous Functions in Python
+
+<date>2013-10-26</date>
+<tags>code, python, fp</tags>
+
 Python functions are generally first-class objects, and that is generally all that's needed to construct higher-order functions and to engage in the style of functional programming those enable. There is, however, no language support for multiline anonymous functions, leaving a very large and unfortunate gap between `def` named functions and `lambda` expressions. I show in this article how decorators can be abused to lend anonymity to `def` function definitions.
 
 ## Functions as Values

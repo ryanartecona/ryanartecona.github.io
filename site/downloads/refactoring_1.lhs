@@ -1,3 +1,10 @@
+Refactoring in Ruby in Haskell
+===
+
+<date>2015-05-21</date>
+
+<tags>code haskell ruby</tags>
+
 Recently, my team at work read the first few chapters of [*Refactoring: Ruby Edition*](http://www.amazon.com/Refactoring-Edition-Addison-Wesley-Professional-Series/dp/0321984137), a 2009 translation by Jay Fields and Shane Harvie of Martin Fowler's [*Refactoring*](http://www.amazon.com/Refactoring-Improving-Design-Existing-Code/dp/0201485672) from 1999.
 
 The book's first chapter takes the reader through a refactoring of a small example program, with incremental code changes and their motivations explained along the way. The chapter is presumably meant to give the reader a taste of what the authors consider a well-managed refactoring session.
