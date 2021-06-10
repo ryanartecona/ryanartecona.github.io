@@ -9,8 +9,10 @@
   - [x] figure out soupault index settings
   - [x] move posts out of dated dirs into /blog
   - [ ] add redirects from old post paths
-- [ ] fix sass compilation or ditch for something else
-- [ ] fix includes, e.g. GA script
+- [x] fix sass compilation or ditch for something else
+  - [ ] fix visual bugs
+- [x] fix includes, e.g. GA script
+  - [ ] move tracking to something non-google
 - [ ] install active nav tagger plugin
 - [ ] move posts back to dated files
   - [ ] include/write a js redirect plugin
