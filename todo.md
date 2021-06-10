@@ -13,9 +13,10 @@
   - [ ] fix visual bugs
 - [x] fix includes, e.g. GA script
   - [ ] move tracking to something non-google
-- [ ] install active nav tagger plugin
-- [ ] move posts back to dated files
-  - [ ] include/write a js redirect plugin
+- [x] install active nav tagger plugin
+- [x] include/write a js redirect plugin
+- [ ] get blog posts rendering in post template
+- [ ] syntax highlight code blocks
 
 ## enhancement
 
