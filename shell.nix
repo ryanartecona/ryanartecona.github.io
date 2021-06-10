@@ -34,6 +34,8 @@ in
       pkgs.pandoc
       # should replace with dart-sass once it's in nixpkgs
       pkgs.sassc
+      # syntax highlighting
+      pkgs.python3Packages.pygments
     ];
 
     passthru = {
