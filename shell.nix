@@ -32,6 +32,8 @@ in
       pkgs.entr
       # need pandoc for literate haskell post
       pkgs.pandoc
+      # should replace with dart-sass once it's in nixpkgs
+      pkgs.sassc
     ];
 
     passthru = {

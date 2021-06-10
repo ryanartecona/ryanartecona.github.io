@@ -2,7 +2,7 @@ GENERATED_POSTS := \
 	site/blog/2015/05/21/refactoring-in-ruby-in-haskell.md
 
 .PHONY: build
-build: posts
+build: posts site/css/main.css
 	soupault
 
 .PHONY: clean
@@ -48,3 +48,7 @@ posts: ${GENERATED_POSTS}
 site/blog/2015/05/21/refactoring-in-ruby-in-haskell.md: site/downloads/refactoring_1.lhs
 	mkdir -p $$(dirname $@)
 	pandoc -f markdown+lhs+strikeout -t commonmark site/downloads/refactoring_1.lhs | sed "s/sourceCode$$/haskell/;" >> $@
+
+site/css/main.css: css/main.scss
+	mkdir -p $$(dirname $@)
+	sassc $< $@ 
