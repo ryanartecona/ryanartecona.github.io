@@ -3,7 +3,9 @@ GENERATED_POSTS := \
 
 .PHONY: build
 build: posts site/css/main.css
-	soupault
+	# use a custom build of soupault until released https://github.com/dmbaturin/soupault/issues/35
+	# soupault
+	./soupault
 
 .PHONY: clean
 clean:
