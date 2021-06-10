@@ -1,20 +1,43 @@
-<div class="article">
-  <div class="entry-header">
-    <h2 class="entry-title">
-      $title$
-    </h2>
-  </div>
+<!DOCTYPE html>
+<html>
+  <head>
+    <include>includes/head.html</include>
+  </head>
 
-  <div class="entry-meta">
-    <span class="entry-meta-item entry-date">
-      $date$
-    </span>
-  </div>
+  <body>
 
-  <div class="entry-content">
-    $if(include_toc)$
-      $toc$
-    $endif$
-    $body$
-  </div>
-</div>
+    <div class="page-wrap">
+      <include>includes/nav.html</include>
+
+      <div class="page-main">
+        <div class="page-content">
+          <div class="article">
+            <div class="entry-header">
+              <h2 class="entry-title">
+                <!-- title inserted here -->
+              </h2>
+            </div>
+            
+            <div class="entry-meta">
+              <span class="entry-meta-item entry-date">
+                <!-- date inserted here -->
+              </span>
+              <span class="entry-meta-item entry-tags">
+                <!-- tags inserted here -->
+              </span>
+            </div>
+            
+            <div class="entry-content">
+              <div class="toc"></div>
+              <!-- post content inserted here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  <include>includes/analytics.html</include>
+  </body>
+</html>
+

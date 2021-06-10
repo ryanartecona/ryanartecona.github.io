@@ -15,7 +15,7 @@
   - [ ] move tracking to something non-google
 - [x] install active nav tagger plugin
 - [x] include/write a js redirect plugin
-- [ ] get blog posts rendering in post template
+- [x] get blog posts rendering in post template
 - [ ] syntax highlight code blocks
 
 ## enhancement
