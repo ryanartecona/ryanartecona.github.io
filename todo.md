@@ -15,12 +15,12 @@
 - [x] get blog posts rendering in post template
 - [x] syntax highlight code blocks
 - [x] fix visual bugs
-- [ ] add redirects from old post paths
+- [x] add redirects from old post paths
 
 ## enhancement
 
-- [ ] update about page
 - [ ] import old tooltips posts I wrote
+- [ ] update about page
 
 - [ ] add an auto ToC to posts?
 - [ ] add a github link to posts?
