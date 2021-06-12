@@ -4,27 +4,27 @@
 -- post template I care about, with hardcoded selectors.
 
 
--- selector = [".page-content h1#post-title", ".page-content h1"]
-post_title_elem = HTML.select_one(page, ".page-content h1#post-title") 
-  or HTML.select_one(page, ".page-content h1")
+-- selector = [".entry-content h1#post-title", ".entry-content h1"]
+post_title_elem = HTML.select_one(page, ".entry-content h1#post-title") 
+  or HTML.select_one(page, ".entry-content h1")
 if not post_title_elem then
   Plugin.fail("Couldn't find a post title")
 else
   post_title = HTML.inner_html(post_title_elem)
 end
 
--- selector = [".page-content date#post-date", ".page-content date"]
-post_date_elem = HTML.select_one(page, ".page-content date#post-date")
-  or HTML.select_one(page, ".page-content date")
+-- selector = [".entry-content date#post-date", ".entry-content date"]
+post_date_elem = HTML.select_one(page, ".entry-content date#post-date")
+  or HTML.select_one(page, ".entry-content date")
 if not post_date_elem then
   Plugin.fail("Couldn't find a post date")
 else
   post_date_raw = HTML.inner_html(post_date_elem)
 end
 
--- selector = [".page-content tags#post-tags", ".page-content tags"]
-post_tags_elem = HTML.select_one(page, ".page-content tags#post-tags")
-  or HTML.select_one(page, ".page-content tags")
+-- selector = [".entry-content tags#post-tags", ".entry-content tags"]
+post_tags_elem = HTML.select_one(page, ".entry-content tags#post-tags")
+  or HTML.select_one(page, ".entry-content tags")
 if not post_tags_elem then
   post_tags = ""
 else

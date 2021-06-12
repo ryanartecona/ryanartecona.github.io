@@ -16,7 +16,7 @@ blue      #268bd2  reserved keywords
 cyan      #2aa198  strings, numbers
 green     #859900  operators, other keywords
 */
-.highlight pre {
+.highlight pre, .entry-content > pre {
   background-color: #002b36;
   color: #93a1a1; }
 
@@ -738,7 +738,7 @@ body {
       border-radius: 3px;
       font-family: PragmataPro, FiraCode, "Source Code Pro", Menlo, Consolas, "Lucida Console", monospace;
       line-height: 1.3;
-      overflow-x: scroll;
+      overflow-x: auto;
       overflow-wrap: normal; }
     .article .entry-content small {
       display: block;
@@ -776,10 +776,10 @@ body {
       width: 100%;
       table-layout: fixed;
       border-collapse: collapse; }
-      .article .entry-content table thead tr.header {
+      .article .entry-content table thead tr.header, .article .entry-content table thead tr {
         font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
         text-align: left; }
-        .article .entry-content table thead tr.header th {
+        .article .entry-content table thead tr.header th, .article .entry-content table thead tr th {
           border: solid 2px #e7e7e7;
           padding: .3em .5em; }
       .article .entry-content table tbody {

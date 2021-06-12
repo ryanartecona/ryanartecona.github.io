@@ -28,7 +28,7 @@ in
       niv
       soupault
       pkgs.asciidoctor
-      pkgs.cmark
+      pkgs.cmark-gfm
       pkgs.entr
       # need pandoc for literate haskell post
       pkgs.pandoc

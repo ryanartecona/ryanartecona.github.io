@@ -309,7 +309,7 @@ body {
 
       font-family: $monospace;
       line-height: 1.3;
-      overflow-x: scroll;
+      overflow-x: auto;
       overflow-wrap: normal;
     }
     small {
@@ -353,7 +353,7 @@ body {
       table-layout: fixed;
       border-collapse: collapse;
       thead {
-        tr.header {
+        tr.header, tr {
           font-family: $sans-serif;
           text-align: left;
           th {

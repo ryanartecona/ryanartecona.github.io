@@ -19,9 +19,11 @@
 
 ## enhancement
 
-- [ ] import old tooltips posts I wrote
+- [x] import old tooltips posts I wrote
+  - [x] renumber tooltip posts
 - [ ] update about page
 
+- [ ] make tags link to tag indexes
 - [ ] add an auto ToC to posts?
 - [ ] add a github link to posts?
 - [ ] move tracking to something non-google

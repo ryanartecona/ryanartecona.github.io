@@ -10,6 +10,7 @@ build: posts site/css/main.css
 .PHONY: clean
 clean:
 	rm ${GENERATED_POSTS}
+	rm site/css/main.css
 	git submodule update --init
 	rm -rf _site
 	mkdir -p _site
@@ -51,6 +52,6 @@ site/blog/2015/refactoring-in-ruby-in-haskell.md: site/downloads/refactoring_1.l
 	mkdir -p $$(dirname $@)
 	pandoc -f markdown+lhs+strikeout -t commonmark site/downloads/refactoring_1.lhs | sed "s/sourceCode$$/haskell/;" >> $@
 
-site/css/main.css: css/main.scss
+site/css/main.css: css/main.scss $(shell find css -name '_*.scss')
 	mkdir -p $$(dirname $@)
 	sassc $< $@ 
