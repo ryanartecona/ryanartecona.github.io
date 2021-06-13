@@ -666,7 +666,7 @@ body {
     @media screen and (max-width: 560px) {
       .article .entry-content {
         font-size: 14px; } }
-    .article .entry-content div.toc {
+    .article .entry-content div#toc {
       font-family: Georgia, "Times New Roman", serif;
       line-height: 1.5em;
       font-size: 14px;
@@ -677,7 +677,7 @@ body {
       border-left: solid 2px #e7e7e7;
       margin-bottom: 1em; }
       @media screen and (max-width: 560px) {
-        .article .entry-content div.toc {
+        .article .entry-content div#toc {
           font-size: 12px;
           float: none;
           max-width: auto;
@@ -686,16 +686,25 @@ body {
           border: none;
           margin-top: 1em;
           margin-bottom: 0; } }
-      .article .entry-content div.toc ul {
+      .article .entry-content div#toc ul {
         padding-left: 0;
         margin: 0;
         list-style: none; }
-        .article .entry-content div.toc ul ul {
+        .article .entry-content div#toc ul ul {
           padding-left: 2em; }
     .article .entry-content p, .article .entry-content blockquote, .article .entry-content ul, .article .entry-content ol {
       line-height: 1.7; }
     .article .entry-content h1, .article .entry-content h2, .article .entry-content h3, .article .entry-content h4 {
       font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif; }
+    .article .entry-content h1, .article .entry-content h2, .article .entry-content h3, .article .entry-content h4, .article .entry-content h5, .article .entry-content h6 {
+      position: relative; }
+      .article .entry-content h1 a.heading-anchor, .article .entry-content h2 a.heading-anchor, .article .entry-content h3 a.heading-anchor, .article .entry-content h4 a.heading-anchor, .article .entry-content h5 a.heading-anchor, .article .entry-content h6 a.heading-anchor {
+        position: absolute;
+        left: -.8em;
+        opacity: 0;
+        border-bottom: none; }
+      .article .entry-content h1:hover a.heading-anchor, .article .entry-content h2:hover a.heading-anchor, .article .entry-content h3:hover a.heading-anchor, .article .entry-content h4:hover a.heading-anchor, .article .entry-content h5:hover a.heading-anchor, .article .entry-content h6:hover a.heading-anchor {
+        opacity: .5; }
     .article .entry-content p code, .article .entry-content blockquote code, .article .entry-content ul code, .article .entry-content ol code, .article .entry-content h1 code, .article .entry-content h2 code, .article .entry-content h3 code, .article .entry-content h4 code, .article .entry-content h5 code, .article .entry-content h6 code {
       font-family: PragmataPro, FiraCode, "Source Code Pro", Menlo, Consolas, "Lucida Console", monospace;
       font-size: 0.85em;

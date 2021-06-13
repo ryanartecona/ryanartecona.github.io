@@ -219,7 +219,7 @@ body {
     @include screen-narrow {
       font-size: 14px;
     }
-    div.toc {
+    div#toc {
       font-family: $serif;
       line-height: 1.5em;
       font-size: 14px;
@@ -254,6 +254,18 @@ body {
     }
     h1, h2, h3, h4 {
       font-family: $sans-serif;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      position: relative;
+      a.heading-anchor {
+        position: absolute;
+        left: -.8em;
+        opacity: 0;
+        border-bottom: none;
+      }
+      &:hover a.heading-anchor {
+        opacity: .5;
+      }
     }
     p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6 {
       code {

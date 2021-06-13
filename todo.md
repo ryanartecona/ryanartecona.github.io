@@ -24,6 +24,8 @@
 - [ ] update about page
 
 - [ ] make tags link to tag indexes
-- [ ] add an auto ToC to posts?
+- [x] add an auto ToC to posts?
+- [x] add heading anchor links
+- [ ] better format post dates
 - [ ] add a github link to posts?
 - [ ] move tracking to something non-google

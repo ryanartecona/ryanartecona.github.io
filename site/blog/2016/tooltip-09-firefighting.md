@@ -1,28 +1,8 @@
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
-**Table of Contents**
-
-- [Firefighting](#firefighting)
-    - [What processes are using which resources?](#what-processes-are-using-which-resources)
-        - [`ps`](#ps)
-        - [`htop`](#htop)
-    - [What's taking up disk space?](#whats-taking-up-disk-space)
-        - [`df`](#df)
-        - [`du`](#du)
-        - [Drilling down to a runaway log file](#drilling-down-to-a-runaway-log-file)
-    - [What files or connections is a thing holding open?](#what-files-or-connections-is-a-thing-holding-open)
-    - [Log file spelunking](#log-file-spelunking)
-        - [`tail -f` and friends](#tail--f-and-friends)
-        - [Where to look](#where-to-look)
-    - [Networking](#networking)
-        - [What IP does this host resolve to?](#what-ip-does-this-host-resolve-to)
-        - [Is that box even reachable?](#is-that-box-even-reachable)
-
-<!-- markdown-toc end -->
-
 # Tooltip #9: Firefighting
 
 <date>2016-03-10</date>
 <tags>tooltip</date>
+<toc />
 
 Ding! Errors just spiked. App's down. The ENOMEMs have arrived, and they're not happy. _Shit's broke_.
 
