@@ -22,7 +22,11 @@
 - [x] import old tooltips posts I wrote
   - [x] renumber tooltip posts
 - [ ] update about page
+  - [ ] update profile photo
+  - [ ] update resume?
 
+- [x] move from pygments to chroma for dev speed
+- [ ] make a draft post state + publish workflow
 - [ ] make tags link to tag indexes
 - [x] add an auto ToC to posts?
 - [x] add heading anchor links

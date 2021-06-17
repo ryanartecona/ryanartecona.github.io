@@ -9,8 +9,8 @@ build: posts site/css/main.css
 
 .PHONY: clean
 clean:
-	rm ${GENERATED_POSTS}
-	rm site/css/main.css
+	rm -f ${GENERATED_POSTS}
+	rm -f site/css/main.css
 	git submodule update --init
 	rm -rf _site
 	mkdir -p _site
@@ -19,7 +19,7 @@ clean:
 HOST := 127.0.0.1
 PORT := 8000
 .PHONY: watch
-watch: posts
+watch: posts site/css/main.css
 	git ls-files | entr -cr bash -c "sleep 1; make build; echo; cd _site && exec python -m http.server --bind ${HOST} ${PORT}"
 
 # Because of how github pages work, I keep config, scss, and other source files
