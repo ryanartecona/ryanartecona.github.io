@@ -16,20 +16,25 @@
 - [x] syntax highlight code blocks
 - [x] fix visual bugs
 - [x] add redirects from old post paths
+- [ ] fix problem with about.html page having `<head>` contents inside `<boxy>`
 
 ## enhancement
 
 - [x] import old tooltips posts I wrote
   - [x] renumber tooltip posts
-- [ ] update about page
-  - [ ] update profile photo
-  - [ ] update resume?
+- [x] update about page
+- [x] update profile photo
+- [ ] update resume
 
 - [x] move from pygments to chroma for dev speed
-- [ ] make a draft post state + publish workflow
-- [ ] make tags link to tag indexes
 - [x] add an auto ToC to posts?
 - [x] add heading anchor links
+- [ ] make tags link to tag indexes
+- [ ] make a draft post state + publish workflow
 - [ ] better format post dates
 - [ ] add a github link to posts?
 - [ ] move tracking to something non-google
+
+# blog post ideas
+
+- things I've learned as an EM
