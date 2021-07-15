@@ -1,3 +1,5 @@
+SHELL=/bin/bash
+
 GENERATED_POSTS := \
 	site/blog/2015/refactoring-in-ruby-in-haskell.md
 
@@ -32,9 +34,9 @@ watch: posts site/css/main.css
 REVISION = $(shell git rev-parse HEAD)
 GIT_SITE = git -C _site/
 deploy: clean build
-	@git diff-index --quiet --ignore-submodules=dirty HEAD || { \
+	@git diff --quiet --ignore-submodules=dirty HEAD || { \
 	  echo "ERROR: Dirty working directory detected" ;\
-	  git diff-index --ignore-submodules=dirty --stat HEAD ;\
+	  git diff --ignore-submodules=dirty --stat HEAD ;\
 	  exit 1 ;\
 	}
 	${GIT_SITE} checkout master
