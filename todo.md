@@ -24,7 +24,7 @@
   - [x] renumber tooltip posts
 - [x] update about page
 - [x] update profile photo
-- [ ] update resume
+- [x] update resume
 
 - [x] move from pygments to chroma for dev speed
 - [x] add an auto ToC to posts?
@@ -35,6 +35,9 @@
 - [ ] add a github link to posts?
 - [ ] move tracking to something non-google
 
+- [ ] get back on mainline soupault once indexing fix is released
+
 # blog post ideas
 
 - things I've learned as an EM
+- the deployment mechanism in this site's Makefile
