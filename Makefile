@@ -13,7 +13,7 @@ build: posts site/css/main.css
 clean:
 	rm -f ${GENERATED_POSTS}
 	rm -f site/css/main.css
-	git submodule update --init
+	git submodule update --remote --init
 	rm -rf _site
 	mkdir -p _site
 	echo "gitdir: ../.git/modules/_site" > _site/.git
@@ -34,16 +34,21 @@ watch: posts site/css/main.css
 REVISION = $(shell git rev-parse HEAD)
 GIT_SITE = git -C _site/
 deploy: clean build
-	@git diff --quiet --ignore-submodules=dirty HEAD || { \
+	@git diff --quiet --ignore-submodules=all HEAD || { \
 	  echo "ERROR: Dirty working directory detected" ;\
-	  git diff --ignore-submodules=dirty --stat HEAD ;\
+	  git diff --ignore-submodules=all --stat HEAD ;\
 	  exit 1 ;\
 	}
-	${GIT_SITE} checkout master
+	${GIT_SITE} fetch -a
+	${GIT_SITE} checkout origin/master
+	# reset local master to current origin/master, in case of unpulled changes
+	${GIT_SITE} checkout -B master
+	# add, display, and commit all changes
 	${GIT_SITE} add -A
 	${GIT_SITE} diff HEAD --stat
 	${GIT_SITE} commit -m "Deploy from develop branch at ${REVISION}"
 	${GIT_SITE} push origin
+	# update inner submodule in outer develop tree
 	git add _site/
 	git diff --staged
 	git commit -m "Deploy to master"
