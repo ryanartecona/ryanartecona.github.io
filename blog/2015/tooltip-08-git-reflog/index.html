@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+ <head></head>
+ <body>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>
+   Tooltip #8: Git Reflog — Ryan Artecona
+  </title>
+  <meta name="viewport" content="width=device-width">
+  <link href="../../../css/main.css" rel="stylesheet">
+  <div class="page-wrap">
+   <div class="header-wrap">
+    <div class="header" role="page-header">
+     <header class="site-title-wrap">
+      <a href="../../../" rel="home" title="Ryan Artecona">
+        <span class="logo-wrap">
+          <span class="logo-background">
+            <img src="../../../images/RA_logo.png" class="logo" alt="Ryan Artecona">
+          </span>
+        </span>
+        <span class="site-title">
+          Ryan Artecona
+        </span>
+      </a>
+     </header>
+     <div class="nav" role="navigation">
+      <ul class="nav-items">
+       <li class="current nav-item">
+        <a href="../../../blog">Blog</a>
+       </li>
+       <li class="nav-item">
+        <a href="../../../about">About</a>
+       </li>
+      </ul>
+     </div>
+    </div>
+   </div>
+   <div class="page-main">
+    <div class="page-content">
+     <div class="article">
+      <div class="entry-header">
+       <h1 id="tooltip--8--git-reflog" class="entry-title">
+        Tooltip #8: Git Reflog
+       </h1>
+      </div>
+      <div class="entry-meta">
+       <span class="entry-meta-item entry-date">2015-11-20</span>
+              <span class="entry-meta-item entry-tags">tooltip</span>
+      </div>
+      <div class="entry-content">
+       <p></p>
+       <h4 id="or-undo-whatever-you-just-did-to-your-branch-that-made-an-utter-mess">
+        <a class="heading-anchor" href="#or-undo-whatever-you-just-did-to-your-branch-that-made-an-utter-mess">#</a>or <em>Undo Whatever You Just Did To Your Branch That Made An Utter Mess</em>
+       </h4>
+       <hr>
+       <p>
+        Okay. All you did was try to be a <em>good coworker</em> and do a bit of cleanup on the commits in the branch you’re ready to merge. A couple reworded commit messages, a rebase, a little manual conflict resolution, and <em>BOOM</em> now git is complaining at you, the diff between master and HEAD is unintelligible, and you can’t even get back to a working state because your working tree is dirty and the commits from your branch are now interspersed with junk from who knows where!
+       </p>
+       <p>
+        First, come down off that ledge. You don’t have to <code>git checkout origin/mybranch</code> and redo work, there’s no need to <code>reset --hard</code> anything, and <em>please</em> try not to reach for the <code>cd ../ &amp;&amp; rm -rf myproject &amp;&amp; git clone ...</code>. We can get you help.
+       </p>
+       <h2 id="cleaning-up">
+        <a class="heading-anchor" href="#cleaning-up">#</a>Cleaning up
+       </h2>
+       <p>
+        First things first. If there’s unstaged stuff in your <code>git status</code> that doesn’t belong, be sure to stash anything you want to keep, and then do a <code>git clean</code>.
+       </p>
+       <p>
+        There are 3 cleaning modes you have to pick from. The first is <code>-n</code> or <code>--dry-run</code>. The second is <code>-i</code> or <code>--interactive</code>, which will ask you whether or not you want to delete each unstaged file. If you’re sure it’s safe, you can instead give <code>-f</code> or <code>--force</code> to give git permission to delete it all. With <code>--force</code>, you may also need to give it <code>-d</code> which allows it to also delete whole unstaged directories.
+       </p>
+       <p>
+        If you’re stuck in the middle of a rebase, a quick <code>git rebase --abort</code> is also in order.
+       </p>
+       <h2 id="backing-out">
+        <a class="heading-anchor" href="#backing-out">#</a>Backing out
+       </h2>
+       <p>
+        Turns out, git tracks all the changes you make to <em>references</em> which includes operations like creating or deleting a branch, stepping through a rebase, pulling, changing tags, etc. It keeps these in what’s called the <em>reference log</em> for a few months. The great thing is you can use this reflog to essentially <em>undo</em> the types of changes that it tracks!
+       </p>
+       <p>
+        You can take a peek at these changes with <code>git reflog</code>. One of mine currently looks like this.
+       </p>
+       <pre><code>abac029 HEAD@{0}: checkout: moving from master to ryan/webpack
+abac029 HEAD@{1}: rebase finished: returning to refs/heads/master
+abac029 HEAD@{2}: pull --rebase: Add a couple AccountStats#play_vector specs
+dd18c22 HEAD@{3}: pull --rebase: checkout dd18c229f314e8cdd9fc8acde5cf0f943f8a6c87
+4e8a61f HEAD@{4}: merge ryan/stats-fix-perf: Fast-forward
+f787611 HEAD@{5}: checkout: moving from ryan/stats-fix-perf to master
+4e8a61f HEAD@{6}: commit (amend): Add a couple AccountStats#play_vector specs
+fb932cb HEAD@{7}: commit: Add a couple AccountStats#play_vector specs
+f787611 HEAD@{8}: checkout: moving from master to ryan/stats-fix-perf
+f787611 HEAD@{9}: rebase finished: returning to refs/heads/master
+f787611 HEAD@{10}: pull: checkout f787611d4ca8f1bc4dcf5ddd60c44646b9fd817b
+59525d8 HEAD@{11}: checkout: moving from ryan/ios-support to master
+6b379fa HEAD@{12}: rebase -i (finish): returning to refs/heads/ryan/ios-support
+6b379fa HEAD@{13}: rebase -i (pick): get Doorkeeper setup to work with AFOAuth2Manager for iOS
+59525d8 HEAD@{14}: rebase -i (start): checkout origin/master
+...
+</code></pre>
+       <p>
+        You may not have done each of these manually, but they all directly or indirectly resulted from your git commands. For example, if you do an interactive rebase, each step will show up as a separate reflog entry, and the whole rebase operation will be bookended with <code>(start)</code> and <code>(finish)</code> (or <code>abort</code>) entries.
+       </p>
+       <p>
+        If you can glance through that reflog and identify the spot that represents the state of things before things went south, the only thing left to do is to reset to that spot! For example, given the reflog above, if I wanted to reset to just before I did that last <code>pull --rebase</code>, I’d run <code>git reset --hard HEAD@{4}</code>. That will the commits that your branches point to to whatever they pointed to at that time.
+       </p>
+       <p>
+        Note that doing a reset to some point in the reflog <em>is itself</em> an operation that gets recorded in the reflog. This means running <code>git reset --hard HEAD@{4}</code> and then viewing <code>git reflog</code> will show a new entry at the top.
+       </p>
+       <pre><code>4e8a61f HEAD@{0}: reset: moving to HEAD@{4}
+abac029 HEAD@{1}: checkout: moving from master to ryan/webpack
+...
+</code></pre>
+       <p>
+        This has the <em>slightly</em> unfortunate consequence that you can’t just repeatedly run <code>git reset --hard HEAD@{1}</code> like you would hit a normal undo button, but also the <em>very</em> fortunate property that you won’t shoot yourself in the foot by resetting to the wrong reflog position and losing reflog history. Solace!
+       </p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script type="text/javascript">
+   var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-28816340-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+  </script>
+ </body>
+</html>

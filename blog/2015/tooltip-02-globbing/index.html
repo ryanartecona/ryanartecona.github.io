@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+ <head></head>
+ <body>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>
+   Tooltip #2: Globbing — Ryan Artecona
+  </title>
+  <meta name="viewport" content="width=device-width">
+  <link href="../../../css/main.css" rel="stylesheet">
+  <div class="page-wrap">
+   <div class="header-wrap">
+    <div class="header" role="page-header">
+     <header class="site-title-wrap">
+      <a href="../../../" rel="home" title="Ryan Artecona">
+        <span class="logo-wrap">
+          <span class="logo-background">
+            <img src="../../../images/RA_logo.png" class="logo" alt="Ryan Artecona">
+          </span>
+        </span>
+        <span class="site-title">
+          Ryan Artecona
+        </span>
+      </a>
+     </header>
+     <div class="nav" role="navigation">
+      <ul class="nav-items">
+       <li class="current nav-item">
+        <a href="../../../blog">Blog</a>
+       </li>
+       <li class="nav-item">
+        <a href="../../../about">About</a>
+       </li>
+      </ul>
+     </div>
+    </div>
+   </div>
+   <div class="page-main">
+    <div class="page-content">
+     <div class="article">
+      <div class="entry-header">
+       <h1 id="tooltip--2--globbing" class="entry-title">
+        Tooltip #2: Globbing
+       </h1>
+      </div>
+      <div class="entry-meta">
+       <span class="entry-meta-item entry-date">2015-06-26</span>
+              <span class="entry-meta-item entry-tags">tooltip</span>
+      </div>
+      <div class="entry-content">
+       <p></p>
+       <p>
+        This week’s tip about a couple of simple but powerful shell features that make working at the command line a bit less painful. For me personally they have contributed significantly to my transition from being all “the shell is slow and opaque, just give me a GUI with buttons” to wishing I could do everything in Emacs and my shell. Not that you should go my route, just that these things are pretty handy.
+       </p>
+       <h2 id="basic-globbing">
+        <a class="heading-anchor" href="#basic-globbing">#</a>Basic globbing
+       </h2>
+       <p>
+        When you type a command into your shell and hit enter, your shell first looks for some special symbols and translates those into explicit arguments with which to call the program in your command. The special symbols are often collectively called glob patterns, the translation process is called glob expansion, and the whole system is just globbing. You can use this reference as a cheat sheet for Bash glob patterns, which are mostly supported in other modern shells.
+       </p>
+       <p>
+        Rather than describe them all, it’s quicker to just see a demo.
+       </p>
+       <script id="asciicast-22527" src="https://asciinema.org/a/22527.js" async=""></script>
+       <p>
+        It’s pretty easy to find more thorough guides by googling around, like <a href="http://mywiki.wooledge.org/glob">this one here</a>.
+       </p>
+       <h2 id="shell-differences">
+        <a class="heading-anchor" href="#shell-differences">#</a>Shell differences
+       </h2>
+       <p>
+        I used Bash 4.3 in the demo, which is current. The bash installed with OSX is comparatively ancient, and doesn’t support all the glob patterns used.
+       </p>
+       <p>
+        It’s worth noting that some other shells go even further than bash with glob patterns, notably zsh and fish. In both of those, you can use a ‘<em>’ in more places, and a ‘**’ will expand not only directories but also files like ’</em>’. For example, to match both <code>file.rb</code> and <code>subdir/file.rb</code>, zsh can use <code>**/*.rb</code>, and fish can use <code>**.rb</code>, but bash needs two separate patterns <code>*.rb **/*.rb</code>.
+       </p>
+       <hr>
+       <p>
+        This came up from searching giphy for ‘glob’, and it looked relevant enough to include.
+       </p>
+       <p>
+        <img src="http://media.giphy.com/media/FfT6SLxVmfey4/giphy.gif" alt="glob">
+       </p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script type="text/javascript">
+   var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-28816340-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+  </script>
+ </body>
+</html>

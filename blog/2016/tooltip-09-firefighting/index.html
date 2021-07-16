@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+ <head></head>
+ <body>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>
+   Tooltip #9: Firefighting — Ryan Artecona
+  </title>
+  <meta name="viewport" content="width=device-width">
+  <link href="../../../css/main.css" rel="stylesheet">
+  <div class="page-wrap">
+   <div class="header-wrap">
+    <div class="header" role="page-header">
+     <header class="site-title-wrap">
+      <a href="../../../" rel="home" title="Ryan Artecona">
+        <span class="logo-wrap">
+          <span class="logo-background">
+            <img src="../../../images/RA_logo.png" class="logo" alt="Ryan Artecona">
+          </span>
+        </span>
+        <span class="site-title">
+          Ryan Artecona
+        </span>
+      </a>
+     </header>
+     <div class="nav" role="navigation">
+      <ul class="nav-items">
+       <li class="current nav-item">
+        <a href="../../../blog">Blog</a>
+       </li>
+       <li class="nav-item">
+        <a href="../../../about">About</a>
+       </li>
+      </ul>
+     </div>
+    </div>
+   </div>
+   <div class="page-main">
+    <div class="page-content">
+     <div class="article">
+      <div class="entry-header">
+       <h1 id="tooltip--9--firefighting" class="entry-title">
+        Tooltip #9: Firefighting
+       </h1>
+      </div>
+      <div class="entry-meta">
+       <span class="entry-meta-item entry-date">2016-03-10</span>
+              <span class="entry-meta-item entry-tags">tooltip
+</span>
+      </div>
+      <div class="entry-content">
+       <div id="toc">
+        <ul>
+         <li>
+          <a href="#what-processes-are-using-which-resources-">What processes are using which resources?</a>
+         </li>
+         <ul>
+          <li>
+           <a href="#ps"><code>ps</code></a>
+          </li>
+          <li>
+           <a href="#htop"><code>htop</code></a>
+          </li>
+         </ul>
+         <li>
+          <a href="#what---s-taking-up-disk-space-">What’s taking up disk space?</a>
+         </li>
+         <ul>
+          <li>
+           <a href="#df"><code>df</code></a>
+          </li>
+          <li>
+           <a href="#du"><code>du</code></a>
+          </li>
+          <li>
+           <a href="#drilling-down-to-a-runaway-log-file">Drilling down to a runaway log file</a>
+          </li>
+         </ul>
+         <li>
+          <a href="#what-files-or-connections-is-a-thing-holding-open-">What files or connections is a thing holding open?</a>
+         </li>
+         <li>
+          <a href="#log-file-spelunking">Log file spelunking</a>
+         </li>
+         <ul>
+          <li>
+           <a href="#tail--f-and-friends"><code>tail -f</code> and friends</a>
+          </li>
+          <li>
+           <a href="#where-to-look">Where to look</a>
+          </li>
+         </ul>
+         <li>
+          <a href="#networking">Networking</a>
+         </li>
+         <ul>
+          <li>
+           <a href="#what-ip-does-this-host-resolve-to-">What IP does this host resolve to?</a>
+          </li>
+          <li>
+           <a href="#is-that-box-even-reachable-">Is that box even reachable?</a>
+          </li>
+         </ul>
+        </ul>
+       </div>
+       <p></p>
+       <p>
+        Ding! Errors just spiked. App’s down. The ENOMEMs have arrived, and they’re not happy. <em>Shit’s broke</em>.
+       </p>
+       <p>
+        You look around, and everyone who was <em>just here</em> who could definitely deal with it have suddenly all vanished. Welp. What now?
+       </p>
+       <h2 id="what-processes-are-using-which-resources-">
+        <a class="heading-anchor" href="#what-processes-are-using-which-resources-">#</a>What processes are using which resources?
+       </h2>
+       <p>
+        There’s <code>ps</code> for simply listing processes, and <code>top</code> and <code>htop</code> for a richer, more interactive take on your process table.
+       </p>
+       <h3 id="ps">
+        <a class="heading-anchor" href="#ps">#</a><code>ps</code>
+       </h3>
+       <p>
+        The <code>ps</code> command by default only lists processes owned by the current user and run from a terminal. It also doesn’t display the user associated with each process. To list all processes and include a user column in the output, do this.
+       </p>
+       <code class="language-bash"><pre class="highlight">ps aux
+</pre></code>
+       <p>
+        From there, you can pipe to <code>grep</code> to find processes run by a certain user or containing a particular command or argument. For anything more explorative, you probably want to jump straight to <code>htop</code>.
+       </p>
+       <h3 id="htop">
+        <a class="heading-anchor" href="#htop">#</a><code>htop</code>
+       </h3>
+       <p>
+        Running htop is easy enough.
+       </p>
+       <code class="language-bash"><pre class="highlight">htop
+</pre></code>
+       <p>
+        But there’s some serious wizardry buried in that simple command.
+       </p>
+       <p>
+        The first view you’ll see looks roughly like <code>top</code>, but with colors. Arrow keys move you up and down in the process listing or will scroll you left and right to see long process names. The <code>Page Up</code> and <code>Page Down</code> keys will let you scroll pages at a time. Those are <code>fn+↑</code> and <code>fn+↓</code> on OS X.
+       </p>
+       <p>
+        The <code>h</code> key will show you a key binding cheat sheet. Everything else here is there, so remember that if you forget everything else!
+       </p>
+       <p>
+        A <code>t</code> will toggle a tree view, a <code>u</code> will let you filter the list for a specific user, and a <code>k</code> will let you send any signal you want to that process. Signalling defaults to <code>TERM</code>, so <code>k RET</code> will (should) kill the process under cursor. You can even use <code>SPC</code> to select a bunch of processes and hit <code>k</code> to send the same signal to all of them!
+       </p>
+       <p>
+        You can click on each column heading to set the sort column, and you can search process names with <code>/</code>.
+       </p>
+       <p>
+        If you need to dig deeper, <code>l</code> will show you every file descriptor that process has open (via <code>lsof</code>), and <code>s</code> will fire up <code>strace</code> (Linux only) to show you every system call that process is making! That <code>lsof</code> listing may be slow, but shouldn’t be particularly expensive to generate; on the other hand, <code>strace</code> may slow down the traced program significantly (depending on how frequently it makes syscalls; see <a href="http://www.brendangregg.com/blog/2014-05-11/strace-wow-much-syscall.html">“strace Wow Much Syscall”</a> for details), so just be cautious tracing in production where you can’t afford a performance hit.
+       </p>
+       <p>
+        Just be aware that <code>htop</code> may not have access to all the information it wants, depending on your user’s permissions. If you’ve got root, it’s usually best to <code>sudo htop</code>.
+       </p>
+       <h2 id="what---s-taking-up-disk-space-">
+        <a class="heading-anchor" href="#what---s-taking-up-disk-space-">#</a>What’s taking up disk space?
+       </h2>
+       <p>
+        If you <code>ls -l</code> a file, it will show you its size; but if you <code>ls -l</code> a directory, its size will always be <code>4096</code>! Why? The <code>ls</code> command shows you the size of each item’s <em>inode</em> in the filesystem, which for a directory does not include the size of its contents.
+       </p>
+       <p>
+        To explore disk usage, you probably want some combination of <code>df</code> and <code>du</code>.
+       </p>
+       <h3 id="df">
+        <a class="heading-anchor" href="#df">#</a><code>df</code>
+       </h3>
+       <p>
+        The <code>df</code> command will show you a summary of how much space is used vs. free for each currently mounted filesystem. Units are kilobytes by default, so you usually want <code>df -h</code> to get units rounded and shown in MB, GB, etc.
+       </p>
+       <h3 id="du">
+        <a class="heading-anchor" href="#du">#</a><code>du</code>
+       </h3>
+       <p>
+        The <code>du</code> command knows how to compute total disk usage for the contents of directories.
+       </p>
+       <p>
+        Given a directory, <code>du</code> will recurse down all descendent files and subdirectories and get the disk usage of each. With no other options specified, it will print the size on disk of <em>every file</em> descendent from that directory, which is usually not what you want. You must give it a <em>depth</em> option to tell it how many levels of directories you want a summary for, so <code>du -d1 /</code> will show you the total size of all contents of only root level directories.
+       </p>
+       <p>
+        Units are kilobytes by default here too, so you usually want human-readable <code>du -hd1 &lt;path&gt;</code>.
+       </p>
+       <h3 id="drilling-down-to-a-runaway-log-file">
+        <a class="heading-anchor" href="#drilling-down-to-a-runaway-log-file">#</a>Drilling down to a runaway log file
+       </h3>
+       <p>
+        Uh oh! Disk is full on an app box.
+       </p>
+       <ol>
+        <li>
+         <p>
+          Starting out, do a preliminary <code>df</code> to see how much space on which filesystem is used up.
+         </p>
+        </li>
+        <li>
+         <p>
+          For the offending filesystem, do a <code>du -hd1</code> with the filesystem’s listed <em>mount point</em> (e.g. <code>du -hd1 /</code>). If you see a bunch of <code>cannot read directory ...: Permission denied</code> errors, and your user has root privileges, retry with <code>sudo</code>.
+         </p>
+        </li>
+        <li>
+         <p>
+          In all likelihood, one of the listed results is much larger than the others. If it’s a file, you found the offender! If it’s a directory, do another <code>du -hd1</code> at that directory, and go to (3).
+         </p>
+        </li>
+        <li>
+         <p>
+          If you found and deleted or truncated an overlarge file, check the results of a fresh <code>df</code> against the one from (1) to be sure it took.
+         </p>
+        </li>
+       </ol>
+       <p>
+        Here’s one caveat. Space on disk for a file can’t be freed until no program is using it anymore. When you delete a file, new programs can’t open it, but existing ones may still have it open! Sometimes in (4) you can not find what’s taking up space, or you can find and delete it but see that space isn’t immediately recovered in <code>df</code>, and this can be why. (For example, when mysql creates a temporary file in its <code>tmpdir</code>, it immediately deletes it, but keeps the descriptor open, so that only it can use it, and so that its space is automatically freed if mysql happens to exit uncleanly. See <code>man 2 unlink</code> for more info.)
+       </p>
+       <p>
+        If this is the case, <code>du</code> is of no more use. That brings me to <code>lsof</code>.
+       </p>
+       <h2 id="what-files-or-connections-is-a-thing-holding-open-">
+        <a class="heading-anchor" href="#what-files-or-connections-is-a-thing-holding-open-">#</a>What files or connections is a thing holding open?
+       </h2>
+       <p>
+        The job of <code>lsof</code> is to <em>list open files</em>. Since, on Unix, everything is a file (descriptor), <code>lsof</code> can dump out quite a lot of useful information about a running process. It’s one of my favorites.
+       </p>
+       <p>
+        An <code>lsof</code> with no options will list <em>every open file descriptor</em> for <em>everything running</em>, which is almost surely not what you want.
+       </p>
+       <p>
+        You can give <code>lsof</code> a pid or list of comma-separated pids to filter output for.
+       </p>
+       <code class="language-bash"><pre class="highlight"><span class="c1"># Bash's $$ expands to the its own current process id</span>
+lsof -p <span class="nv">$$</span>
+</pre></code>
+       <p>
+        You can give it a network specification to filter connections for only open connections which match.
+       </p>
+       <code class="language-bash"><pre class="highlight"><span class="c1"># open connections on port 443</span>
+lsof -i :443
+
+<span class="c1"># the same thing, specifying the default port for https (see /etc/services for a full list)</span>
+lsof -i :https
+
+<span class="c1"># all TCP connections</span>
+lsof -i TCP
+
+<span class="c1"># all IPv4 TCP connections on localhost mysql port (3306)</span>
+lsof -i 4TCP@localhost:mysql
+</pre></code>
+       <p>
+        You can even ask it for all open files which have since been deleted!
+       </p>
+       <code class="language-bash"><pre class="highlight"><span class="c1"># list all files with fewer than 1 link, i.e. all deleted (unlinked) files</span>
+lsof +L1
+</pre></code>
+       <p>
+        One quirk about <code>lsof</code> is that filter options are <em>disjunctive</em> (logical <em>or</em>) by default. To specify filters as <em>conjunctive</em> instead, use <code>-a</code> (for <em>and</em>).
+       </p>
+       <code class="language-bash"><pre class="highlight"><span class="c1"># all file descriptors which are TCP connections, or which are owned by pid 1337</span>
+lsof -i TCP -p <span class="m">1337</span>
+
+<span class="c1"># all TCP connections of only pid 1337</span>
+lsof -i TCP -a -p <span class="m">1337</span>
+</pre></code>
+       <p>
+        Fun fact: dynamically linked libraries, for the purposes of inspection with <code>lsof</code>, are just normal file descriptors! So, for example, you can see every running process dynamically linked against openssl like so.
+       </p>
+       <code class="language-bash"><pre class="highlight">sudo lsof <span class="p">|</span> grep libssl <span class="p">|</span> less
+</pre></code>
+       <h2 id="log-file-spelunking">
+        <a class="heading-anchor" href="#log-file-spelunking">#</a>Log file spelunking
+       </h2>
+       <p>
+        If we’re honest, who cares about logs? Filled with well-intended <code>INFO</code> lines grasping for relevance and <code>WARN</code>s with arguably decent advice never heeded, logs are most often like my collection of mugs, which started that time I told my mom I liked coffee, and which has grown every gift-oriented holiday since by 1 or 2 bright pink ones with hearts on them or ones with the ingenuine grins of my own immediate family printed on them, all rarely, if ever, used.
+       </p>
+       <p>
+        Still, sometimes you just don’t have better options.
+       </p>
+       <h3 id="tail--f-and-friends">
+        <a class="heading-anchor" href="#tail--f-and-friends">#</a><code>tail -f</code> and friends
+       </h3>
+       <p>
+        You’ve likely already used <code>tail -f thing.log</code>. Just remember you can <code>tail</code> multiple files at once, and it works well with shell globbing, like so.
+       </p>
+       <code class="language-bash"><pre class="highlight">tail -f /opt/apps/*/shared/log/*.log
+</pre></code>
+       <p>
+        You can also use <code>less +F</code> for <code>tail -f</code>-like behavior (or <code>less +G</code> to scroll to the end without following). The notable difference when used with multiple log files, though, is that <code>tail -f</code> will intersperse the output of each to stdout, where <code>less +F</code> keeps the files separate, and you have to <code>:n</code> or <code>:p</code> to flip between them.
+       </p>
+       <h3 id="where-to-look">
+        <a class="heading-anchor" href="#where-to-look">#</a>Where to look
+       </h3>
+       <p>
+        Besides app logs, you’re likely to find log files for other system programs like mysql or nginx in <code>/var/log</code>, at least in Ubuntu. One extra special log file is <code>/var/log/syslog</code>, which is an aggregate log of some other low level processes. If something’s broken at the system level, chances are something will point to it in the syslog.
+       </p>
+       <p>
+        If, on the other hand, you’re doing some manual maintenance on a server, always remember that you can <code>oops_lol_broken.sh | tee fixup.log</code> to save all output to a file for later. There’s nothing worse than <em>just knowing</em> those few output lines you need right now are <em>just beyond</em> the edge of your scrollback. (Bonus: if you have the <code>moreutils</code> package installed, you can pipe to <code>ts</code> to get timestamped log lines for anything which doesn’t already have them!)
+       </p>
+       <h2 id="networking">
+        <a class="heading-anchor" href="#networking">#</a>Networking
+       </h2>
+       <p>
+        <em>Networks, man</em>. Can’t live with ‘em, can’t live without ’em.
+       </p>
+       <h3 id="what-ip-does-this-host-resolve-to-">
+        <a class="heading-anchor" href="#what-ip-does-this-host-resolve-to-">#</a>What IP does this host resolve to?
+       </h3>
+       <p>
+        To see what your DNS resolver has on record for a domain name, <code>dig</code> is (usually) your friend.
+       </p>
+       <code class="language-bash"><pre class="highlight">dig google.com
+</pre></code>
+       <p>
+        That will give you the DNS A records for that domain, as reported by one of your DNS servers. To get a different type of record, just supply it after the domain. To show all records, use the special type <code>ANY</code>.
+       </p>
+       <code class="language-bash"><pre class="highlight"><span class="c1"># email SPF records and such</span>
+dig google.com TXT
+<span class="c1"># I want it all</span>
+dig google.com ANY
+</pre></code>
+       <p>
+        Note that <code>dig</code> will reach out to a DNS server <em>every time</em>, which may not necessarily be the source of DNS resolution that your program sees. Notably, <code>nscd</code> (name service caching daemon) is a weird fish that <em>hooks into glibc directly</em> to inject cached DNS responses, with its own configurable TTL <em>separate</em> from any TTL respected by the DNS server itself. To see a bit more accurately what your program sees, use <code>getent</code> (Linux only).
+       </p>
+       <code class="language-bash"><pre class="highlight">getent hosts google.com
+</pre></code>
+       <h3 id="is-that-box-even-reachable-">
+        <a class="heading-anchor" href="#is-that-box-even-reachable-">#</a>Is that box even reachable?
+       </h3>
+       <p>
+        You’ve almost definitely used <code>ping</code>.
+       </p>
+       <code class="language-bash"><pre class="highlight">ping google.com
+</pre></code>
+       <p>
+        If you need to script it, you probably want to specify a max number of attempts to avoid that infinite loop.
+       </p>
+       <code class="language-bash"><pre class="highlight">ping -c1 google.com
+</pre></code>
+       <p>
+        One thing to keep in mind is that <code>ping</code> uses the ICMP protocol. Sometimes ICMP traffic is disabled by a server (so that it’s less discoverable, usually), so a <code>ping</code> to an otherwise reachable address may still fail. If you suspect that, or if you need to test a specific port for connectivity, you might try a <code>telnet</code> instead.
+       </p>
+       <code class="language-bash"><pre class="highlight">telnet google.com <span class="m">80</span>
+</pre></code>
+       <p>
+        Bonus points if you can type out a valid HTTP request from memory (I couldn’t quite)!
+       </p>
+       <p>
+        On the rare occasion a remote IP turns out to <em>not</em> be reachable, but both endpoints seem properly configured, then it’s time to break out the <code>traceroute</code> to see all the hops between A and B.
+       </p>
+       <code class="language-bash"><pre class="highlight">traceroute google.com
+</pre></code>
+       <p>
+        The <code>traceroute</code> program also uses ICMP to send out its probes, so the same ICMP-maybe-disabled caveat as <code>ping</code> applies here too.
+       </p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script type="text/javascript">
+   var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-28816340-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+  </script>
+ </body>
+</html>

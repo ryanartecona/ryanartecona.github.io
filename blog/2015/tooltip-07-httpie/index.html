@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+ <head></head>
+ <body>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>
+   Tooltip #7: httpie — Ryan Artecona
+  </title>
+  <meta name="viewport" content="width=device-width">
+  <link href="../../../css/main.css" rel="stylesheet">
+  <div class="page-wrap">
+   <div class="header-wrap">
+    <div class="header" role="page-header">
+     <header class="site-title-wrap">
+      <a href="../../../" rel="home" title="Ryan Artecona">
+        <span class="logo-wrap">
+          <span class="logo-background">
+            <img src="../../../images/RA_logo.png" class="logo" alt="Ryan Artecona">
+          </span>
+        </span>
+        <span class="site-title">
+          Ryan Artecona
+        </span>
+      </a>
+     </header>
+     <div class="nav" role="navigation">
+      <ul class="nav-items">
+       <li class="current nav-item">
+        <a href="../../../blog">Blog</a>
+       </li>
+       <li class="nav-item">
+        <a href="../../../about">About</a>
+       </li>
+      </ul>
+     </div>
+    </div>
+   </div>
+   <div class="page-main">
+    <div class="page-content">
+     <div class="article">
+      <div class="entry-header">
+       <h1 id="tooltip--7--httpie" class="entry-title">
+        Tooltip #7: httpie
+       </h1>
+      </div>
+      <div class="entry-meta">
+       <span class="entry-meta-item entry-date">2015-11-07</span>
+              <span class="entry-meta-item entry-tags">tooltip</span>
+      </div>
+      <div class="entry-content">
+       <p></p>
+       <p>
+        You know <code>curl</code>. Well, you don’t really <em>know</em> know <code>curl</code>, because who could? It supports over 20 different protocols, and, I mean, the tool <em>itself</em> basically confesses to being abstruse.
+       </p>
+       <blockquote>
+        <p>
+         The command is designed to work without user interaction.…As you will see below, the number of features will make your head spin!
+        </p>
+       </blockquote>
+       <p>
+        Moreover,
+       </p>
+       <pre><code>man curl | wc -l
+2640
+</code></pre>
+       <p>
+        With a man page like that, who needs enemies?
+       </p>
+       <p>
+        Anyway, for all those times you just want to make an HTTP request to somewhere, maybe with a custom header or two and a few parameters, but <em>you just know</em> it would take less time to type your request out by hand into netcat than it would to figure out how to construct the right <code>curl</code> invocation, there’s a better way.
+       </p>
+       <h2 id="http-for-humans">
+        <a class="heading-anchor" href="#http-for-humans">#</a>HTTP for humans
+       </h2>
+       <p>
+        The Python-fluent among you probably know (and probably love) Kenneth Reitz’s <a href="http://docs.python-requests.org/en/latest/"><code>requests</code></a> library. <a href="https://github.com/jkbrzt/httpie">HTTPie</a> is essentially <code>requests</code>-the-CLI, but also with <code>pygments</code>-colored and pretty-printed output. Yeah, it’s that nice.
+       </p>
+       <p>
+        Install it the usual way with <code>brew install httpie</code>, or with <code>apt-get</code>, or with <code>pip</code> if that’s your thing.
+       </p>
+       <p>
+        It goes generally like this.
+       </p>
+       <pre><code>http GET localhost:3000/health
+</code></pre>
+       <p>
+        Options and flags go first, then the HTTP method, then the URL, and last some number of headers or parameters. That one above will print out the whole HTTP response, verbatim. It will syntax-highlight headers, and if the body is a format HTTPie knows about, like JSON, that will be colored and nicely formatted also.
+       </p>
+       <p>
+        Since <code>GET</code> is the default method and <code>localhost</code> is the default domain, the above can even be nicely elided.
+       </p>
+       <pre><code>http :3000/health
+</code></pre>
+       <h2 id="an-interface-you-can--basically--memorize">
+        <a class="heading-anchor" href="#an-interface-you-can--basically--memorize">#</a>An interface you can (basically) memorize
+       </h2>
+       <p>
+        Constructing POST requests is about as simple as it can get.
+       </p>
+       <pre><code>http POST httpbin.org/post myparam=myvalue
+</code></pre>
+       <p>
+        This will, naturally, send a POST off to <a href="https://httpbin.org">httpbin</a> (which is itself another fantastic Reitz tool, a gold standard for echo servers), complete with a request body of <code>{"myparam":"myvalue"}</code>. Conveniently, if you specify <em>any</em> request parameters, HTTPie will know to send a POST instead of a GET. If you’d rather form-encode your request than send JSON, use <code>--form</code> or <code>-f</code> like so.
+       </p>
+       <pre><code>http --form httpbin.org/post myparam=myvalue
+</code></pre>
+       <p>
+        It’s a friend to pipes, too, knowing to disable highlighting and printing of headers when redirected, and able to accept request bodies on stdin.
+       </p>
+       <pre><code>cat request.json | http httpbin.org/status/418 &gt; teapot.txt
+</code></pre>
+       <p>
+        Similar to <code>key=value</code> style JSON parameters, you can also specify custom headers without hassle.
+       </p>
+       <pre><code>http httpbin.org/user-agent User-Agent:2sneaky4u
+</code></pre>
+       <p>
+        Several more forms of these are supported. Note they must always come at the end, after the URL part.
+       </p>
+       <table>
+        <thead>
+         <tr>
+          <th>
+           Separator
+          </th>
+          <th>
+           Usage
+          </th>
+          <th></th>
+         </tr>
+        </thead>
+        <tbody>
+         <tr>
+          <td>
+           <code>:</code>
+          </td>
+          <td>
+           <code>X-Api-Token:1234</code>
+          </td>
+          <td>
+           HTTP Header
+          </td>
+         </tr>
+         <tr>
+          <td>
+           <code>=</code>
+          </td>
+          <td>
+           <code>param=value</code>
+          </td>
+          <td>
+           Parameter in JSON or form-encoded if <code>--form</code> specified. If JSON, <code>value</code> is <em>always</em> a string.
+          </td>
+         </tr>
+         <tr>
+          <td>
+           <code>:=</code>
+          </td>
+          <td>
+           <code>param:=false</code>
+          </td>
+          <td>
+           Parameter as <em>raw</em> JSON, for use with non-string values
+          </td>
+         </tr>
+         <tr>
+          <td>
+           <code>==</code>
+          </td>
+          <td>
+           <code>query==somequery</code>
+          </td>
+          <td>
+           Query parameter, so you don’t have to escape or handle <code>?</code> and <code>&amp;</code> yourself
+          </td>
+         </tr>
+         <tr>
+          <td>
+           <code>:=@</code>
+          </td>
+          <td>
+           <code>ids:=@ids.json</code>
+          </td>
+          <td>
+           Like <code>:=</code>, but the contents of the file <code>ids.json</code> are used verbatim. It should already be valid JSON or form encoded.
+          </td>
+         </tr>
+         <tr>
+          <td>
+           <code>=@</code>
+          </td>
+          <td>
+           <code>password=@pw.txt</code>
+          </td>
+          <td>
+           Like <code>=</code>, but the contents of the file <code>pw.txt</code> are form-encoded (<code>--form</code>) or put in a JSON string (default).
+          </td>
+         </tr>
+         <tr>
+          <td>
+           <code>@</code>
+          </td>
+          <td>
+           <code>file@upload.tar</code>
+          </td>
+          <td>
+           Requires <code>--form</code>, and uploads the file <code>upload.tar</code> in a <code>multipart/form-data</code> request.
+          </td>
+         </tr>
+        </tbody>
+       </table>
+       <h2 id="other-goodies">
+        <a class="heading-anchor" href="#other-goodies">#</a>Other goodies
+       </h2>
+       <p>
+        Download a file like <code>wget</code> with <code>--download</code> or <code>-d</code>.
+       </p>
+       <pre><code>http --download https://httpbin.org/image/jpeg
+</code></pre>
+       <p>
+        Get through a Basic auth challenge by giving your name with <code>--auth</code> or <code>-a</code> up front, and entering your password at the prompt.
+       </p>
+       <pre><code>http -a ryan https://httpbin.org/basic-auth/ryan/s00pers3krit
+</code></pre>
+       <p>
+        Control what things to print with <code>--print</code> or <code>-p</code>.
+       </p>
+       <table>
+        <thead>
+         <tr>
+          <th>
+           Flag
+          </th>
+          <th>
+           Prints
+          </th>
+         </tr>
+        </thead>
+        <tbody>
+         <tr>
+          <td>
+           H
+          </td>
+          <td>
+           Request headers
+          </td>
+         </tr>
+         <tr>
+          <td>
+           B
+          </td>
+          <td>
+           Request body
+          </td>
+         </tr>
+         <tr>
+          <td>
+           h
+          </td>
+          <td>
+           response headers
+          </td>
+         </tr>
+         <tr>
+          <td>
+           b
+          </td>
+          <td>
+           response body
+          </td>
+         </tr>
+        </tbody>
+       </table>
+       <p>
+        This will print the request and response headers without either body.
+       </p>
+       <pre><code>http --print=Hh httpbin.org/post k=v
+</code></pre>
+       <p>
+        You can also opt to print everything with <code>--verbose</code> or <code>-v</code>, which behaves like <code>--print=HBhb</code>.
+       </p>
+       <p>
+        A couple others worth mentioning are skipping SSL cert verification with <code>--verify=no</code>, and opting to keep cookies and authentication creds around in a named session file with <code>--session=test_session</code>. FYI, these session files are stored in plain text at <code>~/.httpie/sessions</code>.
+       </p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script type="text/javascript">
+   var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-28816340-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+  </script>
+ </body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+ <head></head>
+ <body>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>
+   Tooltip #6: flock, shlock &amp; timeout — Ryan Artecona
+  </title>
+  <meta name="viewport" content="width=device-width">
+  <link href="../../../css/main.css" rel="stylesheet">
+  <div class="page-wrap">
+   <div class="header-wrap">
+    <div class="header" role="page-header">
+     <header class="site-title-wrap">
+      <a href="../../../" rel="home" title="Ryan Artecona">
+        <span class="logo-wrap">
+          <span class="logo-background">
+            <img src="../../../images/RA_logo.png" class="logo" alt="Ryan Artecona">
+          </span>
+        </span>
+        <span class="site-title">
+          Ryan Artecona
+        </span>
+      </a>
+     </header>
+     <div class="nav" role="navigation">
+      <ul class="nav-items">
+       <li class="current nav-item">
+        <a href="../../../blog">Blog</a>
+       </li>
+       <li class="nav-item">
+        <a href="../../../about">About</a>
+       </li>
+      </ul>
+     </div>
+    </div>
+   </div>
+   <div class="page-main">
+    <div class="page-content">
+     <div class="article">
+      <div class="entry-header">
+       <h1 id="tooltip--6--flock--shlock---timeout" class="entry-title">
+        Tooltip #6: flock, shlock &amp; timeout
+       </h1>
+      </div>
+      <div class="entry-meta">
+       <span class="entry-meta-item entry-date">2015-10-16</span>
+              <span class="entry-meta-item entry-tags">tooltip</span>
+      </div>
+      <div class="entry-content">
+       <p></p>
+       <p>
+        Have you ever seen a cron job somehow take longer than expected? Have you ever opened a <code>top</code> and been surprised to find a sad little cluster of hung cron jobs? Have those jobs ever happened to contend for a shared resource, such that if only a <em>single</em> job took too long, they would all slow down and result in a <em>multi-cron pileup</em>?
+       </p>
+       <p>
+        I have.
+       </p>
+       <p>
+        Have you ever hesitated for a brief moment before running a command and wondered “what happens if someone else starts one of these before mine finishes? something bad?”, then realize you wouldn’t even know how to protect this command from multiple simultaneous invocations anyway, and finally,  defeated by the awfulness of software, let out an audible sigh and run the potentially disasterous command the way you were going to anyway?
+       </p>
+       <p>
+        I <em>totally</em> haven’t. Nope. Definitely not yesterday.
+       </p>
+       <h2 id="put-a-mutex-in-your-filesystem">
+        <a class="heading-anchor" href="#put-a-mutex-in-your-filesystem">#</a>Put a mutex in your filesystem
+       </h2>
+       <p>
+        The good news is there’s hope. The general strategy isn’t even all that complicated, conceptually.
+       </p>
+       <p>
+        To protect a shared resource in a way that only allows one actor to <em>do something</em> with it at any given time, one reliable strategy is to make that actor acquire a lock first, and release the lock after use.
+       </p>
+       <p>
+        It’s no different here! Linux’s <code>flock(1)</code> command will wrap a command by first acquiring a lock via a file, and afterward releasing the lock by deleting the file.
+       </p>
+       <p>
+        Since OS X doesn’t have <code>flock(1)</code> <em>the command</em> (though it has <code>flock(2)</code> <em>the syscall</em>…), <code>flock</code> isn’t exactly great for use inside portable scripts. In OS X you have to use <code>shlock</code> to achieve the same effect, which uses a similar locking mechanism, but is more difficult to use.
+       </p>
+       <h3 id="flock-in-linux">
+        <a class="heading-anchor" href="#flock-in-linux">#</a><code>flock</code> in Linux
+       </h3>
+       <p>
+        So you have a command which you want at most one copy of running at any time.
+       </p>
+       <code class="language-bash"><pre class="highlight">deploy-to-prod --big-data --hot-swap all --force
+</pre></code>
+       <p>
+        Wrap it with <code>flock</code>, specifying the name of the file to use for the lock.
+       </p>
+       <code class="language-bash"><pre class="highlight">flock /tmp/deploy-to-prod.lock deploy-to-prod --big-data --hot-swap all --force
+</pre></code>
+       <p>
+        Everything works the same as otherwise if the lock doesn’t exist when the command is run. If it does, the default configuration will <em>wait</em> to acquire the lock, and then start the wrapped command.
+       </p>
+       <p>
+        You can tell <code>flock</code> to <em>bail out early</em> instead of waiting to acquire the lock, if you want.
+       </p>
+       <code class="language-bash"><pre class="highlight">flock --nonblock /tmp/deploy-to-prod.lock deploy-to-prod --big-data --hot-swap all --force
+</pre></code>
+       <p>
+        This is better for the <code>cron</code> use case, since you know the command will eventually be retried if it can’t do its thing immediately.
+       </p>
+       <p>
+        You can alternatively tell <code>flock</code> to wait for the lock up to a timeout threshold, and if the lock still hasn’t come available, to exit with an error code <code>1</code>.
+       </p>
+       <code class="language-bash"><pre class="highlight">flock --wait 4.5 /tmp/deploy-to-prod.lock deploy-to-prod --big-data --hot-swap all --force
+</pre></code>
+       <p>
+        This will let <code>flock</code> wait up to 4.5 seconds, or otherwise fail.
+       </p>
+       <h3 id="shlock-in-os-x">
+        <a class="heading-anchor" href="#shlock-in-os-x">#</a><code>shlock</code> in OS X
+       </h3>
+       <p>
+        Unfortunately, <code>flock(1)</code> doesn’t exist in OS X, only Linux and BSD. There’s <a href="https://github.com/discoteq/flock">this stated ‘portable’ version</a>, but it doesn’t looks like it has many users. <em>Caveat executor</em>.
+       </p>
+       <p>
+        What <em>is</em> available in OS X is a related tool called <code>shlock</code>. It’s meant to be used in a script, so it doesn’t simply wrap a command.
+       </p>
+       <code class="language-bash"><pre class="highlight"><span class="cp">#!/usr/bin/env bash
+</span><span class="cp"></span><span class="nv">lckfile</span><span class="o">=</span>/tmp/foo.lock
+<span class="k">if</span> shlock -f <span class="si">${</span><span class="nv">lckfile</span><span class="si">}</span> -p <span class="nv">$$</span>
+<span class="k">then</span>
+  deploy-to-prod --first grip_it --then rip_it
+  rm <span class="si">${</span><span class="nv">lckfile</span><span class="si">}</span>
+<span class="k">else</span>
+  <span class="nb">echo</span> Lock <span class="si">${</span><span class="nv">lckfile</span><span class="si">}</span> already held by <span class="sb">`</span>cat <span class="si">${</span><span class="nv">lckfile</span><span class="si">}</span><span class="sb">`</span>
+<span class="k">fi</span>
+</pre></code>
+       <p>
+        As you might guess by the different name, <code>shlock</code> achieves an effect similar to <code>flock</code>, but via a different mechanism. Most notably, you have to explicitly give it the PID of the process which is to be considered the acquirer of the lock (via <code>-p $$</code> in bash), and you have to manually <code>rm</code> the lockfile when you’re done with it. Also, <code>shlock</code> always exits immediately, akin to the <code>--nonblock</code> flag in flag, leaving any wait/timeout behavior up to the user.
+       </p>
+       <h3 id="the-manpage-behind-the-curtain">
+        <a class="heading-anchor" href="#the-manpage-behind-the-curtain">#</a>The manpage behind the curtain
+       </h3>
+       <p>
+        The <code>flock(1)</code> command wraps the <code>flock(2)</code> system call with a nice interface. The <code>flock(2)</code> syscall works by assigning locks to <em>file descriptors</em>. The <code>flock(1)</code> command essentially opens a file descriptor for the lock file you point it at, acquires an <code>flock(2)</code> on it, and then keeps that file descriptor open and locked while your command runs.
+       </p>
+       <p>
+        Judging by the warning signs in the respective man pages, it seems this mechanism can make some environments tricky to use with <code>flock</code>. Specifically, <code>fork</code>ing a process after the parent acquires an <code>flock</code> on a file descriptor means the child effectively inherits that lock, by way of inheriting its associated file descriptor. Conversely, opening two file descriptors to the same file and <code>flock</code>ing each will behave the same as two separate processes attempting to acquire <code>flock</code>s on that file, since the file descriptors are distinct. Also, the presence of the lock file <em>does not</em> imply some process currently has an <code>flock</code> on it; the file stays around after the lock is released.
+       </p>
+       <p>
+        The <code>shlock</code> in OS X works very differently under the hood. To acquire an <code>shlock</code> is to write the calling process’s PID to that file, and to release the lock is to simply delete the file. The <code>shlock</code> command takes care of checking if the currently written PID actually corresponds to a currently running process, and will happily acquire the lock itself if that process is nowhere to be found. This guards against a process dying before releasing a lock. The atomicity of acquiring an <code>shlock</code> is guaranteed by <code>link(2)</code> instead of <code>flock(2)</code>.
+       </p>
+       <p>
+        This actually makes for far fewer caveats for <code>shlock</code> than <code>flock</code>, since whole processes and PIDs are easier to track and manage than individual file descriptors.
+       </p>
+       <h2 id="a-complementary-timeout">
+        <a class="heading-anchor" href="#a-complementary-timeout">#</a>A complementary <code>timeout</code>
+       </h2>
+       <p>
+        Even with the protection of a mutex lock for any command, your computer might still be exposed to a particularly unsavory situation wherein a command launches, acquires an <code>flock</code> or <code>shlock</code>, and then <em>hangs</em>, never to exit nor to release the lock!
+       </p>
+       <p>
+        For this malady a pretty decent remedy is a good, old fashioned <code>timeout</code>, which does exactly what it sounds like. Combined with an <code>flock</code> or <code>shlock</code>, you can be sure <em>at most 1</em> of a command ever run simultaneously, and that no bad run will be allowed to keep the lock for <em>too</em> long.
+       </p>
+       <code class="language-bash"><pre class="highlight">flock --wait <span class="m">600</span> /tmp/deploy-to-prod.lock timeout 60m deploy-to-prod --exec **/*
+</pre></code>
+       <p>
+        Here, <code>flock</code> waits up to 10 minutes to acquire the <code>/tmp/deploy-to-prod.lock</code>. If the lock is acquired, <code>timeout</code> waits up to an hour for the command to exit naturally, or it will kill it with a <code>TERM</code> signal.
+       </p>
+       <p>
+        Note that since <code>timeout</code> is part of GNU coreutils, on OS X you will need a <code>brew install coreutils</code>, after which it will be installed with a <em>g</em> prefix as <code>gtimeout</code>.
+       </p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script type="text/javascript">
+   var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-28816340-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+  </script>
+ </body>
+</html>

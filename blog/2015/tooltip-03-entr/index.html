@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+ <head></head>
+ <body>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>
+   Tooltip #3: entr — Ryan Artecona
+  </title>
+  <meta name="viewport" content="width=device-width">
+  <link href="../../../css/main.css" rel="stylesheet">
+  <div class="page-wrap">
+   <div class="header-wrap">
+    <div class="header" role="page-header">
+     <header class="site-title-wrap">
+      <a href="../../../" rel="home" title="Ryan Artecona">
+        <span class="logo-wrap">
+          <span class="logo-background">
+            <img src="../../../images/RA_logo.png" class="logo" alt="Ryan Artecona">
+          </span>
+        </span>
+        <span class="site-title">
+          Ryan Artecona
+        </span>
+      </a>
+     </header>
+     <div class="nav" role="navigation">
+      <ul class="nav-items">
+       <li class="current nav-item">
+        <a href="../../../blog">Blog</a>
+       </li>
+       <li class="nav-item">
+        <a href="../../../about">About</a>
+       </li>
+      </ul>
+     </div>
+    </div>
+   </div>
+   <div class="page-main">
+    <div class="page-content">
+     <div class="article">
+      <div class="entry-header">
+       <h1 id="tooltip--3--entr" class="entry-title">
+        Tooltip #3: entr
+       </h1>
+      </div>
+      <div class="entry-meta">
+       <span class="entry-meta-item entry-date">2015-07-10</span>
+              <span class="entry-meta-item entry-tags">tooltip</span>
+      </div>
+      <div class="entry-content">
+       <p></p>
+       <p>
+        There’s nothing quite like tightening up your feedback loop between changing code and observing a program’s changed behavior to help you become and stay focused.
+       </p>
+       <p>
+        There are lots of tools out there meant to help with special cases of this, like <code>guard</code>, but setting them up can be a bit inconvenient. Knowing this, some of the more mature build tools and test runners have <code>--watch</code> options <em>built in</em> to make it easy to rerun a command whenever any of its depended upon files change, but there, if you want a file change to trigger a command that the tool doesn’t know how to run, you’re left with configuring a general purpose file watcher.
+       </p>
+       <h2 id="enter-entr">
+        <a class="heading-anchor" href="#enter-entr">#</a>Enter <code>entr</code>
+       </h2>
+       <p>
+        The <a href="http://entrproject.org/"><code>entr</code></a> utility is everything I wanted <code>guard</code> to be. It is one of those tools that’s never anything but a pleasure to use. It fills a specific role, it’s reliable, and it has an absolutely minimal set of options (3!).
+       </p>
+       <p>
+        You use the CLI by piping into it a list of files you want it to watch, and you give it a command to run each time it notices a file has changed.
+       </p>
+       <pre><code>ls **/*.rb | entr rake spec
+</code></pre>
+       <p>
+        Nice! You can give it <code>-c</code> option to clear the screen before running each command, to effectively anchor short output to the top of the terminal window. The <code>-r</code> option tells it to kill and rerun the command in case it hasn’t exited by the time it sees the next file change, which is useful for things like opening a REPL or restarting a dev server.
+       </p>
+       <pre><code>ls **/*.rb | entr -r bundle exec foreman start
+</code></pre>
+       <p>
+        You can tell <code>entr</code> to give your command a path to the file that changed with <code>/_</code>.
+       </p>
+       <pre><code>ls **/*.rb | entr echo /_ changed
+</code></pre>
+       <h2 id="examples">
+        <a class="heading-anchor" href="#examples">#</a>Examples
+       </h2>
+       <p>
+        The project page linked above and the manpage included with the tool itself both have great examples, but I’ll mix a couple of those with a couple of my own here.
+       </p>
+       <p>
+        To watch any file checked into your <code>git</code> repo:
+       </p>
+       <pre><code>git ls-tree -r HEAD --name-only | entr -r rake spec
+</code></pre>
+       <p>
+        This one’s so handy I have an alias <code>git ls</code> in my <code>~/.gitconfig</code> for it.
+       </p>
+       <pre><code>[alias]
+  ls = ls-tree -r HEAD --name-only
+</code></pre>
+       <p>
+        If your current task is scoped to certain files and you only want to run their tests, you can.
+       </p>
+       <pre><code>find app -name 'media*.rb' | entr rspec spec/**/media*.rb
+</code></pre>
+       <p>
+        I just found this when writing this post, but it looks like with <a href="https://github.com/prasmussen/chrome-cli">chrome-cli</a> it is dead simple to reload the current tab.
+       </p>
+       <pre><code>brew install chrome-cli
+find . -name '*.sass' -or -name '*.coffee' | entr chrome-cli reload
+</code></pre>
+       <p>
+        You can only give <code>entr</code> a single command, but you can mux multiple commands into a single string argument to your favorite shell.
+       </p>
+       <pre><code>git ls | entr -cr fish -c "rake spec; or say 'red alert! red alert!'"
+</code></pre>
+       <p>
+        That’s it for my examples! The ultimate example on the project page uses <code>entr</code> to send a key to a <code>tmux</code> pane running <code>vim</code> to reload a <code>vimdiff</code> session, but I haven’t taken it nearly that far yet.
+       </p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script type="text/javascript">
+   var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-28816340-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+  </script>
+ </body>
+</html>

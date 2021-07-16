@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+ <head></head>
+ <body>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>
+   Tooltip #4: less — Ryan Artecona
+  </title>
+  <meta name="viewport" content="width=device-width">
+  <link href="../../../css/main.css" rel="stylesheet">
+  <div class="page-wrap">
+   <div class="header-wrap">
+    <div class="header" role="page-header">
+     <header class="site-title-wrap">
+      <a href="../../../" rel="home" title="Ryan Artecona">
+        <span class="logo-wrap">
+          <span class="logo-background">
+            <img src="../../../images/RA_logo.png" class="logo" alt="Ryan Artecona">
+          </span>
+        </span>
+        <span class="site-title">
+          Ryan Artecona
+        </span>
+      </a>
+     </header>
+     <div class="nav" role="navigation">
+      <ul class="nav-items">
+       <li class="current nav-item">
+        <a href="../../../blog">Blog</a>
+       </li>
+       <li class="nav-item">
+        <a href="../../../about">About</a>
+       </li>
+      </ul>
+     </div>
+    </div>
+   </div>
+   <div class="page-main">
+    <div class="page-content">
+     <div class="article">
+      <div class="entry-header">
+       <h1 id="tooltip--4--less" class="entry-title">
+        Tooltip #4: less
+       </h1>
+      </div>
+      <div class="entry-meta">
+       <span class="entry-meta-item entry-date">2015-07-24</span>
+              <span class="entry-meta-item entry-tags">tooltip</span>
+      </div>
+      <div class="entry-content">
+       <p></p>
+       <p>
+        I’ve had to go poking around unfamiliar servers and reading man pages of unfamiliar commands more these last few weeks than previously, and I’ve grown very fond of <a href="http://ss64.com/bash/less.html"><code>less</code></a>, the pager. It’s not a very exciting tool, but you probably already use it at least as often as you view a man page, or maybe also inspect a log, and you probably use <em>less</em> of its feature set than you’d find useful if you knew about them!
+       </p>
+       <p>
+        See what I did there? Expect plenty <em>more</em> of that!
+       </p>
+       <p>
+        For starters, you can all the goods of this guide and more in <code>less --help</code> (which gets paged inside <code>less</code>, of course), or for the <em>less</em> intimidated by overlong manuals with altogether too many historical details, in <code>man less</code> (also paged with itself, which is all the <em>more</em> <a href="https://www.reddit.com/r/oddlysatisfying">oddly satisfying</a>).
+       </p>
+       <h2 id="the-basics">
+        <a class="heading-anchor" href="#the-basics">#</a>The basics
+       </h2>
+       <p>
+        If you haven’t before, you can pipe the output of <em>any command ever</em> into less completely bare, no flags required.
+       </p>
+       <pre><code>(echo yippee &amp;&amp; yes eeeeee) | less
+</code></pre>
+       <p>
+        This is why people love UNIX.
+       </p>
+       <p>
+        Also, remember you can always get to the help screen from inside <code>less</code> with the <code>h</code> key.
+       </p>
+       <h3 id="movement">
+        <a class="heading-anchor" href="#movement">#</a>Movement
+       </h3>
+       <p>
+        Here’s a table of movement commands!
+       </p>
+       <table>
+        <thead>
+         <tr>
+          <th>
+           down
+          </th>
+          <th>
+           up
+          </th>
+          <th>
+           unit
+          </th>
+         </tr>
+        </thead>
+        <tbody>
+         <tr>
+          <td>
+           down arrow
+          </td>
+          <td>
+           up arrow
+          </td>
+          <td>
+           line
+          </td>
+         </tr>
+         <tr>
+          <td>
+           ^f
+          </td>
+          <td>
+           ^b
+          </td>
+          <td>
+           page
+          </td>
+         </tr>
+         <tr>
+          <td>
+           d
+          </td>
+          <td>
+           u
+          </td>
+          <td>
+           half-page
+          </td>
+         </tr>
+         <tr>
+          <td>
+           ^d
+          </td>
+          <td>
+           ^u
+          </td>
+          <td>
+           half-page
+          </td>
+         </tr>
+        </tbody>
+       </table>
+       <p>
+        I personally prefer <code>^d</code> and <code>^u</code>, since they’re the same in vim. Also, if your logs have long lines, you can move left and right with the left/right arrow keys.
+       </p>
+       <p>
+        It’s worth noting you can use <code>g</code> to jump to the beginning of the content, and <code>G</code> to jump to the end.
+       </p>
+       <h3 id="searching">
+        <a class="heading-anchor" href="#searching">#</a>Searching
+       </h3>
+       <p>
+        Use <code>/</code> to search for something <em>below</em> the top line in your screen, use <code>?</code> to search for something <em>before</em>. These can be regexes.
+       </p>
+       <p>
+        When you’ve got your search terms highlighted, use <code>n</code> to move to the next one, <code>N</code> to move to the previous one, and <code>ESC u</code> to remove the search highlight when you’re done.
+       </p>
+       <h2 id="the-goodies">
+        <a class="heading-anchor" href="#the-goodies">#</a>The goodies
+       </h2>
+       <p>
+        Here’s the real stuff that prompted this week’s tooltip.
+       </p>
+       <h3 id="stick-to-the-end-of-output">
+        <a class="heading-anchor" href="#stick-to-the-end-of-output">#</a>Stick to the end of output
+       </h3>
+       <p>
+        Also known as the <code>tail -f</code> behavior. I call this mode ‘sticky bottom’ mode, but I don’t think that’s quite the official name.
+       </p>
+       <p>
+        In this mode, <code>less</code> will automatically scroll down to the end of input as new input rolls in, like <code>tail -f</code>. Unlike <code>tail -f</code>, this will (a) let you switch between this behavior and normal <code>less</code> behavior without leaving <code>less</code> (i.e. without modifying your previous <code>tail</code> command), which means you can alternate between exploring a log and live-viewing it, and (b) not let the log output overstay its welcome and hang around in your terminal’s scrollback after <code>less</code> exits.
+       </p>
+       <p>
+        The one thing <code>tail -f</code> may be slightly more appropriate for is viewing multiple logs live at once, since <code>tail</code> will interpolate logs from different sources, where <code>less</code> forces you to switch between sources. I don’t care though, because I never do that.
+       </p>
+       <p>
+        You can invoke <code>less</code> in this mode with <code>less +F</code>, and you can return to normal <code>less</code> mode with <code>^C</code>. To go from normal mode to sticky bottom mode, hit <code>F</code>.
+       </p>
+       <h3 id="marking---jumping">
+        <a class="heading-anchor" href="#marking---jumping">#</a>Marking &amp; jumping
+       </h3>
+       <p>
+        You can mark lines and jump to marked lines like you can in vi. The <em>more</em> you know!
+       </p>
+       <p>
+        Mark a line with <code>m</code> followed by a lowercase letter, and jump to a marked line with <code>'</code> followed by that lowercase letter. For example, if I mark a line with <code>ma</code>, I can scroll and search around as much as I want, and later return to that line with <code>'a</code>.
+       </p>
+       <h3 id="other-snacks">
+        <a class="heading-anchor" href="#other-snacks">#</a>Other snacks
+       </h3>
+       <p>
+        You can run a one-off command with <code>!</code>, like <code>!ls -la</code>.
+       </p>
+       <p>
+        You can set any of <code>less</code>’s command line flags from inside less, just by typing the flag.
+       </p>
+       <p>
+        You can toggle line numbers with <code>-N</code>.
+       </p>
+       <p>
+        You can toggle line wrapping with <code>-S</code>.
+       </p>
+       <p>
+        If you’re <code>less</code>ing a file and decide you want to edit it, you can hit <code>v</code> to jump straight into your <code>$EDITOR</code> with that file.
+       </p>
+       <p>
+        If you’re <code>less</code>ing the output of a command and decide you want to save it to a file, you can hit <code>s</code> to do so.
+       </p>
+       <p>
+        You can choose to show only lines matching a certain pattern with <code>&amp;</code>. This is like a <code>| grep ...</code>, except you don’t have to know what you’re searching for before typing out your command! To return to showing all lines, just hit <code>&amp;</code> again without giving it a pattern.
+       </p>
+       <p>
+        In conclusion, <em>less really is more</em>. Except when it comes to unix command puns.
+       </p>
+       <hr>
+       <p>
+        Per usual, giphy had mostly questionable results for ‘less’ and ‘more’, so here’s the cream of the crop for ‘scroll’.
+       </p>
+       <p>
+        <img src="http://media.giphy.com/media/xfCEOjlROkMne/giphy.gif" alt="scroll">
+       </p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script type="text/javascript">
+   var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-28816340-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+  </script>
+ </body>
+</html>
